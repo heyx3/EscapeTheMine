@@ -97,25 +97,17 @@ namespace Rendering.TwoD
 		public override void StartRendering()
 		{
 			//Initialize the tile grid texture data.
-
-			tileGridTex.Resize(Tiles.Width, Tiles.Height);
-			Color[] cols = new Color[tileGridTex.width * tileGridTex.height];
-
-			for (int y = 0; y < tileGridTex.height; ++y)
-				for (int x = 0; x < tileGridTex.width; ++x)
-					cols[x + (y * tileGridTex.width)] = tileTypeToMaterialParam[Tiles[new Vector2i(x, y)]];
-
-			tileGridTex.SetPixels(cols);
-			tileGridTex.Apply();
-
+			OnTilesResized(Tiles, Vector2i.Zero, new Vector2i(tileGridTex.width, tileGridTex.height));
 
 			//Set up callbacks.
 			Tiles.OnTileChanged += OnTileChanged;
+			Tiles.OnTileGridResized += OnTilesResized;
 		}
 		public override void DestroyRendering()
 		{
 			//Clean up callbacks.
 			Tiles.OnTileChanged -= OnTileChanged;
+			Tiles.OnTileGridResized -= OnTilesResized;
 
 			base.DestroyRendering();
 		}
@@ -125,6 +117,24 @@ namespace Rendering.TwoD
 								   GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)
 		{
 			tileGridTex.SetPixel(pos.x, pos.y, tileTypeToMaterialParam[newVal]);
+			tileGridTex.Apply();
+		}
+		private void OnTilesResized(GameLogic.TileGrid tiles, Vector2i oldSize, Vector2i newSize)
+		{
+			//Sanity check:
+			UnityEngine.Assertions.Assert.AreEqual(tiles, Tiles,
+												   "Responding to a different TileGrid instance");
+
+			//Update the texture data.
+
+			tileGridTex.Resize(Tiles.Width, Tiles.Height);
+
+			Color[] cols = new Color[tileGridTex.width * tileGridTex.height];
+			for (int y = 0; y < tileGridTex.height; ++y)
+				for (int x = 0; x < tileGridTex.width; ++x)
+					cols[x + (y * tileGridTex.width)] = tileTypeToMaterialParam[Tiles[new Vector2i(x, y)]];
+
+			tileGridTex.SetPixels(cols);
 			tileGridTex.Apply();
 		}
 	}

@@ -340,7 +340,57 @@ public static class NoiseAlgos3D
 }
 
 
+[Serializable]
+public class NoiseOctaves : MyData.IReadWritable
+{
+	public int NOctaves = 3;
+	public float StartScale = 10.0f;
+	
+	public float Persistence = 0.5f;
 
+
+	public NoiseOctaves() { }
+	public NoiseOctaves(int nOctaves, float startScale, float persistence)
+	{
+		NOctaves = nOctaves;
+		StartScale = startScale;
+		Persistence = persistence;
+	}
+
+
+	public float Sample<SeedType>(SeedType seed,
+								  Func<SeedType, float, float> sampleNoiseWithSeedAndScale)
+	{
+		float val = 0.0f;
+		float weight = (NOctaves == 1 ? 1.0f : 0.5f),
+			  scale = StartScale;
+		float invPersistence = 1.0f / Persistence;
+
+		for (int i = 0; i < NOctaves; ++i)
+		{
+			val += weight * sampleNoiseWithSeedAndScale(seed, scale);
+
+			weight *= Persistence;
+			scale *= invPersistence;
+		}
+
+		return val;
+	}
+
+	//Serialization stuff:
+	public void ReadData(MyData.Reader reader)
+	{
+		NOctaves = reader.Int("nOctaves");
+		StartScale = reader.Float("startScale");
+		Persistence = reader.Float("persistence");
+	}
+	public void WriteData(MyData.Writer writer)
+	{
+		writer.Int(NOctaves, "nOctaves");
+		writer.Float(StartScale, "startScale");
+		writer.Float(Persistence, "persistence");
+	}
+}
 
 
 public static class NoiseAlgoUtils

@@ -8,6 +8,8 @@ namespace GameLogic
 {
 	public class Map : MyData.IReadWritable
 	{
+		public event Action<Map> OnMapCleared;
+
 		public UnitSet Units;
 		public TileGrid Tiles;
 
@@ -46,6 +48,14 @@ namespace GameLogic
 			return (posToUnits.ContainsKey(tilePos) ?
 						posToUnits[tilePos] :
 						emptyUnitList);
+		}
+
+		public void Clear()
+		{
+			Units.Clear();
+
+			if (OnMapCleared != null)
+				OnMapCleared(this);
 		}
 
 

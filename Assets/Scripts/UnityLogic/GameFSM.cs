@@ -9,7 +9,7 @@ namespace UnityLogic
 	/// <summary>
 	/// Runs the Finite State Machine controlling the flow of the game.
 	/// </summary>
-	public class GameFSM : Singleton<GameFSM>
+	public class GameFSM : MonoBehaviour
 	{
 		public abstract class State
 		{
@@ -17,7 +17,7 @@ namespace UnityLogic
 
 			/// <summary>
 			/// Called when this state starts up.
-			/// If everything is normal, the state should return null.
+			/// If everything is normal, the method should return null.
 			/// However, if this state should be replaced by a different one,
 			///     that different state should be returned instead.
 			/// Default behavior: returns null.
@@ -33,14 +33,13 @@ namespace UnityLogic
 			public virtual State Update() { return null; }
 			/// <summary>
 			/// Called when this state is about to be replaced by a new one.
-			/// If everything is normal, the state should return itself.
+			/// If everything is normal, the method should return null.
 			/// However, if the new state should be replaced by a different one,
 			///     that different state should be returned instead.
 			/// Default behavior: returns null.
 			/// </summary>
 			public virtual State End(State nextState) { return null; }
 		}
-
 
 		public class WorldProgress : MyData.IReadWritable
 		{
@@ -70,6 +69,50 @@ namespace UnityLogic
 			}
 		}
 
+		[Serializable]
+		public class NewWorldSettings : MyData.IReadWritable
+		{
+			public string Name = "My World";
+			public int Size = 250;
+			public MapGen.BiomeGenSettings Biome = new MapGen.BiomeGenSettings();
+			public MapGen.RoomGenSettings Rooms = new MapGen.RoomGenSettings();
+
+			public void ReadData(MyData.Reader reader)
+			{
+				Name = reader.String("name");
+				Size = reader.Int("size");
+				reader.Structure(Biome, "biome");
+				reader.Structure(Rooms, "rooms");
+			}
+			public void WriteData(MyData.Writer writer)
+			{
+				writer.String(Name, "name");
+				writer.Int(Size, "size");
+				writer.Structure(Biome, "biome");
+				writer.Structure(Rooms, "rooms");
+			}
+		}
+
+
+		public static GameFSM Instance
+		{
+			get
+			{
+				if (_instance == null)
+				{
+					_instance = FindObjectOfType<GameFSM>();
+					if (_instance == null)
+					{
+						GameObject go = new GameObject("Game FSM");
+						_instance = go.AddComponent<GameFSM>();
+					}
+				}
+
+				return _instance;
+			}
+		}
+		private static GameFSM _instance = null;
+
 
 		/// <summary>
 		/// Called when a new map is being created.
@@ -81,6 +124,9 @@ namespace UnityLogic
 		/// Rendering components can subscribe to this action to destroy themselves in preparation.
 		/// </summary>
 		public event Action OnMapDestroyed;
+
+		public NewWorldSettings WorldSettings = new NewWorldSettings();
+
 
 		public State CurrentState
 		{
@@ -120,19 +166,21 @@ namespace UnityLogic
 
 		public void GenerateWorld()
 		{
+			Map.Clear();
 			Progress = new WorldProgress();
-			//TODO: Set CurrentState to a state that generates a new map with new units.
+			CurrentState = new State_GenMap(true, WorldSettings.Biome, WorldSettings.Rooms);
 		}
 		public void GenerateNextMap()
 		{
+			Map.Clear();
 			Progress.Level += 1;
-			//TODO: Set CurrentState to a state that generates a new map using the ExitedUnits. Make sure to empty out ExitedUnits afterwards.
+			CurrentState = new State_GenMap(false, WorldSettings.Biome, WorldSettings.Rooms);
 		}
-
+		
 		public void LoadWorld(string filePath)
 		{
 			//Clean up the current world.
-			Map.Units.Clear();
+			Map.Clear();
 			if (OnMapDestroyed != null)
 				OnMapDestroyed();
 
@@ -141,6 +189,7 @@ namespace UnityLogic
 				MyData.JSONReader reader = new MyData.JSONReader(filePath);
 				reader.Structure(Progress, "progress");
 				reader.Structure(Map, "map");
+				reader.Structure(WorldSettings, "worldSettings");
 			}
 			catch (MyData.Reader.ReadException e)
 			{
@@ -156,10 +205,15 @@ namespace UnityLogic
 			{
 				writer.Structure(Progress, "progress");
 				writer.Structure(Map, "map");
+				writer.Structure(WorldSettings, "worldSettings");
 			}
 		}
 
-		void Update()
+		protected void Awake()
+		{
+			Map = new GameLogic.Map();
+		}
+		private void Update()
 		{
 			if (CurrentState != null)
 			{
