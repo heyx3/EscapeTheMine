@@ -146,8 +146,8 @@ namespace UnityLogic.MapGen
 							//Get the odds of this tile switching its membership in the room.
 							//Modify the chance based on the biome.
 							float chanceOfSwitch = TileChangeChances[similarTiles];
-							chanceOfSwitch = Mathf.Lerp(1.0f - chanceOfSwitch,
-														chanceOfSwitch,
+							chanceOfSwitch = Mathf.Lerp(chanceOfSwitch,
+														(similarTiles > 4 ? 0.0f : 1.0f),
 														tileBiome.CaveSmoothness);
 
 							if (prng.NextFloat() < chanceOfSwitch)

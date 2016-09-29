@@ -29,7 +29,7 @@ namespace UnityLogic.MapGen
 	[Serializable]
 	public class BiomeGenSettings : MyData.IReadWritable
 	{
-		NoiseOctaves Noise = new NoiseOctaves();
+		public NoiseOctaves Noise = new NoiseOctaves();
 
 		public BiomeTile[,] Generate(int sizeX, int sizeY)
 		{

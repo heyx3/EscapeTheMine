@@ -52,7 +52,6 @@ namespace GameLogic
 			pos = _pos;
 
 			Owner = map;
-			Owner.Units.Add(this);
 
 			Allies = new UnitSet(Owner);
 			Allies.OnElementAdded += (allies, ally) =>
@@ -66,6 +65,19 @@ namespace GameLogic
 					Allies.Remove(enemy);
 				};
 		}
+
+		protected Unit(Map map, Unit copyFrom)
+		{
+			Owner = map;
+			Team = copyFrom.Team;
+			pos = copyFrom.pos;
+		}
+
+		/// <summary>
+		/// Creates a clone of this unit that belongs to the given map.
+		/// Note that this does NOT copy over events or allies/enemies.
+		/// </summary>
+		public abstract Unit Clone(Map newOwner);
 
 
 		//Serialization stuff:

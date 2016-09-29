@@ -32,6 +32,8 @@ namespace UnityLogic
 		{
 			RunGenerator();
 
+			FSM.SaveWorld();
+
 			//TODO: Change to the normal gameplay state.
 			return base.Start(previousState);
 		}
@@ -55,10 +57,19 @@ namespace UnityLogic
 
 			FSM.Map.Tiles = new GameLogic.TileGrid(tiles);
 
-			//Bring in any units.
+			//Bring in any units from the previous level.
 			if (!FromScratch)
 			{
-				//TODO: Implement.
+				Dictionary<GameLogic.Unit, GameLogic.Unit> oldUnitToNewUnit =
+					new Dictionary<GameLogic.Unit, GameLogic.Unit>();
+				foreach (GameLogic.Unit unit in FSM.Progress.ExitedUnits)
+				{
+					GameLogic.Unit newUnit = unit.Clone(FSM.Map);
+
+					oldUnitToNewUnit.Add(unit, newUnit);
+					FSM.Map.Units.Add(newUnit);
+				}
+				
 				FSM.Progress.ExitedUnits.Clear();
 			}
 		}

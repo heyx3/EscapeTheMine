@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace UnityLogic
 {
-	public class MainMenu : Singleton<MainMenu>
+	public class MenuController : Singleton<MenuController>
 	{
-		public GameObject Menu_Main, Menu_NewWorld, Menu_LoadWorld;
+		public GameObject Menu_Main, Menu_NewWorld, Menu_LoadWorld, Menu_WorldGenSettings;
 
 
 		public void Callback_SetupNewGame()
@@ -30,22 +30,13 @@ namespace UnityLogic
 			Activate(Menu_Main);
 		}
 
-		public void Callback_StartNewGame()
-		{
-			GameFSM.Instance.GenerateWorld();
-		}
-		public void Callback_StartLoadedGame()
-		{
-			GameFSM.Instance.LoadWorld(Path.Combine(LoadWorldMenu.Instance.SaveFolderPath,
-													LoadWorldMenu.Instance.SelectedWorld));
-		}
-
 		
-		private void Activate(GameObject menu)
+		public void Activate(GameObject menu)
 		{
 			Menu_Main.SetActive(Menu_Main == menu);
 			Menu_NewWorld.SetActive(Menu_NewWorld == menu);
 			Menu_LoadWorld.SetActive(Menu_LoadWorld == menu);
+			Menu_WorldGenSettings.SetActive(Menu_WorldGenSettings == menu);
 		}
 
 

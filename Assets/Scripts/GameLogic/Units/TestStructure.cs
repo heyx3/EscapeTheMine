@@ -39,6 +39,16 @@ namespace GameLogic.Units
 		public TestStructure(Map map) : base(map, Teams.Environment) { }
 		public TestStructure(Map map, Vector2i pos) : base(map, Teams.Environment, pos) { }
 
+		private TestStructure(Map map, TestStructure copyFrom) : base(map, copyFrom)
+		{
+			food = copyFrom.food;
+		}
+
+
+		public override Unit Clone(Map newOwner)
+		{
+			return new TestStructure(newOwner, this);
+		}
 
 		public void TakeTurn()
 		{

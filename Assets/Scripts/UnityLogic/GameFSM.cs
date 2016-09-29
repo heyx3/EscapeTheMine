@@ -104,6 +104,7 @@ namespace UnityLogic
 					if (_instance == null)
 					{
 						GameObject go = new GameObject("Game FSM");
+						DontDestroyOnLoad(go);
 						_instance = go.AddComponent<GameFSM>();
 					}
 				}
@@ -183,7 +184,7 @@ namespace UnityLogic
 			Map.Clear();
 			if (OnMapDestroyed != null)
 				OnMapDestroyed();
-
+			
 			try
 			{
 				MyData.JSONReader reader = new MyData.JSONReader(filePath);
@@ -199,17 +200,26 @@ namespace UnityLogic
 			if (OnMapCreated != null)
 				OnMapCreated();
 		}
-		public void SaveWorld(string filePath)
+		public void SaveWorld()
 		{
+			string filePath = MenuConsts.SaveFilePath(WorldSettings.Name);
 			using (MyData.JSONWriter writer = new MyData.JSONWriter(filePath))
 			{
-				writer.Structure(Progress, "progress");
-				writer.Structure(Map, "map");
-				writer.Structure(WorldSettings, "worldSettings");
+				try
+				{
+					writer.Structure(Progress, "progress");
+					writer.Structure(Map, "map");
+					writer.Structure(WorldSettings, "worldSettings");
+				}
+				catch (MyData.Writer.WriteException e)
+				{
+					Debug.LogError("Unable to save " + filePath + ": " + e.Message);
+				}
 			}
 		}
 
-		protected void Awake()
+
+		private void Awake()
 		{
 			Map = new GameLogic.Map();
 		}
