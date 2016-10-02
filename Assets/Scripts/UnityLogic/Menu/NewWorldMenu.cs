@@ -27,12 +27,12 @@ namespace UnityLogic
 			ui_Message.text = msg;
 		}
 
-		public void Callback_WorldNameChanged(string newName)
+		public void Callback_WorldNameChanged()
 		{
-			Settings.Name = newName;
+			Settings.Name = ui_WorldName.text;
 
 			//If the name is invalid, swap out the bad characters with underscores.
-			if (newName.Any(c => Path.GetInvalidFileNameChars().Contains(c)))
+			if (ui_WorldName.text.Any(c => Path.GetInvalidFileNameChars().Contains(c)))
 			{
 				SetMessage("Invalid characters in name", 5.0f);
 				resetWorldName = true;
@@ -44,28 +44,29 @@ namespace UnityLogic
 			//If a file with that name already exists, warn.
 			else if (File.Exists(MenuConsts.SaveFilePath(Settings.Name)))
 			{
-				SetMessage("A world with that name already exists");
+				SetMessage("A world with that name already exists", 2.0f);
 			}
 			else
 			{
 				SetMessage("");
 			}
 		}
-		public void Callback_WorldSizeChanged(string newName)
+		public void Callback_WorldSizeChanged()
 		{
 			int size;
-			if (int.TryParse(newName, out size) && size > 32)
+			if (int.TryParse(ui_WorldSize.text, out size) && size > 32)
 			{
 				Settings.Size = size;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid size");
+				SetMessage("Invalid size", 1.0f);
 			}
 		}
 		public void Callback_StartNewGame()
 		{
+            MenuController.Instance.Activate(null);
 			GameFSM.Instance.GenerateWorld();
 		}
 		public void Callback_WorldGenSettings()

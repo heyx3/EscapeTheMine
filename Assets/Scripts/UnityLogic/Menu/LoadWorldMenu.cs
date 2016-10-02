@@ -25,8 +25,9 @@ namespace UnityLogic
 			SelectedWorld = availableWorlds[newIndex];
 		}
 		public void Callback_StartLoadedGame()
-		{
-			GameFSM.Instance.LoadWorld(SelectedWorld);
+        {
+            MenuController.Instance.Activate(null);
+            GameFSM.Instance.LoadWorld(SelectedWorld);
 		}
 		public void Callback_Delete()
 		{
