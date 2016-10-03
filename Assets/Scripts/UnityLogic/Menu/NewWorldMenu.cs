@@ -27,9 +27,9 @@ namespace UnityLogic
 			ui_Message.text = msg;
 		}
 
-		public void Callback_WorldNameChanged()
+		public void Callback_WorldNameChanged(string newValue)
 		{
-			Settings.Name = ui_WorldName.text;
+			Settings.Name = newValue;
 
 			//If the name is invalid, swap out the bad characters with underscores.
 			if (ui_WorldName.text.Any(c => Path.GetInvalidFileNameChars().Contains(c)))
@@ -51,10 +51,10 @@ namespace UnityLogic
 				SetMessage("");
 			}
 		}
-		public void Callback_WorldSizeChanged()
+		public void Callback_WorldSizeChanged(string newValue)
 		{
 			int size;
-			if (int.TryParse(ui_WorldSize.text, out size) && size > 32)
+			if (int.TryParse(newValue, out size) && size > 32)
 			{
 				Settings.Size = size;
 				SetMessage("");

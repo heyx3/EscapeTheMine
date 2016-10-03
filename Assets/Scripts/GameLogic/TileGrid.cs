@@ -57,7 +57,9 @@ namespace GameLogic
 		{
 			//Make a copy so that modifying the parameter doesn't secretly change this grid.
 			grid = new TileTypes[_grid.GetLength(0), _grid.GetLength(1)];
-			_grid.CopyTo(grid, 0);
+            for (int y = 0; y < grid.GetLength(1); ++y)
+                for (int x = 0; x < grid.GetLength(0); ++x)
+                    grid[x, y] = _grid[x, y];
 		}
 		public TileGrid(int width, int height) : this(new Vector2i(width, height)) { }
 		public TileGrid(Vector2i size)
@@ -137,7 +139,7 @@ namespace GameLogic
 				{
 					if (x > 0)
 						data.Append('|');
-					data.Append(x);
+					data.Append((int)this[new Vector2i(x, y)]);
 				}
 
 				writer.String(data.ToString(), "row" + y);

@@ -38,122 +38,121 @@ namespace UnityLogic
 		{
 			MenuController.Instance.Activate(MenuController.Instance.Menu_NewWorld);
 		}
-		public void Callback_BiomeNoiseOctavesChanged()
+		public void Callback_BiomeNoiseOctavesChanged(string newValue)
 		{
 			int valI;
-			if (int.TryParse(ui_BiomeNoiseOctaves.text, out valI) && valI > 0)
+			if (int.TryParse(newValue, out valI) && valI > 0)
 			{
 				Biome.Noise.NOctaves = valI;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_BiomeNoiseScaleChanged()
+		public void Callback_BiomeNoiseScaleChanged(string newValue)
 		{
 			float valF;
-			if (float.TryParse(ui_BiomeNoiseScale.text, out valF))
+			if (float.TryParse(newValue, out valF))
 			{
 				Biome.Noise.StartScale = valF;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_BiomeNoisePersistenceChanged()
+		public void Callback_BiomeNoisePersistenceChanged(string newValue)
 		{
 			float valF;
-			if (float.TryParse(ui_BiomeNoisePersistence.text, out valF))
+			if (float.TryParse(newValue, out valF))
 			{
 				Biome.Noise.Persistence = valF;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsNumberChanged()
+		public void Callback_RoomsNumberChanged(string newValue)
 		{
 			int valI;
-			if (int.TryParse(ui_RoomsNumber.text, out valI) && valI > 0)
+			if (int.TryParse(newValue, out valI) && valI > 0)
 			{
 				Rooms.NRooms = valI;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsSpacingChanged()
+		public void Callback_RoomsSpacingChanged(string newValue)
 		{
 			int valI;
-			if (int.TryParse(ui_RoomsSpacing.text, out valI) && valI > 0)
+			if (int.TryParse(newValue, out valI) && valI > 0)
 			{
 				Rooms.RoomSpacing = valI;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsSizeChanged()
+		public void Callback_RoomsSizeChanged(string newValue)
 		{
 			float valF;
-			if (float.TryParse(ui_RoomsSize.text, out valF) && valF >= 0.0f && valF <= 1.0f)
+			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
 			{
 				Rooms.RoomSize = valF;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsNIterationsChanged()
+		public void Callback_RoomsNIterationsChanged(string newValue)
 		{
 			int valI;
-			if (int.TryParse(ui_RoomsNIterations.text, out valI) && valI >= 0)
+			if (int.TryParse(newValue, out valI) && valI >= 0)
 			{
 				Rooms.NIterations = valI;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsTileVariationChanged()
+		public void Callback_RoomsTileVariationChanged(string newValue)
 		{
 			float valF;
-			if (float.TryParse(ui_RoomsTileVariation.text, out valF) && valF >= 0.0f && valF <= 1.0f)
+			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
 			{
 				Rooms.TileVariation = valF;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsTileChangeChanceChanged(int index)
+		public void Callback_RoomsTileChangeChanceChanged(string newValue, int index)
 		{
 			float valF;
-			if (float.TryParse(UIs_RoomsTileChangeChances[index].text, out valF) &&
-                valF >= 0.0f && valF <= 1.0f)
+			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
 			{
 				Rooms.TileChangeChances[index] = valF;
 				SetMessage("");
 			}
 			else
 			{
-				SetMessage("Invalid value", 1.0f);
+				SetMessage("Invalid value");
 			}
 		}
 

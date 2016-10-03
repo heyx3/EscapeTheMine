@@ -17,10 +17,13 @@ namespace UnityLogic
 		{
 			get
 			{
-				if (Application.isEditor)
-					return Path.Combine(Application.dataPath, Path.Combine("../", SaveFolderName));
-				else
-					return Path.Combine(Application.dataPath, SaveFolderName);
+                //Create the directory if it doesn't exist yet.
+                string path = (Application.isEditor ?
+                                   Path.Combine(Application.dataPath, Path.Combine("../", SaveFolderName)) :
+                                   Path.Combine(Application.dataPath, SaveFolderName));
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                return path;
 			}
 		}
 		public static string SaveFilePath(string fileName)

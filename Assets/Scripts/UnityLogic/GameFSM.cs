@@ -94,6 +94,13 @@ namespace UnityLogic
 		}
 
 
+        public enum ViewModes
+        {
+            ThreeD,
+            TwoD,
+        }
+
+
 		public static GameFSM Instance
 		{
 			get
@@ -115,16 +122,7 @@ namespace UnityLogic
 		private static GameFSM _instance = null;
 
 
-		/// <summary>
-		/// Called when a new map is being created.
-		/// Rendering components can subscribe to this action to add hooks into the new map.
-		/// </summary>
-		public event Action OnMapCreated;
-		/// <summary>
-		/// Called when the map is being destroyed, generally to start a new one.
-		/// Rendering components can subscribe to this action to destroy themselves in preparation.
-		/// </summary>
-		public event Action OnMapDestroyed;
+        public event Action<GameLogic.Map> OnNewMap;
 
 		public NewWorldSettings WorldSettings = new NewWorldSettings();
 
@@ -161,30 +159,39 @@ namespace UnityLogic
 		}
 		private State currState = null;
 
+        /// <summary>
+        /// Note that this Map is persistent; it never gets a new value assigned to it after creation.
+        /// This means that Map callbacks never have to be re-added wheneve e.x. a new map is loaded.
+        /// </summary>
 		public GameLogic.Map Map { get; private set; }
-		public WorldProgress Progress { get; private set; }
 
+		public WorldProgress Progress { get; private set; }
+        public ViewModes ViewMode { get; private set; }
+        
+
+        //TODO: Create RendererComponent on Awake() and make sure it corresponds with ViewMode.
 
 		public void GenerateWorld()
 		{
 			Map.Clear();
 			Progress = new WorldProgress();
 			CurrentState = new State_GenMap(true, WorldSettings.Biome, WorldSettings.Rooms);
+
+            if (OnNewMap != null)
+                OnNewMap(Map);
 		}
 		public void GenerateNextMap()
 		{
 			Map.Clear();
 			Progress.Level += 1;
 			CurrentState = new State_GenMap(false, WorldSettings.Biome, WorldSettings.Rooms);
-		}
+
+            if (OnNewMap != null)
+                OnNewMap(Map);
+        }
 		
 		public void LoadWorld(string filePath)
 		{
-			//Clean up the current world.
-			Map.Clear();
-			if (OnMapDestroyed != null)
-				OnMapDestroyed();
-			
 			try
 			{
 				MyData.JSONReader reader = new MyData.JSONReader(filePath);
@@ -195,11 +202,11 @@ namespace UnityLogic
 			catch (MyData.Reader.ReadException e)
 			{
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
-			}
+            }
 
-			if (OnMapCreated != null)
-				OnMapCreated();
-		}
+            if (OnNewMap != null)
+                OnNewMap(Map);
+        }
 		public void SaveWorld()
 		{
 			string filePath = MenuConsts.SaveFilePath(WorldSettings.Name);
