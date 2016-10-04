@@ -57,8 +57,12 @@ namespace UnityLogic
 
 			FSM.Map.Tiles = new GameLogic.TileGrid(tiles);
 
-			//Bring in any units from the previous level.
-			if (!FromScratch)
+			//Generate units.
+			if (FromScratch)
+			{
+				//TODO: Implement.
+			}
+			else
 			{
 				Dictionary<GameLogic.Unit, GameLogic.Unit> oldUnitToNewUnit =
 					new Dictionary<GameLogic.Unit, GameLogic.Unit>();

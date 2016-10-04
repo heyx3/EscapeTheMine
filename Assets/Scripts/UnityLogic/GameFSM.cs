@@ -70,7 +70,7 @@ namespace UnityLogic
 		}
 
 		[Serializable]
-		public class NewWorldSettings : MyData.IReadWritable
+		public class WorldSettings : MyData.IReadWritable
 		{
 			public string Name = "My World";
 			public int Size = 250;
@@ -124,7 +124,7 @@ namespace UnityLogic
 
         public event Action<GameLogic.Map> OnNewMap;
 
-		public NewWorldSettings WorldSettings = new NewWorldSettings();
+		public WorldSettings Settings = new WorldSettings();
 
 
 		public State CurrentState
@@ -166,16 +166,27 @@ namespace UnityLogic
 		public GameLogic.Map Map { get; private set; }
 
 		public WorldProgress Progress { get; private set; }
-        public ViewModes ViewMode { get; private set; }
-        
 
-        //TODO: Create RendererComponent on Awake() and make sure it corresponds with ViewMode.
+        public ViewModes ViewMode
+		{
+			get { return viewMode; }
+			set
+			{
+				if (viewMode == value)
+					return;
+
+				viewMode = value;
+				Rendering.RendererController.Instance.UseRenderer(viewMode);
+			}
+		}
+		private ViewModes viewMode;
+        
 
 		public void GenerateWorld()
 		{
 			Map.Clear();
 			Progress = new WorldProgress();
-			CurrentState = new State_GenMap(true, WorldSettings.Biome, WorldSettings.Rooms);
+			CurrentState = new State_GenMap(true, Settings.Biome, Settings.Rooms);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -184,7 +195,7 @@ namespace UnityLogic
 		{
 			Map.Clear();
 			Progress.Level += 1;
-			CurrentState = new State_GenMap(false, WorldSettings.Biome, WorldSettings.Rooms);
+			CurrentState = new State_GenMap(false, Settings.Biome, Settings.Rooms);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -197,7 +208,7 @@ namespace UnityLogic
 				MyData.JSONReader reader = new MyData.JSONReader(filePath);
 				reader.Structure(Progress, "progress");
 				reader.Structure(Map, "map");
-				reader.Structure(WorldSettings, "worldSettings");
+				reader.Structure(Settings, "worldSettings");
 			}
 			catch (MyData.Reader.ReadException e)
 			{
@@ -209,14 +220,14 @@ namespace UnityLogic
         }
 		public void SaveWorld()
 		{
-			string filePath = MenuConsts.SaveFilePath(WorldSettings.Name);
+			string filePath = MenuConsts.Instance.GetSaveFilePath(Settings.Name);
 			using (MyData.JSONWriter writer = new MyData.JSONWriter(filePath))
 			{
 				try
 				{
 					writer.Structure(Progress, "progress");
 					writer.Structure(Map, "map");
-					writer.Structure(WorldSettings, "worldSettings");
+					writer.Structure(Settings, "worldSettings");
 				}
 				catch (MyData.Writer.WriteException e)
 				{
@@ -229,6 +240,10 @@ namespace UnityLogic
 		private void Awake()
 		{
 			Map = new GameLogic.Map();
+		}
+		private void Start()
+		{
+			ViewMode = (ViewModes)PlayerPrefs.GetInt("viewMode", (int)ViewModes.TwoD);
 		}
 		private void Update()
 		{

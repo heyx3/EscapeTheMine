@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameLogic;
 using UnityEngine;
 
 
@@ -23,12 +24,12 @@ namespace Rendering.TwoD
 		private Mesh quadMesh;
 
 		[SerializeField]
-		private string paramName_TileGridTex = "_tileGridTex";
+		private string paramName_TileGridTex = "_TextureGridTex";
 
 		[SerializeField]
 		private TileAtlasSlice[] tileAtlases = new TileAtlasSlice[0];
 		[SerializeField]
-		private Texture2D tileAtlasTex;
+		private Sprite tileAtlas;
 		[SerializeField]
 		private int tileAtlasSize = 32,
 					tileAtlasBorder = 0,
@@ -45,37 +46,55 @@ namespace Rendering.TwoD
 
 		private Texture2D tileGridTex = null;
 		private Dictionary<GameLogic.TileTypes, Color> tileTypeToMaterialParam;
+		private GameObject tileQuad = null;
 
 
 		private Camera GameCam { get { return Camera.main; } }
 
 
-		protected override void Awake()
+		protected override void OnEnable()
 		{
-			base.Awake();
+			base.OnEnable();
 
 			//Use the best available format for the tile grid texture when initializing it.
 			TextureFormat bestFmt = tileTexFormatsByPriority.First(SystemInfo.SupportsTextureFormat);
 			tileGridTex = new Texture2D(1, 1, bestFmt, false);
 			tileGridTex.filterMode = FilterMode.Point;
 
+			if (tileQuad == null)
+			{
+				tileQuad = new GameObject("Tile Quad");
+				tileQuad.transform.SetParent(transform, true);
+				tileQuad.transform.localScale = new Vector3(99999.0f, 99999.0f, 1.0f);
+				tileQuad.SetActive(false);
+			}
+
+			//Set up sprite renderer.
+			SpriteRenderer sr = tileQuad.GetComponent<SpriteRenderer>();
+			if (sr == null)
+				sr = tileQuad.AddComponent<SpriteRenderer>();
+			sr.material = tileRenderMat;
+			sr.material.SetTexture(paramName_TileGridTex, tileGridTex);
+			sr.sprite = tileAtlas;
+
+			if (false) {
 			//Set up mesh.
-			MeshFilter mf = GetComponent<MeshFilter>();
+			MeshFilter mf = tileQuad.GetComponent<MeshFilter>();
 			if (mf == null)
-				mf = gameObject.AddComponent<MeshFilter>();
+				mf = tileQuad.AddComponent<MeshFilter>();
 			mf.sharedMesh = quadMesh;
 
 			//Set up material.
-			MeshRenderer mr = GetComponent<MeshRenderer>();
+			MeshRenderer mr = tileQuad.GetComponent<MeshRenderer>();
 			if (mr == null)
-				mr = gameObject.AddComponent<MeshRenderer>();
+				mr = tileQuad.AddComponent<MeshRenderer>();
 			mr.material = tileRenderMat;
 			mr.material.SetTexture(paramName_TileGridTex, tileGridTex);
-			mr.material.mainTexture = tileAtlasTex;
+			mr.material.mainTexture = tileAtlas.texture; }
 
 			//Calculate UV sub-rects for each tile type.
 			tileTypeToMaterialParam = new Dictionary<GameLogic.TileTypes, Color>();
-			Vector2 texel = tileAtlasTex.texelSize;
+			Vector2 texel = tileAtlas.texture.texelSize;
 			Vector2 texel_TileSize = texel * tileAtlasSize,
 					texel_Border = texel * tileAtlasBorder,
 					texel_Spacing = texel * tileAtlasSpacing;
@@ -86,44 +105,42 @@ namespace Rendering.TwoD
 					if (tileAtlases[i].TileType == tileAtlases[j].TileType)
 						Debug.LogError("Tile atlases " + i + " and " + j + " use the same tile type");
 
-				Rect texR = new Rect(texel_Border + (i * (texel_Spacing + texel_TileSize)),
-									 texel_TileSize);
+				Rect texR = new Rect(texel_Border.x + (tileAtlases[i].TileX * (texel_Spacing.x + texel_TileSize.x)),
+									 texel_Border.y + (tileAtlases[i].TileY * (texel_Spacing.y + texel_TileSize.y)),
+									 texel_TileSize.x, texel_TileSize.y);
 				tileTypeToMaterialParam.Add(tileAtlases[i].TileType,
 											new Color(texR.xMin, texR.yMin,
 													  texR.xMax, texR.yMax));
 			}
 		}
-
-		public override void StartRendering()
+		protected override void OnDisable()
 		{
-			//Initialize the tile grid texture data.
-			OnTilesResized(Tiles, Vector2i.Zero, new Vector2i(tileGridTex.width, tileGridTex.height));
+			base.OnDisable();
 
-			//Set up callbacks.
-			Tiles.OnTileChanged += OnTileChanged;
-			Tiles.OnTileGridResized += OnTilesResized;
-		}
-		public override void DestroyRendering()
-		{
-			//Clean up callbacks.
-			Tiles.OnTileChanged -= OnTileChanged;
-			Tiles.OnTileGridResized -= OnTilesResized;
-
-			base.DestroyRendering();
-		}
-
-
-		private void OnTileChanged(GameLogic.TileGrid tiles, Vector2i pos,
-								   GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)
-		{
-			tileGridTex.SetPixel(pos.x, pos.y, tileTypeToMaterialParam[newVal]);
+			tileGridTex.Resize(1, 1);
 			tileGridTex.Apply();
+			tileGridTex = null;
 		}
-		private void OnTilesResized(GameLogic.TileGrid tiles, Vector2i oldSize, Vector2i newSize)
+
+
+		protected override void StartMap(Map map)
 		{
-			//Sanity check:
-			UnityEngine.Assertions.Assert.AreEqual(tiles, Tiles,
-												   "Responding to a different TileGrid instance");
+			base.StartMap(map);
+
+			tileQuad.SetActive(true);
+			TileGridResized(map.Tiles, Vector2i.Zero, new Vector2i(map.Tiles.Width, map.Tiles.Height));
+		}
+		protected override void EndMap(Map map)
+		{
+			base.EndMap(map);
+			
+			tileQuad.SetActive(false);
+		}
+
+		protected override void TileGridResized(GameLogic.TileGrid tiles,
+												Vector2i oldSize, Vector2i newSize)
+		{
+			base.TileGridResized(tiles, oldSize, newSize);
 
 			//Update the texture data.
 
@@ -135,6 +152,16 @@ namespace Rendering.TwoD
 					cols[x + (y * tileGridTex.width)] = tileTypeToMaterialParam[Tiles[new Vector2i(x, y)]];
 
 			tileGridTex.SetPixels(cols);
+			tileGridTex.Apply();
+			
+			GetComponentInChildren<SpriteRenderer>().material.SetTexture(paramName_TileGridTex, tileGridTex);
+		}
+		protected override void TileChanged(GameLogic.TileGrid tiles, Vector2i pos,
+										    GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)
+		{
+			base.TileChanged(tiles, pos, oldVal, newVal);
+
+			tileGridTex.SetPixel(pos.x, pos.y, tileTypeToMaterialParam[newVal]);
 			tileGridTex.Apply();
 		}
 	}

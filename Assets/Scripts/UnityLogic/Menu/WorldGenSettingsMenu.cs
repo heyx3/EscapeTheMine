@@ -9,8 +9,8 @@ namespace UnityLogic
 {
 	public class WorldGenSettingsMenu : Singleton<WorldGenSettingsMenu>
 	{
-		public UnityLogic.MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.WorldSettings.Biome; } }
-		public UnityLogic.MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.WorldSettings.Rooms; } }
+		public UnityLogic.MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.Settings.Biome; } }
+		public UnityLogic.MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.Settings.Rooms; } }
 
 		[SerializeField]
 		private UnityEngine.UI.Text ui_Message,

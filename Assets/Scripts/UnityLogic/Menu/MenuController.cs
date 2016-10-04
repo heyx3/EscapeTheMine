@@ -30,6 +30,24 @@ namespace UnityLogic
 			Activate(Menu_Main);
 		}
 
+		public void Callback_ToggleViewMode(UnityEngine.UI.Image viewModeImage)
+		{
+			switch (GameFSM.Instance.ViewMode)
+			{
+				case GameFSM.ViewModes.TwoD:
+					GameFSM.Instance.ViewMode = GameFSM.ViewModes.ThreeD;
+					viewModeImage.sprite = MenuConsts.Instance.ViewMode_3D;
+					break;
+
+				case GameFSM.ViewModes.ThreeD:
+					GameFSM.Instance.ViewMode = GameFSM.ViewModes.TwoD;
+					viewModeImage.sprite = MenuConsts.Instance.ViewMode_2D;
+					break;
+
+				default: throw new NotImplementedException(GameFSM.Instance.ViewMode.ToString());
+			}
+		}
+
 		
 		public void Activate(GameObject menu)
 		{

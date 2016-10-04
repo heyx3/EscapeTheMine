@@ -8,12 +8,15 @@ using UnityEngine;
 
 namespace UnityLogic
 {
-	public static class MenuConsts
+	public class MenuConsts : Singleton<MenuConsts>
 	{
-		public static readonly string SaveFolderName = "Saves",
-									  SaveExtension = ".world";
+		public string SaveFolderName = "Saves",
+					  SaveExtension = ".world";
 
-		public static string SaveFolderPath
+		public Sprite ViewMode_2D, ViewMode_3D;
+
+
+		public string SaveFolderPath
 		{
 			get
 			{
@@ -26,7 +29,9 @@ namespace UnityLogic
                 return path;
 			}
 		}
-		public static string SaveFilePath(string fileName)
+
+
+		public string GetSaveFilePath(string fileName)
 		{
 			return Path.Combine(SaveFolderPath, fileName + SaveExtension);
 		}

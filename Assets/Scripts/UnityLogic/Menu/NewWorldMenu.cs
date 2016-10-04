@@ -10,7 +10,7 @@ namespace UnityLogic
 {
 	public class NewWorldMenu : Singleton<NewWorldMenu>
 	{
-		public GameFSM.NewWorldSettings Settings { get { return GameFSM.Instance.WorldSettings; } }
+		public GameFSM.WorldSettings Settings { get { return GameFSM.Instance.Settings; } }
 
 		[SerializeField]
 		private UnityEngine.UI.Text ui_Message,
@@ -42,7 +42,7 @@ namespace UnityLogic
 					Settings.Name = Settings.Name.Replace(c, '_');
 			}
 			//If a file with that name already exists, warn.
-			else if (File.Exists(MenuConsts.SaveFilePath(Settings.Name)))
+			else if (File.Exists(MenuConsts.Instance.GetSaveFilePath(Settings.Name)))
 			{
 				SetMessage("A world with that name already exists", 2.0f);
 			}

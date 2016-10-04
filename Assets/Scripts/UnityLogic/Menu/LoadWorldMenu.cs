@@ -38,7 +38,7 @@ namespace UnityLogic
 			{
 				try
 				{
-					File.Delete(MenuConsts.SaveFilePath(SelectedWorld));
+					File.Delete(MenuConsts.Instance.GetSaveFilePath(SelectedWorld));
 				}
 				catch (Exception e)
 				{
@@ -55,10 +55,10 @@ namespace UnityLogic
 
 		private void OnEnable()
 		{
-			if (!Directory.Exists(MenuConsts.SaveFolderPath))
-				Directory.CreateDirectory(MenuConsts.SaveFolderPath);
+			if (!Directory.Exists(MenuConsts.Instance.SaveFolderPath))
+				Directory.CreateDirectory(MenuConsts.Instance.SaveFolderPath);
 
-			string[] worldFiles = Directory.GetFiles(MenuConsts.SaveFolderPath, "*.world");
+			string[] worldFiles = Directory.GetFiles(MenuConsts.Instance.SaveFolderPath, "*.world");
 			availableWorlds = worldFiles.Select<string, string>(Path.GetFileNameWithoutExtension).ToList();
 
 			SelectionDropdown.options = availableWorlds.Select(s => new UnityEngine.UI.Dropdown.OptionData(s)).ToList();

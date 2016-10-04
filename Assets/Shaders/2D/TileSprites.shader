@@ -4,7 +4,7 @@ Shader "EtM 2D/Tile Sprites"
 {
 	Properties
 	{
-		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {} 
 		//_Color ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 
@@ -63,7 +63,7 @@ Shader "EtM 2D/Tile Sprites"
 				OUT.vertex = UnityPixelSnap (OUT.vertex);
 #endif
 
-                OUT.worldPos = mul(unity_ObjectToWorld, float4(IN.vertex, 1.0)).xy;
+                OUT.worldPos = mul(unity_ObjectToWorld, IN.vertex).xy;
 
 				return OUT;
 			}
@@ -72,12 +72,15 @@ Shader "EtM 2D/Tile Sprites"
 			sampler2D _AlphaTex;
             sampler2D _TextureGridTex;
 
+            float4 _TextureGridTex_TexelSize,
+                   _MainTex_TexelSize;
+
 			fixed4 SampleSpriteTexture(float2 worldPos)
 			{
                 //TODO: Try using half instead of float.
                 //Sample _TextureGridTex to get the UV rectangle to use for sampling the sprite texture atlas.
                 float4 uvRect = tex2D(_TextureGridTex, worldPos * _TextureGridTex_TexelSize.xy);
-                float2 t = IN.worldPos - floor(IN.worldPos);
+                float2 t = worldPos - floor(worldPos);
 				fixed4 color = tex2D(_MainTex, lerp(uvRect.xy, uvRect.zw, t));
 
 #if ETC1_EXTERNAL_ALPHA
@@ -90,7 +93,7 @@ Shader "EtM 2D/Tile Sprites"
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
-				fixed4 c = SampleSpriteTexture(IN);// * IN.color;
+				fixed4 c = SampleSpriteTexture(IN.worldPos);// * IN.color;
 				c.rgb *= c.a;
 				return c;
 			}

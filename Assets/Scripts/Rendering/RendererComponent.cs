@@ -9,7 +9,7 @@ namespace Rendering
 	/// <summary>
 	/// A script that handles some aspect of rendering the game.
 	/// </summary>
-	public abstract class RendererComponent : Singleton<RendererComponent>
+	public abstract class RendererComponent : MonoBehaviour
 	{
 		protected static UnityLogic.GameFSM GameFSM { get { return UnityLogic.GameFSM.Instance; } }
 
@@ -22,12 +22,11 @@ namespace Rendering
 		public Transform MyTr { get; private set; }
 
 
-		protected override void Awake()
+		protected virtual void Awake()
 		{
-            base.Awake();
 			MyTr = transform;
 		}
-		protected virtual void Start()
+		protected virtual void OnEnable()
 		{
             GameFSM.OnNewMap += StartMap;
             GameFSM.Map.OnMapCleared += EndMap;
@@ -36,10 +35,8 @@ namespace Rendering
             GameFSM.Map.Units.OnElementAdded += UnitAddedToMap;
             GameFSM.Map.Units.OnElementRemoved += UnitRemovedFromMap;
 		}
-        protected override void OnDestroy()
+        protected virtual void OnDisable()
         {
-            base.OnDestroy();
-
             GameFSM.OnNewMap -= StartMap;
             GameFSM.Map.OnMapCleared -= EndMap;
             GameFSM.Map.Tiles.OnTileChanged -= TileChanged;
