@@ -31,44 +31,25 @@ namespace UnityLogic.MapGen
 		/// The spacing between the rooms when first generated.
 		/// </summary>
 		public int RoomSpacing = 10;
-		/// <summary>
-		/// The space taken up by the rooms when first generated,
-		///		from 0 to 1.
-		/// </summary>
-		public float RoomSize = 0.5f;
 
 		/// <summary>
-		/// The number of cellular automata iterations to run.
+		/// The min/max number of circles each room uses to carve out its initial space.
 		/// </summary>
-		public int NIterations = 10;
-
+		public int MinCirclesPerRoom = 3,
+				   MaxCirclesPerRoom = 5;
 		/// <summary>
-		/// How much varation there is between tiles in a room.
-		/// Should be between 0 and 1.
+		/// The amount of spread (from 0 to 1) that circles have when being placed in a room.
 		/// </summary>
-		public float TileVariation = 0.5f;
-
+		public float CirclePosVariance = 0.75f;
 		/// <summary>
-		/// The chance of a tile changing from its current state to the opposite state
-		///     given the number of similar tiles surrounding it.
+		/// The min/max radius of each circle in a room, as a percentage of the room's size.
 		/// </summary>
-		public float[] TileChangeChances = new float[9]
+		public float CircleMinRadius = 0.1f,
+					 CircleMaxRadius = 0.35f;
+		
+
+		public List<Room> Generate(BiomeTile[,] tiles, int nThreads, int seed)
 		{
-			0.95f, // 0 similar tiles
-			0.85f, // 1 similar tiles
-			0.75f, // 2 similar tiles
-			0.65f, // 3 similar tiles
-			0.55f, // 4 similar tiles
-			0.35f, // 5 similar tiles
-			0.25f, // 6 similar tiles
-			0.15f, // 7 similar tiles
-			0.05f, // 8 similar tiles
-		};
-
-
-		public List<Room> Generate(BiomeTile[,] tiles)
-		{
-			PRNG prng = new PRNG(UnityEngine.Random.Range(0, int.MaxValue));
 			List<Room> outRooms = new List<Room>();
 
 			//Generate the initial rooms as rectangles,
@@ -78,121 +59,103 @@ namespace UnityLogic.MapGen
 				sizeY = tiles.GetLength(1);
 
 			//Calculate the size of each initial room.
-			int oneRoomFullX = sizeX / NRooms,
-				oneRoomFullY = sizeY / NRooms;
-			int roomSizeX = (int)((oneRoomFullX - RoomSpacing) * RoomSize),
-				roomSizeY = (int)((oneRoomFullY - RoomSpacing) * RoomSize);
+			int roomCellSizeX = sizeX / NRooms,
+				roomCellSizeY = sizeY / NRooms;
+			int roomSizeX = roomCellSizeX - RoomSpacing,
+				roomSizeY = roomCellSizeY - RoomSpacing;
+			
+			float minCircleLerp = Mathf.Lerp(0.5f, 0.0f, CirclePosVariance),
+				  maxCircleLerp = Mathf.Lerp(0.5f, 1.0f, CirclePosVariance);
 
 			//Create the initial rooms.
-			for (int yStart = 0; (yStart + roomSizeY) <= sizeY; yStart += roomSizeY)
-				for (int xStart = 0; (xStart + roomSizeX) <= NRooms; xStart += roomSizeX)
+			for (int yStart = 0; (yStart + roomCellSizeY) <= sizeY; yStart += roomCellSizeY)
+				for (int xStart = 0; (xStart + roomCellSizeX) <= sizeX; xStart += roomCellSizeX)
 				{
 					//For the room's biome, get the biome of its center tile.
 
-					int centerX = xStart + (roomSizeX / 2),
-						centerY = yStart + (roomSizeY / 2);
+					int centerX = xStart + (roomCellSizeX / 2),
+						centerY = yStart + (roomCellSizeY / 2);
+
+					PRNG prng = new PRNG(centerX, centerY, seed);
+
+					int roomMinX = centerX - (roomSizeX / 2),
+						roomMinY = centerY - (roomSizeY / 2),
+						roomMaxX = centerX + (roomSizeX / 2),
+						roomMaxY = centerY + (roomSizeY / 2);
 
 					outRooms.Add(new Room(tiles[centerX, centerY],
-										  new RectI(xStart, yStart, roomSizeX, roomSizeY)));
+										  new RectI(roomMinX, roomMinY,
+													(roomMaxX - roomMinX),
+													(roomMaxY - roomMinY))));
 
-					for (int roomX = xStart; roomX < (xStart + roomSizeX); ++roomX)
-						for (int roomY = yStart; roomY < (yStart + roomSizeY); ++roomY)
-							outRooms[outRooms.Count - 1].Spaces.Add(new Vector2i(roomX, roomY));
-				}
-
-			//Mutate the rooms using several iterations of a cellular automata.
-			for (int iterI = 0; iterI < NIterations; ++iterI)
-			{
-				foreach (Room r in outRooms)
-				{
-					//Get a copy of the tiles currently in the room
-					//    so that changes in this iteration don't apply until the next iteration.
-					HashSet<Vector2i> currentSpaces = new HashSet<Vector2i>(r.Spaces);
-
-					for (int tileY = r.OriginalBounds.MinY; tileY <= r.OriginalBounds.MaxY; ++tileY)
+					//Carve circular spaces out of the room.
+					int nCircles = MinCirclesPerRoom +
+								   (prng.NextInt() % (MaxCirclesPerRoom - MinCirclesPerRoom + 1));
+					for (int circI = 0; circI < nCircles; ++circI)
 					{
-						for (int tileX = r.OriginalBounds.MinX; tileX <= r.OriginalBounds.MaxX; ++tileX)
-						{
-							Vector2i tilePos = new Vector2i(tileX, tileY);
+						//Choose a random position for the circle centered around the origin.
+						Vector2 posLerp = new Vector2(Mathf.Lerp(minCircleLerp, maxCircleLerp,
+																 prng.NextFloat()),
+													  Mathf.Lerp(minCircleLerp, maxCircleLerp,
+																 prng.NextFloat()));
 
-							//Use a blend between the room's biome and the tile's own biome.
-							BiomeTile tileBiome = tiles[tileX, tileY];
-							tileBiome = new BiomeTile(r.Biome, tileBiome, TileVariation);
+						Vector2 circlePos = new Vector2(Mathf.Lerp(xStart, xStart + roomCellSizeX,
+																   posLerp.x),
+														Mathf.Lerp(yStart, yStart + roomCellSizeY,
+																   posLerp.y));
+						float circleRadius = Mathf.Lerp(CircleMinRadius * roomSizeX,
+														CircleMaxRadius * roomSizeY,
+														prng.NextFloat());
 
-							//Get the number of similar tiles nearby.
-							bool minXEdge = (tileX == 0),
-								 minYEdge = (tileY == 0),
-								 maxXEdge = (tileX == (tiles.GetLength(0) - 1)),
-								 maxYEdge = (tileY == (tiles.GetLength(1) - 1));
-							bool isInRoom = currentSpaces.Contains(tilePos);
-							int similarTiles = 0;
-							if (minXEdge || (isInRoom == currentSpaces.Contains(tilePos.LessX)))
-								similarTiles += 1;
-							if (minYEdge || (isInRoom == currentSpaces.Contains(tilePos.LessY)))
-								similarTiles += 1;
-							if (maxXEdge || (isInRoom == currentSpaces.Contains(tilePos.MoreX)))
-								similarTiles += 1;
-							if (maxYEdge || (isInRoom == currentSpaces.Contains(tilePos.MoreY)))
-								similarTiles += 1;
-							if (minXEdge || minYEdge || (isInRoom == currentSpaces.Contains(tilePos.LessX.LessY)))
-								similarTiles += 1;
-							if (minXEdge || maxYEdge || (isInRoom == currentSpaces.Contains(tilePos.LessX.MoreY)))
-								similarTiles += 1;
-							if (maxXEdge || minYEdge || (isInRoom == currentSpaces.Contains(tilePos.MoreX.LessY)))
-								similarTiles += 1;
-							if (maxXEdge || maxYEdge || (isInRoom == currentSpaces.Contains(tilePos.MoreX.MoreY)))
-								similarTiles += 1;
-
-							//Get the odds of this tile switching its membership in the room.
-							//Modify the chance based on the biome.
-							float chanceOfSwitch = TileChangeChances[similarTiles];
-							chanceOfSwitch = Mathf.Lerp(chanceOfSwitch,
-														(similarTiles > 4 ? 0.0f : 1.0f),
-														tileBiome.CaveSmoothness);
-
-							if (prng.NextFloat() < chanceOfSwitch)
-								if (isInRoom)
-									r.Spaces.Remove(tilePos);
-								else
-									r.Spaces.Add(tilePos);
-						}
+						CarveCircle(outRooms[outRooms.Count - 1], circlePos, circleRadius);
 					}
 				}
-			}
 
 			return outRooms;
 		}
+
+		public void CarveCircle(Room room, Vector2 center, float radius)
+		{
+			float radiusSqr = radius * radius;
+
+			Vector2i minPos = new Vector2i((int)(center.x - radius),
+										   (int)(center.y - radius)),
+					 maxPos = new Vector2i((int)(center.x + radius) + 1,
+										   (int)(center.y + radius) + 1);
+			minPos.x = Math.Max(minPos.x, room.OriginalBounds.MinX);
+			minPos.y = Math.Max(minPos.y, room.OriginalBounds.MinY);
+			maxPos.x = Math.Min(maxPos.x, room.OriginalBounds.MaxX);
+			maxPos.y = Math.Min(maxPos.y, room.OriginalBounds.MaxY);
+
+			for (int y = minPos.y; y <= maxPos.y; ++y)
+				for (int x = minPos.x; x <= maxPos.x; ++x)
+					if (new Vector2i(x, y).DistanceSqr(center) <= radiusSqr)
+						room.Spaces.Add(new Vector2i(x, y));
+		}
+
 
 		//Serialization stuff:
 		public void ReadData(MyData.Reader reader)
 		{
 			NRooms = reader.Int("nRooms");
 			RoomSpacing = reader.Int("roomSpacing");
-			RoomSize = reader.Float("roomSize");
 
-			NIterations = reader.Int("nIterations");
-
-			TileVariation = reader.Float("tileVariation");
-
-			TileChangeChances = reader.Collection(
-				"tileChangeChances",
-				(MyData.Reader r, ref float outVal, string name) =>
-					{ outVal = r.Float(name); },
-				(size) => new float[size]);
-		}
+			MinCirclesPerRoom = reader.Int("minCirclesPerRoom");
+			MaxCirclesPerRoom = reader.Int("maxCirclesPerRoom");
+			CirclePosVariance = reader.Float("circlePosVariance");
+			CircleMinRadius = reader.Float("circleMinRadius");
+			CircleMaxRadius = reader.Float("circleMaxRadius");
+	}
 		public void WriteData(MyData.Writer writer)
 		{
 			writer.Int(NRooms, "nRooms");
 			writer.Int(RoomSpacing, "roomSpacing");
-			writer.Float(RoomSize, "roomSize");
 
-			writer.Int(NIterations, "nIterations");
-
-			writer.Float(TileVariation, "tileVariation");
-
-			writer.Collection(TileChangeChances, "tileChangeChances",
-							  (MyData.Writer w, float val, string name) =>
-								  { w.Float(val, name); });
+			writer.Int(MinCirclesPerRoom, "minCirclesPerRoom");
+			writer.Int(MaxCirclesPerRoom, "maxCirclesPerRoom");
+			writer.Float(CirclePosVariance, "circlePosVariance");
+			writer.Float(CircleMinRadius, "circleMinRadius");
+			writer.Float(CircleMaxRadius, "circleMaxRadius");
 		}
 	}
 }

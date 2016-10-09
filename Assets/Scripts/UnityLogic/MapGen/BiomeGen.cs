@@ -31,24 +31,28 @@ namespace UnityLogic.MapGen
 	{
 		public NoiseOctaves Noise = new NoiseOctaves();
 
-		public BiomeTile[,] Generate(int sizeX, int sizeY)
+		public BiomeTile[,] Generate(int sizeX, int sizeY, int nThreads, int seed)
 		{
 			BiomeTile[,] tiles = new BiomeTile[sizeX, sizeY];
 
-			Func<Vector2, float, float> sampler = (seed, scale) =>
-				NoiseAlgos2D.LinearNoise(seed * scale);
+			Func<Vector2, float, float> sampler = (pos, scale) =>
+				NoiseAlgos2D.LinearNoise(pos * scale);
 
-			for (int y = 0; y < sizeY; ++y)
-			{
-				float yF = (float)y;
-				for (int x = 0; x < sizeX; ++x)
+			ThreadedRunner.Run(nThreads, sizeY,
+				(startY, endY) =>
 				{
-					float xF = (float)x;
+					for (int y = startY; y <= endY; ++y)
+					{
+						float yF = (float)y;
+						for (int x = 0; x < sizeX; ++x)
+						{
+							float xF = (float)x;
 
-					tiles[x, y] = new BiomeTile();
-					tiles[x, y].CaveSmoothness = Noise.Sample(new Vector2(xF, yF), sampler);
-				}
-			}
+							tiles[x, y] = new BiomeTile();
+							tiles[x, y].CaveSmoothness = Noise.Sample(new Vector2(xF, yF), sampler);
+						}
+					}
+				});
 
 			return tiles;
 		}

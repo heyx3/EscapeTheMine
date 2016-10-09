@@ -14,17 +14,27 @@ namespace UnityLogic
 		/// </summary>
 		public bool FromScratch;
 
+		public int Seed;
+		public int NThreads;
+
 		public MapGen.BiomeGenSettings BiomeSettings;
 		public MapGen.RoomGenSettings RoomSettings;
+		public MapGen.CAGenSettings CASettings;
 
 
-		public State_GenMap(bool fromScratch,
+		public State_GenMap(bool fromScratch, int seed, int nThreads,
 							MapGen.BiomeGenSettings biomeSettings,
-							MapGen.RoomGenSettings roomSettings)
+							MapGen.RoomGenSettings roomSettings,
+							MapGen.CAGenSettings caSettings)
 		{
 			FromScratch = fromScratch;
+
+			Seed = seed;
+			NThreads = nThreads;
+
 			BiomeSettings = biomeSettings;
 			RoomSettings = roomSettings;
+			CASettings = caSettings;
 		}
 
 
@@ -40,17 +50,20 @@ namespace UnityLogic
 
 		private void RunGenerator()
 		{
-			const int mapSize = 500;
+			int mapSize = FSM.Settings.Size;
 
 			//Run the generators.
-			var biomes = BiomeSettings.Generate(mapSize, mapSize);
-			var rooms = RoomSettings.Generate(biomes);
+			var biomes = BiomeSettings.Generate(mapSize, mapSize, NThreads, Seed);
+			var rooms = RoomSettings.Generate(biomes, NThreads, Seed);
+			var ca = CASettings.Generate(biomes, rooms, NThreads, Seed);
 
 			//Convert that to actual tiles.
 			GameLogic.TileTypes[,] tiles = new GameLogic.TileTypes[mapSize, mapSize];
 			for (int y = 0; y < mapSize; ++y)
 				for (int x = 0; x < mapSize; ++x)
-					if (rooms.Any(room => room.Spaces.Contains(new Vector2i(x, y))))
+					if (y == 0 || y == mapSize - 1 || x == 0 || x == mapSize - 1)
+						tiles[x, y] = GameLogic.TileTypes.Bedrock;
+					else if (ca[x, y])
 						tiles[x, y] = GameLogic.TileTypes.Empty;
 					else
 						tiles[x, y] = GameLogic.TileTypes.Wall;

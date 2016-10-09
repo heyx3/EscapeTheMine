@@ -1,11 +1,11 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+﻿//Renders tiles using an atlas and a texture containing the tile grid data.
+//The tiles are assumed to take up 1x1 spaces in world space, starting at the origin.
 
 Shader "EtM 2D/Tile Sprites"
 {
 	Properties
 	{
-		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {} 
-		//_Color ("Tint", Color) = (1,1,1,1)
+		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 
         _TextureGridTex ("Tile Grid UV Tex", 2D) = "black" {}
@@ -14,18 +14,16 @@ Shader "EtM 2D/Tile Sprites"
 	SubShader
 	{
 		Tags
-		{ 
-			"Queue"="Transparent" 
+		{
 			"IgnoreProjector"="True" 
-			"RenderType"="Transparent" 
+			"RenderType"="Opaque" 
 			"PreviewType"="Plane"
-			"CanUseSpriteAtlas"="True"
+			"CanUseSpriteAtlas"="False"
 		}
 
 		Cull Off
 		Lighting Off
 		ZWrite Off
-		Blend One OneMinusSrcAlpha
 
 		Pass
 		{
@@ -40,24 +38,19 @@ Shader "EtM 2D/Tile Sprites"
 			struct appdata_t
 			{
 				float4 vertex   : POSITION;
-				//float4 color    : COLOR;
 				float2 texcoord : TEXCOORD0;
 			};
 
 			struct v2f
 			{
 				float4 vertex   : SV_POSITION;
-				//fixed4 color    : COLOR;
                 float2 worldPos : TEXCOORD1; //TODO: Try using half2 instead.
-			};
-			
-			//fixed4 _Color;
+			};	
 
 			v2f vert(appdata_t IN)
 			{
 				v2f OUT;
 				OUT.vertex = UnityObjectToClipPos(IN.vertex);
-				//OUT.color = IN.color * _Color;
 
 #ifdef PIXELSNAP_ON
 				OUT.vertex = UnityPixelSnap (OUT.vertex);
@@ -81,7 +74,8 @@ Shader "EtM 2D/Tile Sprites"
                 //Sample _TextureGridTex to get the UV rectangle to use for sampling the sprite texture atlas.
                 float4 uvRect = tex2D(_TextureGridTex, worldPos * _TextureGridTex_TexelSize.xy);
                 float2 t = worldPos - floor(worldPos);
-				fixed4 color = tex2D(_MainTex, lerp(uvRect.xy, uvRect.zw, t));
+                float2 uv = lerp(uvRect.xy, uvRect.zw, t);
+				fixed4 color = tex2D(_MainTex, uv);
 
 #if ETC1_EXTERNAL_ALPHA
 				// get the color from an external texture (usecase: Alpha support for ETC1 on android)
@@ -93,8 +87,7 @@ Shader "EtM 2D/Tile Sprites"
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
-				fixed4 c = SampleSpriteTexture(IN.worldPos);// * IN.color;
-				c.rgb *= c.a;
+				fixed4 c = SampleSpriteTexture(IN.worldPos);
 				return c;
 			}
 		ENDCG

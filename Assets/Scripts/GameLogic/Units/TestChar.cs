@@ -97,6 +97,7 @@ namespace GameLogic.Units
 				case TileTypes.Entrance:
 					return true;
 				case TileTypes.Wall:
+				case TileTypes.Bedrock:
 					return false;
 				default: throw new NotImplementedException(tile.ToString());
 			}

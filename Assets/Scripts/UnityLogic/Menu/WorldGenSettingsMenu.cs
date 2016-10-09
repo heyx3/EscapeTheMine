@@ -11,6 +11,7 @@ namespace UnityLogic
 	{
 		public UnityLogic.MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.Settings.Biome; } }
 		public UnityLogic.MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.Settings.Rooms; } }
+		public UnityLogic.MapGen.CAGenSettings CA {  get { return GameFSM.Instance.Settings.CA; } }
 
 		[SerializeField]
 		private UnityEngine.UI.Text ui_Message,
@@ -19,11 +20,13 @@ namespace UnityLogic
 									ui_BiomeNoisePersistence,
 									ui_RoomsNumber,
 									ui_RoomsSpacing,
-									ui_RoomsSize,
-									ui_RoomsNIterations,
-									ui_RoomsTileVariation;
-		[SerializeField]
-		private UnityEngine.UI.Text[] UIs_RoomsTileChangeChances = new UnityEngine.UI.Text[9];
+									ui_MinCirclesPerRoom,
+									ui_MaxCirclesPerRoom,
+									ui_CirclePosVariance,
+									ui_CircleMinRadius,
+									ui_CircleMaxRadius,
+									ui_CA_NIterations,
+									ui_CA_TileVariation;
 
 		private float messageTimer = -1.0f;
 		
@@ -103,25 +106,12 @@ namespace UnityLogic
 				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsSizeChanged(string newValue)
-		{
-			float valF;
-			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
-			{
-				Rooms.RoomSize = valF;
-				SetMessage("");
-			}
-			else
-			{
-				SetMessage("Invalid value");
-			}
-		}
-		public void Callback_RoomsNIterationsChanged(string newValue)
+		public void Callback_CA_NIterationsChanged(string newValue)
 		{
 			int valI;
 			if (int.TryParse(newValue, out valI) && valI >= 0)
 			{
-				Rooms.NIterations = valI;
+				CA.NIterations = valI;
 				SetMessage("");
 			}
 			else
@@ -129,12 +119,12 @@ namespace UnityLogic
 				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsTileVariationChanged(string newValue)
+		public void Callback_RoomsMinCircPerRoomChanged(string newValue)
 		{
-			float valF;
-			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
+			int valI;
+			if (int.TryParse(newValue, out valI) && valI > 0)
 			{
-				Rooms.TileVariation = valF;
+				Rooms.MinCirclesPerRoom = valI;
 				SetMessage("");
 			}
 			else
@@ -142,12 +132,64 @@ namespace UnityLogic
 				SetMessage("Invalid value");
 			}
 		}
-		public void Callback_RoomsTileChangeChanceChanged(string newValue, int index)
+		public void Callback_RoomsMaxCircPerRoomChanged(string newValue)
+		{
+			int valI;
+			if (int.TryParse(newValue, out valI) && valI >= Rooms.MinCirclesPerRoom)
+			{
+				Rooms.MaxCirclesPerRoom = valI;
+				SetMessage("");
+			}
+			else
+			{
+				SetMessage("Invalid value");
+			}
+		}
+		public void Callback_CircPosVarianceChanged(string newValue)
 		{
 			float valF;
 			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
 			{
-				Rooms.TileChangeChances[index] = valF;
+				Rooms.CirclePosVariance = valF;
+				SetMessage("");
+			}
+			else
+			{
+				SetMessage("Invalid value");
+			}
+		}
+		public void Callback_CircMinRadiusChanged(string newValue)
+		{
+			float valF;
+			if (float.TryParse(newValue, out valF) && valF >= 0.0f)
+			{
+				Rooms.CircleMinRadius = valF;
+				SetMessage("");
+			}
+			else
+			{
+				SetMessage("Invalid value");
+			}
+		}
+		public void Callback_CircMaxRadiusChanged(string newValue)
+		{
+			float valF;
+			if (float.TryParse(newValue, out valF) && valF >= Rooms.CircleMinRadius)
+			{
+				Rooms.CircleMaxRadius = valF;
+				SetMessage("");
+			}
+			else
+			{
+				SetMessage("Invalid value");
+			}
+		}
+		public void Callback_CA_TileVariationChanged(string newValue)
+		{
+			float valF;
+			if (float.TryParse(newValue, out valF) && valF >= 0.0f && valF <= 1.0f)
+			{
+				CA.TileVariation = valF;
 				SetMessage("");
 			}
 			else

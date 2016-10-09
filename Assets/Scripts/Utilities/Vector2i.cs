@@ -63,6 +63,15 @@ public struct Vector2i
 		return (x2 * x2) + (y2 * y2);
 	}
 
+	public float Distance(UnityEngine.Vector2 other)
+	{
+		return UnityEngine.Vector2.Distance(other, new UnityEngine.Vector2(x, y));
+	}
+	public float DistanceSqr(UnityEngine.Vector2 other)
+	{
+		return (other - new UnityEngine.Vector2(x, y)).sqrMagnitude;
+	}
+
 
 	public override string ToString()
 	{
@@ -70,7 +79,7 @@ public struct Vector2i
 	}
 	public override int GetHashCode()
 	{
-		return (x * 73856093) ^ (y * 19349663);
+		return unchecked(x * 73856093) ^ unchecked(y * 19349663);
 	}
 	public int GetHashCode(int z)
 	{

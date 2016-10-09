@@ -9,7 +9,7 @@ namespace GameLogic
 	public enum TileTypes
 	{
 		Empty = 0,
-		Wall,
+		Wall, Bedrock,
 		Entrance, Exit,
 	}
 

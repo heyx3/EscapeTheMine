@@ -15,6 +15,11 @@ public struct PRNG
 	public int Seed;
 
 	public PRNG(int seed = 12345) { Seed = seed; }
+	public PRNG(int seedA, int seedB) : this(new Vector2i(seedA, seedB).GetHashCode()) { }
+	public PRNG(int seedA, int seedB, int seedC)
+		: this(unchecked(seedA * 73856093) ^
+			   unchecked(seedB * 19349663) ^
+			   unchecked(seedC * 83492791)) { }
 
 
 	/// <summary>

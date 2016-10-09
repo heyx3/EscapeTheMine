@@ -38,6 +38,7 @@ namespace Rendering.TwoD
 		[SerializeField]
 		private TextureFormat[] tileTexFormatsByPriority = new TextureFormat[]
 		{
+			TextureFormat.RGBAFloat,
 			//TODO: Try to switch these; check whether 16-bit values are acceptable. Make sure the changes propagate to prefabs/scenes.
 			TextureFormat.RGBA32, TextureFormat.ARGB32,
 			TextureFormat.RGBA4444, TextureFormat.ARGB4444,
@@ -65,7 +66,6 @@ namespace Rendering.TwoD
 			{
 				tileQuad = new GameObject("Tile Quad");
 				tileQuad.transform.SetParent(transform, true);
-				tileQuad.transform.localScale = new Vector3(99999.0f, 99999.0f, 1.0f);
 				tileQuad.SetActive(false);
 			}
 
@@ -77,27 +77,13 @@ namespace Rendering.TwoD
 			sr.material.SetTexture(paramName_TileGridTex, tileGridTex);
 			sr.sprite = tileAtlas;
 
-			if (false) {
-			//Set up mesh.
-			MeshFilter mf = tileQuad.GetComponent<MeshFilter>();
-			if (mf == null)
-				mf = tileQuad.AddComponent<MeshFilter>();
-			mf.sharedMesh = quadMesh;
-
-			//Set up material.
-			MeshRenderer mr = tileQuad.GetComponent<MeshRenderer>();
-			if (mr == null)
-				mr = tileQuad.AddComponent<MeshRenderer>();
-			mr.material = tileRenderMat;
-			mr.material.SetTexture(paramName_TileGridTex, tileGridTex);
-			mr.material.mainTexture = tileAtlas.texture; }
-
 			//Calculate UV sub-rects for each tile type.
 			tileTypeToMaterialParam = new Dictionary<GameLogic.TileTypes, Color>();
 			Vector2 texel = tileAtlas.texture.texelSize;
 			Vector2 texel_TileSize = texel * tileAtlasSize,
 					texel_Border = texel * tileAtlasBorder,
 					texel_Spacing = texel * tileAtlasSpacing;
+			int nTilesY = (tileAtlas.texture.height - tileAtlasBorder - tileAtlasBorder) / tileAtlasSize;
 			for (int i = 0; i < tileAtlases.Length; ++i)
 			{
 				//Make sure no duplicate tiles exist in the atlas array.
@@ -106,7 +92,7 @@ namespace Rendering.TwoD
 						Debug.LogError("Tile atlases " + i + " and " + j + " use the same tile type");
 
 				Rect texR = new Rect(texel_Border.x + (tileAtlases[i].TileX * (texel_Spacing.x + texel_TileSize.x)),
-									 texel_Border.y + (tileAtlases[i].TileY * (texel_Spacing.y + texel_TileSize.y)),
+									 texel_Border.y + ((nTilesY - tileAtlases[i].TileY) * (texel_Spacing.y + texel_TileSize.y)),
 									 texel_TileSize.x, texel_TileSize.y);
 				tileTypeToMaterialParam.Add(tileAtlases[i].TileType,
 											new Color(texR.xMin, texR.yMin,
@@ -141,6 +127,12 @@ namespace Rendering.TwoD
 												Vector2i oldSize, Vector2i newSize)
 		{
 			base.TileGridResized(tiles, oldSize, newSize);
+
+			Transform quadTr = tileQuad.transform;
+			quadTr.localScale = new Vector3(Map.Tiles.Width, Map.Tiles.Height, 1.0f);
+			quadTr.position = new Vector3(Map.Tiles.Width * 0.5f,
+										  Map.Tiles.Height * 0.5f,
+										  quadTr.position.z);
 
 			//Update the texture data.
 

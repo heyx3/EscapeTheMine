@@ -74,22 +74,30 @@ namespace UnityLogic
 		{
 			public string Name = "My World";
 			public int Size = 250;
+			public string Seed = "abc123";
 			public MapGen.BiomeGenSettings Biome = new MapGen.BiomeGenSettings();
 			public MapGen.RoomGenSettings Rooms = new MapGen.RoomGenSettings();
+			public MapGen.CAGenSettings CA = new MapGen.CAGenSettings();
 
 			public void ReadData(MyData.Reader reader)
 			{
 				Name = reader.String("name");
 				Size = reader.Int("size");
+				Seed = reader.String("seed");
+
 				reader.Structure(Biome, "biome");
 				reader.Structure(Rooms, "rooms");
+				reader.Structure(CA, "ca");
 			}
 			public void WriteData(MyData.Writer writer)
 			{
 				writer.String(Name, "name");
 				writer.Int(Size, "size");
+				writer.String(Seed, "seed");
+
 				writer.Structure(Biome, "biome");
 				writer.Structure(Rooms, "rooms");
+				writer.Structure(CA, "ca");
 			}
 		}
 
@@ -125,6 +133,7 @@ namespace UnityLogic
         public event Action<GameLogic.Map> OnNewMap;
 
 		public WorldSettings Settings = new WorldSettings();
+		public int NThreads = 5;
 
 
 		public State CurrentState
@@ -186,7 +195,8 @@ namespace UnityLogic
 		{
 			Map.Clear();
 			Progress = new WorldProgress();
-			CurrentState = new State_GenMap(true, Settings.Biome, Settings.Rooms);
+			CurrentState = new State_GenMap(true, Settings.Seed.GetHashCode(), NThreads,
+											Settings.Biome, Settings.Rooms, Settings.CA);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -195,7 +205,8 @@ namespace UnityLogic
 		{
 			Map.Clear();
 			Progress.Level += 1;
-			CurrentState = new State_GenMap(false, Settings.Biome, Settings.Rooms);
+			CurrentState = new State_GenMap(false, Settings.Seed.GetHashCode(), NThreads,
+											Settings.Biome, Settings.Rooms, Settings.CA);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
