@@ -20,7 +20,7 @@ namespace Rendering
 
 		public enum Cursors { Normal, Drag, }
 
-
+		
 		public void SetCursor(Cursors newType)
 		{
 			if (Application.isMobilePlatform)

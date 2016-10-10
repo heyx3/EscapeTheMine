@@ -128,9 +128,33 @@ namespace GameLogic
 	{
 		public Map Owner { get; private set; }
 
-		public UnitSet(Map owner) { Owner = owner; }
+		public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
 
 
+		public UnitSet(Map owner)
+		{
+			Owner = owner;
+
+			OnElementAdded += Callback_UnitAdded;
+			OnElementRemoved += Callback_UnitRemoved;
+		}
+
+
+		private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
+		{
+			u.OnPosChanged += Callback_UnitMoved;
+		}
+		private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
+		{
+			u.OnPosChanged -= Callback_UnitMoved;
+		}
+		private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
+		{
+			if (OnUnitMoved != null)
+				OnUnitMoved(this, u, oldPos, newPos);
+		}
+
+		//Serialization stuff.
 		protected override void Write(MyData.Writer writer, Unit value, string name)
 		{
 			Unit.Write(writer, name, value);

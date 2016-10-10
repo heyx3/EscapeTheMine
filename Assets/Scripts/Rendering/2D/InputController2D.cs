@@ -78,12 +78,10 @@ namespace Rendering.TwoD
 			{
 				MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
 
-				lastMousePos = null;
 				if (!isDragging)
-				{
-					//TODO: Click on the screen.
-				}
+					ClickOnWorld(Content2D.Instance.Cam.ScreenToWorldPoint(lastMousePos.Value));
 
+				lastMousePos = null;
 				isDragging = false;
 			}
 		}
@@ -94,6 +92,37 @@ namespace Rendering.TwoD
 				Content2D.Instance.Cam.orthographicSize /= scale;
 			else
 				Content2D.Instance.Cam.fieldOfView /= scale;
+		}
+
+		private void ClickOnWorld(Vector2 worldPos)
+		{
+			GameLogic.Map map = UnityLogic.GameFSM.Instance.Map;
+
+			//Exit if we clicked outside the map.
+			Vector2i tilePos = new Vector2i(worldPos);
+			if (!map.Tiles.IsValid(tilePos))
+				return;
+
+			//Get the units in the part of the map we clicked on.
+			List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
+			if (clickedUnits.Count == 1)
+			{
+				OpenWindowFor(clickedUnits[0]);
+			}
+			else if (clickedUnits.Count > 1)
+			{
+				MyUI.ContentUI.Instance.CreateWindowFor(MyUI.ContentUI.Instance.Window_SelectUnit,
+														clickedUnits);
+			}
+		}
+		private void OpenWindowFor(GameLogic.Unit unit)
+		{
+			MyUI.ContentUI ui = MyUI.ContentUI.Instance;
+
+			if (unit is GameLogic.Units.TestChar)
+				ui.CreateWindowFor(ui.Window_TestChar, (GameLogic.Units.TestChar)unit);
+			else if (unit is GameLogic.Units.TestStructure)
+				ui.CreateWindowFor(ui.Window_TestStructure, (GameLogic.Units.TestStructure)unit);
 		}
 	}
 }

@@ -26,7 +26,7 @@ namespace MyUI
 			base.OnDestroy();
 			Target.OnFoodChanged -= OnFoodChanged;
 		}
-
+		
 		private void OnFoodChanged(GameLogic.Units.TestChar theChar, int oldVal, int newVal)
 		{
 			Label_FoodValue.text = FoodPrefix + newVal + FoodSuffix;

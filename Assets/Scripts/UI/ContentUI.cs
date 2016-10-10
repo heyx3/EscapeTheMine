@@ -12,6 +12,7 @@ namespace MyUI
 		/// Prefab for windows.
 		/// </summary>
 		public GameObject Window_Options,
+						  Window_SelectUnit,
 						  Window_TestChar,
 						  Window_TestStructure;
 
@@ -40,7 +41,7 @@ namespace MyUI
 			
 			//Parent the object to the canvas and move it to the center of the screen.
 			Transform tr = go.transform;
-			tr.SetParent(TheCanvas, true);
+			tr.SetParent(TheCanvas, false);
 			tr.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0.0f);
 
 			//Set up the window.

@@ -64,9 +64,9 @@ namespace UnityLogic
 					if (y == 0 || y == mapSize - 1 || x == 0 || x == mapSize - 1)
 						tiles[x, y] = GameLogic.TileTypes.Bedrock;
 					else if (ca[x, y])
-						tiles[x, y] = GameLogic.TileTypes.Empty;
-					else
 						tiles[x, y] = GameLogic.TileTypes.Wall;
+					else
+						tiles[x, y] = GameLogic.TileTypes.Empty;
 
 			FSM.Map.Tiles = new GameLogic.TileGrid(tiles);
 

@@ -186,6 +186,8 @@ namespace UnityLogic
 
 				viewMode = value;
 				Rendering.RendererController.Instance.UseRenderer(viewMode);
+
+				PlayerPrefs.SetInt("viewMode", (int)viewMode);
 			}
 		}
 		private ViewModes viewMode;

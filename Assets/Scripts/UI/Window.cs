@@ -21,6 +21,8 @@ namespace MyUI
 		/// </summary>
 		public static IEnumerable<Window<T>> AllWindows { get { return allWindows; } }
 
+		protected static UnityLogic.GameFSM FSM { get { return UnityLogic.GameFSM.Instance; } }
+
 
 		/// <summary>
 		/// Raised when the "Close" button is pressed.
