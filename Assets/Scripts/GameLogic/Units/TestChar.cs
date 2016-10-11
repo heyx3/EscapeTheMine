@@ -53,7 +53,7 @@ namespace GameLogic.Units
 			return new TestChar(newOwner, this);
 		}
 
-		public void TakeTurn()
+		public override void TakeTurn()
 		{
 			//If standing on a TestStructure, gain its food.
 			TestStructure ts = Owner.GetUnitsAt(Pos).FirstOrDefault(u => u is TestStructure) as TestStructure;

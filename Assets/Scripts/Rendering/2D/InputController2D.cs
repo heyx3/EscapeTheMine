@@ -9,105 +9,28 @@ namespace Rendering.TwoD
 	/// <summary>
 	/// Handles mouse/tap input.
 	/// </summary>
-	public class InputController2D : MonoBehaviour
+	public class InputController2D : Singleton<InputController2D>
 	{
-		//TODO: Handle pinch to zoom.
-
 		public float ScrollSpeed = 5.0f;
 		public float MinDragDist = 10.0f;
 		public float ScrollZoomScale = 1.1f;
 		
-		
-		private Vector2? lastMousePos = null,
-						 initialMousePos = null;
 
-		private bool isDragging = false;
-
-		
-		void Update()
+		public void Click(Vector2 mPos)
 		{
-			if (Application.isMobilePlatform)
-				if (Input.touchCount == 1)
-					ClickInput(Input.GetTouch(0).position);
-				else
-					NoClickInput();
-			else
-				if (Input.GetMouseButton(0))
-					ClickInput(Input.mousePosition);
-				else
-					NoClickInput();
-
-			//Scroll wheel for zooming.
-			float scrollWheel = Input.mouseScrollDelta.y;
-			if (scrollWheel != 0.0f)
-				ZoomInput(Mathf.Pow(ScrollZoomScale, scrollWheel));
-		}
-
-		private void ClickInput(Vector2 pos)
-		{
-			if (lastMousePos.HasValue)
-			{
-				Vector2 delta = pos - lastMousePos.Value;
-
-				if (isDragging)
-				{
-					MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Drag);
-
-					Vector2 deltaCam = delta * ScrollSpeed * Time.deltaTime *
-									   Content2D.Instance.Cam.orthographicSize;
-					Content2D.Instance.CamTr.position -= (Vector3)deltaCam;
-				}
-				else
-				{
-					MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
-
-					if (delta.sqrMagnitude > (MinDragDist * MinDragDist))
-						isDragging = true;
-				}
-			}
-			else
-			{
-				initialMousePos = pos;
-			}
-
-			lastMousePos = pos;
-		}
-		private void NoClickInput()
-		{
-			if (lastMousePos.HasValue)
-			{
-				MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
-
-				if (!isDragging)
-					ClickOnWorld(Content2D.Instance.Cam.ScreenToWorldPoint(lastMousePos.Value));
-
-				lastMousePos = null;
-				isDragging = false;
-			}
-		}
-
-		private void ZoomInput(float scale)
-		{
-			if (Content2D.Instance.Cam.orthographic)
-				Content2D.Instance.Cam.orthographicSize /= scale;
-			else
-				Content2D.Instance.Cam.fieldOfView /= scale;
-		}
-
-		private void ClickOnWorld(Vector2 worldPos)
-		{
+			Vector2 worldMPos = Content2D.Instance.Cam.ScreenToWorldPoint(mPos);
 			GameLogic.Map map = UnityLogic.GameFSM.Instance.Map;
 
 			//Exit if we clicked outside the map.
-			Vector2i tilePos = new Vector2i(worldPos);
+			Vector2i tilePos = new Vector2i(worldMPos);
 			if (!map.Tiles.IsValid(tilePos))
 				return;
 
-			//Get the units in the part of the map we clicked on.
+			//Get the units in the part of the map we clicked on and show the window for them.
 			List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
 			if (clickedUnits.Count == 1)
 			{
-				OpenWindowFor(clickedUnits[0]);
+				MyUI.ContentUI.Instance.CreateWindowFor(clickedUnits[0]);
 			}
 			else if (clickedUnits.Count > 1)
 			{
@@ -115,14 +38,29 @@ namespace Rendering.TwoD
 														clickedUnits);
 			}
 		}
-		private void OpenWindowFor(GameLogic.Unit unit)
-		{
-			MyUI.ContentUI ui = MyUI.ContentUI.Instance;
 
-			if (unit is GameLogic.Units.TestChar)
-				ui.CreateWindowFor(ui.Window_TestChar, (GameLogic.Units.TestChar)unit);
-			else if (unit is GameLogic.Units.TestStructure)
-				ui.CreateWindowFor(ui.Window_TestStructure, (GameLogic.Units.TestStructure)unit);
+		public void StartDragging(Vector2 mousePos)
+		{
+			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Drag);
+		}
+		public void DragInput(Vector2 lastMPos, Vector2 currentMPos)
+		{
+			Vector2 deltaCam = (currentMPos - lastMPos) *
+							   ScrollSpeed * Time.deltaTime *
+							   Content2D.Instance.Cam.orthographicSize;
+			Content2D.Instance.CamTr.position -= (Vector3)deltaCam;
+		}
+		public void StopDragging(Vector2 startMPos, Vector2 endMPos)
+		{
+			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
+		}
+
+		public void Scroll(float scrollWheelAmount)
+		{
+			float scale = Mathf.Pow(ScrollZoomScale, scrollWheelAmount);
+
+			UnityEngine.Assertions.Assert.IsTrue(Content2D.Instance.Cam.orthographic);
+			Content2D.Instance.Cam.orthographicSize /= scale;
 		}
 	}
 }

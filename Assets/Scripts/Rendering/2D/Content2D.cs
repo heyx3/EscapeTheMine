@@ -25,7 +25,8 @@ namespace Rendering.TwoD
 		}
 		private void OnDisable()
 		{
-			Cam.gameObject.SetActive(false);
+			if (Cam != null)
+				Cam.gameObject.SetActive(false);
 		}
 	}
 }

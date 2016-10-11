@@ -129,6 +129,8 @@ namespace UnityLogic
 		}
 		private static GameFSM _instance = null;
 
+		public static bool InstanceExists { get { return _instance != null; } }
+
 
         public event Action<GameLogic.Map> OnNewMap;
 

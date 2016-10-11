@@ -30,6 +30,9 @@ namespace MyUI
 		{
 			base.OnDestroy();
 
+			if (!UnityLogic.GameFSM.InstanceExists)
+				return;
+
 			FSM.Map.OnMapCleared -= Callback_MapCleared;
 			FSM.Map.Units.OnElementAdded -= Callback_NewUnit;
 			FSM.Map.Units.OnElementRemoved -= Callback_UnitDies;

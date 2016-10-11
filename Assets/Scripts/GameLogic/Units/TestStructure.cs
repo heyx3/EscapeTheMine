@@ -50,7 +50,7 @@ namespace GameLogic.Units
 			return new TestStructure(newOwner, this);
 		}
 
-		public void TakeTurn()
+		public override void TakeTurn()
 		{
 			Food += 1;
 		}

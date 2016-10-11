@@ -38,7 +38,7 @@ namespace MyUI
 			where T : class
 		{
 			GameObject go = Instantiate(prefab);
-			
+
 			//Parent the object to the canvas and move it to the center of the screen.
 			Transform tr = go.transform;
 			tr.SetParent(TheCanvas, false);
@@ -65,6 +65,20 @@ namespace MyUI
 			tr.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0.0f);
 
 			return go.GetComponent<Window_Global>();
+		}
+
+		/// <summary>
+		/// Creates the correct window for editing the given unit.
+		/// Returns the window's GameObject.
+		/// </summary>
+		public GameObject CreateWindowFor(GameLogic.Unit unit)
+		{
+			if (unit is GameLogic.Units.TestChar)
+				return CreateWindowFor(Window_TestChar, (GameLogic.Units.TestChar)unit).gameObject;
+			else if (unit is GameLogic.Units.TestStructure)
+				return CreateWindowFor(Window_TestStructure, (GameLogic.Units.TestStructure)unit).gameObject;
+			else
+				throw new NotImplementedException(unit.GetType().Name);
 		}
 	}
 }

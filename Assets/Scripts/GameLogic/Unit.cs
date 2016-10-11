@@ -80,6 +80,9 @@ namespace GameLogic
 		public abstract Unit Clone(Map newOwner);
 
 
+		public abstract void TakeTurn();
+
+
 		//Serialization stuff:
 
 		public static void Write(MyData.Writer writer, string name, Unit u)

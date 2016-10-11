@@ -73,19 +73,36 @@ namespace UnityLogic
 			//Generate units.
 			if (FromScratch)
 			{
-				//TODO: Implement.
+				//Some debug units:
+				Vector2i firstPos, secondPos;
+				var emptyTiles = FSM.Map.Tiles.GetTiles((pos, tile) => tile == GameLogic.TileTypes.Empty);
+				firstPos = emptyTiles.First();
+				secondPos = emptyTiles.Skip(1).First();
+				FSM.Map.Units.Add(new GameLogic.Units.TestChar(FSM.Map, firstPos));
+				FSM.Map.Units.Add(new GameLogic.Units.TestStructure(FSM.Map, secondPos));
+
+				//TODO: Generate actual units.
 			}
 			else
 			{
+				//Clone each unit and store it in a dictionary.
 				Dictionary<GameLogic.Unit, GameLogic.Unit> oldUnitToNewUnit =
 					new Dictionary<GameLogic.Unit, GameLogic.Unit>();
 				foreach (GameLogic.Unit unit in FSM.Progress.ExitedUnits)
-				{
-					GameLogic.Unit newUnit = unit.Clone(FSM.Map);
+					oldUnitToNewUnit.Add(unit, unit.Clone(FSM.Map));
 
-					oldUnitToNewUnit.Add(unit, newUnit);
-					FSM.Map.Units.Add(newUnit);
+				//Give each new unit the proper allies/enemies.
+				foreach (KeyValuePair<GameLogic.Unit, GameLogic.Unit> kvp in oldUnitToNewUnit)
+				{
+					foreach (GameLogic.Unit oldAlly in kvp.Key.Allies)
+						kvp.Value.Allies.Add(oldUnitToNewUnit[oldAlly]);
+					foreach (GameLogic.Unit oldEnemy in kvp.Key.Enemies)
+						kvp.Value.Enemies.Add(oldUnitToNewUnit[oldEnemy]);
 				}
+
+				//Finally, add all the new units to the map.
+				foreach (GameLogic.Unit newUnit in oldUnitToNewUnit.Values)
+					FSM.Map.Units.Add(newUnit);
 				
 				FSM.Progress.ExitedUnits.Clear();
 			}

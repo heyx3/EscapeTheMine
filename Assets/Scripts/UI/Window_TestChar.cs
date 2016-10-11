@@ -13,11 +13,9 @@ namespace MyUI
 
 		public UnityEngine.UI.Text Label_FoodValue;
 
-
-		protected override void Awake()
+		
+		private void Start()
 		{
-			base.Awake();
-
 			Target.OnFoodChanged += OnFoodChanged;
 			OnFoodChanged(Target, Target.Food, Target.Food);
 		}
