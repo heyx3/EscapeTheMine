@@ -9,33 +9,25 @@ namespace Rendering
 {
 	public class RendererController : Singleton<RendererController>
 	{
-		public void UseRenderer(UnityLogic.GameFSM.ViewModes mode)
-		{
-			foreach (KeyValuePair<UnityLogic.GameFSM.ViewModes, GameObject> kvp in viewModeToRenderer)
-				if (kvp.Value != null)
-					kvp.Value.SetActive(kvp.Key == mode);
-		}
-
-
 		[Serializable]
 		private class DictEntry
 		{
-			public UnityLogic.GameFSM.ViewModes Mode;
+			public UnityLogic.ViewModes Mode;
 			public GameObject Renderer;
 
-			public DictEntry(UnityLogic.GameFSM.ViewModes mode) { Mode = mode;  Renderer = null; }
+			public DictEntry(UnityLogic.ViewModes mode) { Mode = mode; Renderer = null; }
 		}
 
 
 		[SerializeField]
 		private DictEntry[] renderers = new DictEntry[2]
 		{
-			new DictEntry(UnityLogic.GameFSM.ViewModes.TwoD),
-			new DictEntry(UnityLogic.GameFSM.ViewModes.ThreeD),
+			new DictEntry(UnityLogic.ViewModes.TwoD),
+			new DictEntry(UnityLogic.ViewModes.ThreeD),
 		};
 
-		private Dictionary<UnityLogic.GameFSM.ViewModes, GameObject> viewModeToRenderer =
-			new Dictionary<UnityLogic.GameFSM.ViewModes, GameObject>();
+		private Dictionary<UnityLogic.ViewModes, GameObject> viewModeToRenderer =
+			new Dictionary<UnityLogic.ViewModes, GameObject>();
 
 
 		protected override void Awake()
@@ -44,6 +36,15 @@ namespace Rendering
 
 			foreach (DictEntry entry in renderers)
 				viewModeToRenderer.Add(entry.Mode, entry.Renderer);
+
+			UnityLogic.Options.OnChanged_ViewMode += Callback_ChangeViewMode;
+			Callback_ChangeViewMode(UnityLogic.ViewModes.TwoD, UnityLogic.Options.ViewMode);
+		}
+		private void Callback_ChangeViewMode(UnityLogic.ViewModes oldMode, UnityLogic.ViewModes newMode)
+		{
+			foreach (KeyValuePair<UnityLogic.ViewModes, GameObject> kvp in viewModeToRenderer)
+				if (kvp.Value != null)
+					kvp.Value.SetActive(kvp.Key == newMode);
 		}
 	}
 }

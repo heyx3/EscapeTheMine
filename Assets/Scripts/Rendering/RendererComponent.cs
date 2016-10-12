@@ -26,39 +26,5 @@ namespace Rendering
 		{
 			MyTr = transform;
 		}
-		protected virtual void OnEnable()
-		{
-            GameFSM.OnNewMap += StartMap;
-            GameFSM.Map.OnMapCleared += EndMap;
-            GameFSM.Map.Tiles.OnTileChanged += TileChanged;
-            GameFSM.Map.Tiles.OnTileGridResized += TileGridResized;
-            GameFSM.Map.Units.OnElementAdded += UnitAddedToMap;
-            GameFSM.Map.Units.OnElementRemoved += UnitRemovedFromMap;
-		}
-        protected virtual void OnDisable()
-        {
-            GameFSM.OnNewMap -= StartMap;
-            GameFSM.Map.OnMapCleared -= EndMap;
-            GameFSM.Map.Tiles.OnTileChanged -= TileChanged;
-            GameFSM.Map.Tiles.OnTileGridResized -= TileGridResized;
-            GameFSM.Map.Units.OnElementAdded -= UnitAddedToMap;
-            GameFSM.Map.Units.OnElementRemoved -= UnitRemovedFromMap;
-        }
-
-
-        //TODO: Callbacks for specific types of unit.
-
-        //Callbacks for when certain things happen.
-        protected virtual void StartMap(GameLogic.Map map) { }
-        protected virtual void EndMap(GameLogic.Map map) { }
-
-        protected virtual void TileChanged(GameLogic.TileGrid tiles, Vector2i tilePos,
-                                           GameLogic.TileTypes oldTile, GameLogic.TileTypes newTile) { }
-        protected virtual void TileGridResized(GameLogic.TileGrid tiles, Vector2i oldSize, Vector2i newSize) { }
-
-        protected virtual void UnitAddedToMap(LockedSet<GameLogic.Unit> collection,
-                                              GameLogic.Unit unit) { }
-        protected virtual void UnitRemovedFromMap(LockedSet<GameLogic.Unit> collection,
-                                                  GameLogic.Unit unit) { }
 	}
 }

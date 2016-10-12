@@ -13,7 +13,8 @@ namespace UnityLogic
 	{
 		public abstract class State
 		{
-			protected GameFSM FSM { get { return GameFSM.Instance; } }
+			protected static GameFSM FSM { get { return GameFSM.Instance; } }
+
 
 			/// <summary>
 			/// Called when this state starts up.
@@ -102,13 +103,6 @@ namespace UnityLogic
 		}
 
 
-        public enum ViewModes
-        {
-            ThreeD,
-            TwoD,
-        }
-
-
 		public static GameFSM Instance
 		{
 			get
@@ -133,6 +127,13 @@ namespace UnityLogic
 
 
         public event Action<GameLogic.Map> OnNewMap;
+
+		/// <summary>
+		/// Called when the game is paused or unpaused.
+		/// The parameter indicates whether the game is now paused.
+		/// </summary>
+		public event Action<bool> OnPauseToggle;
+
 
 		public WorldSettings Settings = new WorldSettings();
 		public int NThreads = 5;
@@ -177,23 +178,23 @@ namespace UnityLogic
 		public GameLogic.Map Map { get; private set; }
 
 		public WorldProgress Progress { get; private set; }
+		
 
-        public ViewModes ViewMode
+		public bool IsPaused
 		{
-			get { return viewMode; }
+			get { return isPaused; }
 			set
 			{
-				if (viewMode == value)
+				if (isPaused == value)
 					return;
+				isPaused = value;
 
-				viewMode = value;
-				Rendering.RendererController.Instance.UseRenderer(viewMode);
-
-				PlayerPrefs.SetInt("viewMode", (int)viewMode);
+				if (OnPauseToggle != null)
+					OnPauseToggle(isPaused);
 			}
 		}
-		private ViewModes viewMode;
-        
+		private bool isPaused = false;
+		
 
 		public void GenerateWorld()
 		{
@@ -255,10 +256,6 @@ namespace UnityLogic
 		private void Awake()
 		{
 			Map = new GameLogic.Map();
-		}
-		private void Start()
-		{
-			ViewMode = (ViewModes)PlayerPrefs.GetInt("viewMode", (int)ViewModes.TwoD);
 		}
 		private void Update()
 		{

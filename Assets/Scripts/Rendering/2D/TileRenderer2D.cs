@@ -53,10 +53,8 @@ namespace Rendering.TwoD
 		private Camera GameCam { get { return Camera.main; } }
 
 
-		protected override void OnEnable()
+		private void OnEnable()
 		{
-			base.OnEnable();
-
 			//Use the best available format for the tile grid texture when initializing it.
 			TextureFormat bestFmt = tileTexFormatsByPriority.First(SystemInfo.SupportsTextureFormat);
 			tileGridTex = new Texture2D(1, 1, bestFmt, false);
@@ -98,43 +96,49 @@ namespace Rendering.TwoD
 											new Color(texR.xMin, texR.yMin,
 													  texR.xMax, texR.yMax));
 			}
-		}
-		protected override void OnDisable()
-		{
-			base.OnDisable();
 
+			//Set up callbacks.
+			GameFSM.OnNewMap += Callback_StartMap;
+			GameFSM.Map.OnMapCleared += Callback_EndMap;
+			GameFSM.Map.Tiles.OnTileChanged += Callback_TileChanged;
+			GameFSM.Map.Tiles.OnTileGridResized += Callback_TileGridResized;
+		}
+		private void OnDisable()
+		{
 			tileGridTex.Resize(1, 1);
 			tileGridTex.Apply();
 			tileGridTex = null;
-		}
-
-
-		protected override void StartMap(Map map)
-		{
-			base.StartMap(map);
-
-			tileQuad.SetActive(true);
-			TileGridResized(map.Tiles, Vector2i.Zero, new Vector2i(map.Tiles.Width, map.Tiles.Height));
-		}
-		protected override void EndMap(Map map)
-		{
-			base.EndMap(map);
 			
+			//Clean up callbacks.
+			GameFSM.OnNewMap -= Callback_StartMap;
+			GameFSM.Map.OnMapCleared -= Callback_EndMap;
+			GameFSM.Map.Tiles.OnTileChanged -= Callback_TileChanged;
+			GameFSM.Map.Tiles.OnTileGridResized -= Callback_TileGridResized;
+		}
+
+
+		private void Callback_StartMap(Map map)
+		{
+			tileQuad.SetActive(true);
+			Callback_TileGridResized(map.Tiles, Vector2i.Zero,
+									 new Vector2i(map.Tiles.Width, map.Tiles.Height));
+		}
+		private void Callback_EndMap(Map map)
+		{
 			tileQuad.SetActive(false);
 		}
 
-		protected override void TileGridResized(GameLogic.TileGrid tiles,
-												Vector2i oldSize, Vector2i newSize)
+		private void Callback_TileGridResized(GameLogic.TileGrid tiles,
+				 							  Vector2i oldSize, Vector2i newSize)
 		{
-			base.TileGridResized(tiles, oldSize, newSize);
-
+			//Reposition the quad so it perfectly covers the map in world space.
 			Transform quadTr = tileQuad.transform;
 			quadTr.localScale = new Vector3(Map.Tiles.Width, Map.Tiles.Height, 1.0f);
 			quadTr.position = new Vector3(Map.Tiles.Width * 0.5f,
 										  Map.Tiles.Height * 0.5f,
 										  quadTr.position.z);
 
-			//Update the texture data.
+			//Update the tile data texture.
 
 			tileGridTex.Resize(Tiles.Width, Tiles.Height);
 
@@ -148,11 +152,10 @@ namespace Rendering.TwoD
 			
 			GetComponentInChildren<SpriteRenderer>().material.SetTexture(paramName_TileGridTex, tileGridTex);
 		}
-		protected override void TileChanged(GameLogic.TileGrid tiles, Vector2i pos,
-										    GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)
+		private void Callback_TileChanged(GameLogic.TileGrid tiles, Vector2i pos,
+										  GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)
 		{
-			base.TileChanged(tiles, pos, oldVal, newVal);
-
+			//Update the tile data texture.
 			tileGridTex.SetPixel(pos.x, pos.y, tileTypeToMaterialParam[newVal]);
 			tileGridTex.Apply();
 		}

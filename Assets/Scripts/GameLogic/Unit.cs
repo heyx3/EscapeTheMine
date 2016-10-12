@@ -12,11 +12,14 @@ namespace GameLogic
 	/// </summary>
 	public abstract class Unit : MyData.IReadWritable
 	{
+		/// <summary>
+		/// NOTE: This enum only determines turn order, not allies/enemies!
+		/// </summary>
 		public enum Teams
 		{
 			Player,
 			Environment,
-			Enemies,
+			Monsters,
 		}
 
 
@@ -25,7 +28,32 @@ namespace GameLogic
 		/// </summary>
 		public event Action<Unit, Vector2i, Vector2i> OnPosChanged;
 
-		public Teams Team;
+		/// <summary>
+		/// The parameters are this unit, its old team, and its new team, respectively.
+		/// Note that this does not inherently change what units are in the Allies/Enemies sets.
+		/// </summary>
+		public event Action<Unit, Teams, Teams> OnTeamChanged;
+
+
+		/// <summary>
+		/// NOTE: This value only determines turn order, not allies/enemies!
+		/// </summary>
+		public Teams Team
+		{
+			get { return team; }
+			set
+			{
+				if (team == value)
+					return;
+
+				Teams oldteam = team;
+				team = value;
+
+				if (OnTeamChanged != null)
+					OnTeamChanged(this, oldteam, team);
+			}
+		}
+		private Teams team;
 
 		public Vector2i Pos
 		{
@@ -45,10 +73,10 @@ namespace GameLogic
 		public Map Owner { get; private set; }
 
 
-		public Unit(Map map, Teams team) : this(map, team, new Vector2i(-1, -1)) { }
-		public Unit(Map map, Teams team, Vector2i _pos)
+		public Unit(Map map, Teams _team) : this(map, _team, new Vector2i(-1, -1)) { }
+		public Unit(Map map, Teams _team, Vector2i _pos)
 		{
-			Team = team;
+			team = _team;
 			pos = _pos;
 
 			Owner = map;
@@ -87,16 +115,17 @@ namespace GameLogic
 
 		public static void Write(MyData.Writer writer, string name, Unit u)
 		{
-			writer.Int((int)u.MyType, name + "_Type");
+			writer.UInt((uint)u.MyType, name + "_Type");
 			writer.Structure(u, name + "_Value");
 		}
 		public static Unit Read(MyData.Reader reader, Map map, string name)
 		{
 			Unit u = null;
-			Types type = (Types)reader.Int(name + "_Type");
+			Types type = (Types)reader.UInt(name + "_Type");
 			switch (type)
 			{
 				case Types.TestChar: u = new Units.TestChar(map); break;
+				case Types.TestStructure: u = new Units.TestStructure(map); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -108,7 +137,7 @@ namespace GameLogic
 		protected enum Types
 		{
 			TestChar = 0,
-			TestStructure = 0,
+			TestStructure,
 		}
 		protected abstract Types MyType { get; }
 
@@ -132,6 +161,7 @@ namespace GameLogic
 		public Map Owner { get; private set; }
 
 		public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
+		public event Action<UnitSet, Unit, Unit.Teams, Unit.Teams> OnUnitTeamChanged;
 
 
 		public UnitSet(Map owner)
@@ -140,16 +170,25 @@ namespace GameLogic
 
 			OnElementAdded += Callback_UnitAdded;
 			OnElementRemoved += Callback_UnitRemoved;
+
+			foreach (Unit u in this)
+				Callback_UnitAdded(this, u);
 		}
 
 
 		private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
 		{
 			u.OnPosChanged += Callback_UnitMoved;
+			u.OnTeamChanged += Callback_UnitTeamChanged;
 		}
 		private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
 		{
 			u.OnPosChanged -= Callback_UnitMoved;
+		}
+		private void Callback_UnitTeamChanged(Unit u, Unit.Teams oldTeam, Unit.Teams newTeam)
+		{
+			if (OnUnitTeamChanged != null)
+				OnUnitTeamChanged(this, u, oldTeam, newTeam);
 		}
 		private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
 		{

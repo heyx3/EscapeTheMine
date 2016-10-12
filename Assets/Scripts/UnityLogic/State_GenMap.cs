@@ -44,8 +44,7 @@ namespace UnityLogic
 
 			FSM.SaveWorld();
 
-			//TODO: Change to the normal gameplay state.
-			return base.Start(previousState);
+			return new State_Turn(GameLogic.Unit.Teams.Player);
 		}
 
 		private void RunGenerator()

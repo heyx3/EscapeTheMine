@@ -21,5 +21,19 @@ namespace Rendering.TwoD
 			MyTr = transform;
 			MySprite = GetComponentInChildren<SpriteRenderer>();
 		}
+		protected virtual void Start()
+		{
+			UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved += Callback_OnElementRemoved;
+		}
+		protected virtual void OnDestroy()
+		{
+			UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved -= Callback_OnElementRemoved;
+		}
+
+		private void Callback_OnElementRemoved(LockedSet<GameLogic.Unit> worldUnits,
+											   GameLogic.Unit unit)
+		{
+			Destroy(gameObject);
+		}
 	}
 }

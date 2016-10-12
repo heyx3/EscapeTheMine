@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Rendering.TwoD
 {
 	/// <summary>
-	/// Spawns GameObjects that represent units in the map.
+	/// Whever a unit is created, spawns a GameObject to represent it.
 	/// </summary>
 	public class UnitDispatcher : RendererComponent
 	{
@@ -16,11 +16,20 @@ namespace Rendering.TwoD
 
 		private Dictionary<GameLogic.Unit, GameObject> unitToObj = new Dictionary<Unit, GameObject>();
 
-
-		protected override void UnitAddedToMap(LockedSet<Unit> collection, Unit unit)
+		
+		private void OnEnable()
 		{
-			base.UnitAddedToMap(collection, unit);
+			GameFSM.Map.Units.OnElementAdded += UnitAddedToMap;
+			GameFSM.Map.Units.OnElementRemoved += UnitRemovedFromMap;
+		}
+		private void OnDisable()
+		{
+			GameFSM.Map.Units.OnElementAdded -= UnitAddedToMap;
+			GameFSM.Map.Units.OnElementRemoved -= UnitRemovedFromMap;
+		}
 
+		protected void UnitAddedToMap(LockedSet<Unit> collection, Unit unit)
+		{
 			GameObject obj;
 			if (unit is GameLogic.Units.TestChar)
 			{
@@ -41,10 +50,8 @@ namespace Rendering.TwoD
 
 			unitToObj.Add(unit, obj);
 		}
-		protected override void UnitRemovedFromMap(LockedSet<Unit> collection, Unit unit)
+		protected void UnitRemovedFromMap(LockedSet<Unit> collection, Unit unit)
 		{
-			base.UnitRemovedFromMap(collection, unit);
-
 			Destroy(unitToObj[unit]);
 			unitToObj.Remove(unit);
 		}

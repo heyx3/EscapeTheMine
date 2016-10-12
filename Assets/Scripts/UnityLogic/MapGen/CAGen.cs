@@ -85,10 +85,6 @@ namespace UnityLogic.MapGen
 				for (int tileX = 0; tileX < outTiles.GetLength(0); ++tileX)
 				{
 					//Get the number of similar tiles nearby.
-					bool minXEdge = (tileX == 0),
-						 minYEdge = (tileY == 0),
-						 maxXEdge = (tileX >= outTiles.GetLength(0)),
-						 maxYEdge = (tileY >= outTiles.GetLength(1));
 					bool isSolid = inTiles[tileX, tileY];
 					int similarTiles = 0;
 					if (CheckMinX(tileX, tileY, inTiles, isSolid))
