@@ -11,6 +11,8 @@ namespace Rendering.TwoD
 		public Camera Cam;
 		public Transform CamTr { get; private set; }
 
+        public GameObject Prefab_HungerWarning;
+
 
 		protected override void Awake()
 		{

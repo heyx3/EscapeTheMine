@@ -11,6 +11,14 @@ namespace Rendering.TwoD
 	/// </summary>
 	public class InputController2D : Singleton<InputController2D>
 	{
+        /// <summary>
+        /// Raised when a world tile is clicked on.
+        /// If no responders "cancel" the event, the usual behavior for clicking on the world is done
+        ///     (i.e. opening a window for the selected unit).
+        /// </summary>
+        public CancelableEvent<Vector2i> OnWorldTileClicked = new CancelableEvent<Vector2i>();
+
+
 		public float ScrollSpeed = 5.0f;
 		public float MinDragDist = 10.0f;
 		public float ScrollZoomScale = 1.1f;
@@ -26,17 +34,22 @@ namespace Rendering.TwoD
 			if (!map.Tiles.IsValid(tilePos))
 				return;
 
-			//Get the units in the part of the map we clicked on and show the window for them.
-			List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
-			if (clickedUnits.Count == 1)
-			{
-				MyUI.ContentUI.Instance.CreateWindowFor(clickedUnits[0]);
-			}
-			else if (clickedUnits.Count > 1)
-			{
-				MyUI.ContentUI.Instance.CreateWindowFor(MyUI.ContentUI.Instance.Window_SelectUnit,
-														clickedUnits);
-			}
+            //If nothing special happens because of this click,
+            //    do the usual behavior -- show a window for the unit(s) that were clicked on.
+            if (!OnWorldTileClicked.Raise(tilePos))
+            {
+                //Get the units in the part of the map we clicked on and show the window for them.
+                List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
+                if (clickedUnits.Count == 1)
+                {
+                    MyUI.ContentUI.Instance.CreateWindowFor(clickedUnits[0]);
+                }
+                else if (clickedUnits.Count > 1)
+                {
+                    MyUI.ContentUI.Instance.CreateWindowFor(MyUI.ContentUI.Instance.Window_SelectUnit,
+                                                            clickedUnits);
+                }
+            }
 		}
 
 		public void StartDragging(Vector2 mousePos)

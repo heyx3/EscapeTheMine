@@ -25,9 +25,9 @@ namespace MyUI
 			Target.OnFoodChanged -= OnFoodChanged;
 		}
 
-		private void OnFoodChanged(GameLogic.Units.TestStructure theChar, int oldVal, int newVal)
+		private void OnFoodChanged(GameLogic.Units.TestStructure theChar, float oldVal, float newVal)
 		{
-			Label_FoodValue.text = FoodPrefix + newVal + FoodSuffix;
+			Label_FoodValue.text = FoodPrefix + Mathf.RoundToInt(newVal) + FoodSuffix;
 		}
 	}
 }

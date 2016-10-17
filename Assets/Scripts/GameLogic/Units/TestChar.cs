@@ -8,8 +8,8 @@ namespace GameLogic.Units
 {
 	/// <summary>
 	/// A unit that belongs to the Environment. Does the following every turn:
-	///     1. Gains food if standing on a TestStructure unit.
-	///     2. Loses 1 food. If food runs out, the unit dies.
+	///     1. Takes food if standing on a TestStructure unit.
+	///     2. Loses food. If food runs out, the unit dies.
 	///     3. Randomly moves to an adjacent space is one is open.
 	/// </summary>
 	public class TestChar : Unit
@@ -19,21 +19,22 @@ namespace GameLogic.Units
 		/// The parameters are this character, the old food amount,
 		///     and the new food amount, respectively.
 		/// </summary>
-		public event Action<TestChar, int, int> OnFoodChanged;
+		public event Action<TestChar, float, float> OnFoodChanged;
 
-		public int Food
+		public float Food
 		{
 			get { return food; }
 			set
 			{
-				int oldFood = food;
+                float oldFood = food;
 				food = value;
 
 				if (OnFoodChanged != null)
 					OnFoodChanged(this, oldFood, food);
 			}
 		}
-		private int food = 20;
+		private float food = 200.0f;
+        private float foodLossPerTurn = 0.1f;
 
 
 		protected override Types MyType { get { return Types.TestChar; } }
@@ -60,12 +61,12 @@ namespace GameLogic.Units
 			if (ts != null)
 			{
 				Food += ts.Food;
-				ts.Food = 0;
+				ts.Food = 0.0f;
 			}
 
-			//Subtract one from food. If there's no food left, die.
-			Food -= 1;
-			if (Food <= 0)
+            //Subtract one from food. If there's no food left, die.
+            Food -= foodLossPerTurn;
+			if (Food <= 0.0f)
 			{
 				Owner.Units.Remove(this);
 				return;
@@ -107,12 +108,12 @@ namespace GameLogic.Units
 		public override void WriteData(MyData.Writer writer)
 		{
 			base.WriteData(writer);
-			writer.Int(food, "Food");
+			writer.Float(food, "Food");
 		}
 		public override void ReadData(MyData.Reader reader)
 		{
 			base.ReadData(reader);
-			Food = reader.Int("Food");
+			Food = reader.Float("Food");
 		}
 	}
 }

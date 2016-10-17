@@ -7,7 +7,7 @@ using UnityEngine;
 namespace GameLogic.Units
 {
 	/// <summary>
-	/// Belongs to the environment, gives itself one Food every turn.
+	/// Belongs to the environment, gives itself some Food every turn.
 	/// </summary>
 	public class TestStructure : Unit
 	{
@@ -16,21 +16,22 @@ namespace GameLogic.Units
 		/// The parameters are this structure, the old food amount,
 		///     and the new food amount, respectively.
 		/// </summary>
-		public event Action<TestStructure, int, int> OnFoodChanged;
+		public event Action<TestStructure, float, float> OnFoodChanged;
 
-		public int Food
+		public float Food
 		{
 			get { return food; }
 			set
 			{
-				int oldFood = food;
+                float oldFood = food;
 				food = value;
 
 				if (OnFoodChanged != null)
 					OnFoodChanged(this, oldFood, food);
 			}
 		}
-		private int food = 0;
+		private float food = 0.0f;
+        private float foodGainPerTurn = 0.05f;
 
 		
 		protected override Types MyType { get { return Types.TestStructure; } }
@@ -52,7 +53,7 @@ namespace GameLogic.Units
 
 		public override void TakeTurn()
 		{
-			Food += 1;
+			Food += foodGainPerTurn;
 		}
 	}
 }
