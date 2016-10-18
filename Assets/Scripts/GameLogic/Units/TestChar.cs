@@ -77,17 +77,18 @@ namespace GameLogic.Units
 
 			List<Vector2i> validPoses = new List<Vector2i>();
 
-			if (Owner.Tiles.IsValid(Pos.LessX) && CanMoveTo(Owner.Tiles[Pos.LessX]))
-				validPoses.Add(Pos.LessX);
-			if (Owner.Tiles.IsValid(Pos.MoreX) && CanMoveTo(Owner.Tiles[Pos.MoreX]))
-				validPoses.Add(Pos.MoreX);
-			if (Owner.Tiles.IsValid(Pos.LessY) && CanMoveTo(Owner.Tiles[Pos.LessY]))
-				validPoses.Add(Pos.LessY);
-			if (Owner.Tiles.IsValid(Pos.MoreY) && CanMoveTo(Owner.Tiles[Pos.MoreY]))
-				validPoses.Add(Pos.MoreY);
+			Vector2i pos = Pos;
+			if (Owner.Tiles.IsValid(pos.LessX) && CanMoveTo(Owner.Tiles[pos.LessX]))
+				validPoses.Add(pos.LessX);
+			if (Owner.Tiles.IsValid(pos.MoreX) && CanMoveTo(Owner.Tiles[pos.MoreX]))
+				validPoses.Add(pos.MoreX);
+			if (Owner.Tiles.IsValid(pos.LessY) && CanMoveTo(Owner.Tiles[pos.LessY]))
+				validPoses.Add(pos.LessY);
+			if (Owner.Tiles.IsValid(pos.MoreY) && CanMoveTo(Owner.Tiles[pos.MoreY]))
+				validPoses.Add(pos.MoreY);
 			
 			if (validPoses.Count > 0)
-				Pos = validPoses[UnityEngine.Random.Range(0, validPoses.Count)];
+				Pos.Value = validPoses[UnityEngine.Random.Range(0, validPoses.Count)];
 		}
 		private bool CanMoveTo(TileTypes tile)
 		{

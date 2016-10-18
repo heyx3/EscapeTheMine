@@ -38,46 +38,20 @@ namespace GameLogic
 		/// <summary>
 		/// NOTE: This value only determines turn order, not allies/enemies!
 		/// </summary>
-		public Teams Team
-		{
-			get { return team; }
-			set
-			{
-				if (team == value)
-					return;
+		public Stat<Teams> Team { get; private set; }
 
-				Teams oldteam = team;
-				team = value;
-
-				if (OnTeamChanged != null)
-					OnTeamChanged(this, oldteam, team);
-			}
-		}
-		private Teams team;
-
-		public Vector2i Pos
-		{
-			get { return pos; }
-			set
-			{
-				Vector2i oldP = pos;
-				pos = value;
-				if (OnPosChanged != null)
-					OnPosChanged(this, oldP, value);
-			}
-		}
-		private Vector2i pos;
+		public Stat<Vector2i> Pos { get; private set; }
 
 		public UnitSet Allies, Enemies;
 		
 		public Map Owner { get; private set; }
 
 
-		public Unit(Map map, Teams _team) : this(map, _team, new Vector2i(-1, -1)) { }
-		public Unit(Map map, Teams _team, Vector2i _pos)
+		public Unit(Map map, Teams team) : this(map, team, new Vector2i(-1, -1)) { }
+		public Unit(Map map, Teams team, Vector2i pos)
 		{
-			team = _team;
-			pos = _pos;
+			Team = new Stat<Teams>(this, team);
+			Pos = new Stat<Vector2i>(this, pos);
 
 			Owner = map;
 
@@ -98,7 +72,7 @@ namespace GameLogic
 		{
 			Owner = map;
 			Team = copyFrom.Team;
-			pos = copyFrom.pos;
+			Pos = copyFrom.Pos;
 		}
 
 		/// <summary>
@@ -126,6 +100,7 @@ namespace GameLogic
 			{
 				case Types.TestChar: u = new Units.TestChar(map); break;
 				case Types.TestStructure: u = new Units.TestStructure(map); break;
+				case Types.PlayerChar: u = new Units.PlayerChar(map); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -138,20 +113,21 @@ namespace GameLogic
 		{
 			TestChar = 0,
 			TestStructure,
+			PlayerChar,
 		}
 		protected abstract Types MyType { get; }
 
 		public virtual void WriteData(MyData.Writer writer)
 		{
-			writer.Int((int)Team, "team");
-			writer.Int(pos.x, "posX");
-			writer.Int(pos.y, "posY");
+			writer.Int((int)Team.Value, "team");
+			writer.Int(Pos.Value.x, "posX");
+			writer.Int(Pos.Value.y, "posY");
 		}
 		public virtual void ReadData(MyData.Reader reader)
 		{
-			Team = (Teams)reader.Int("team");
-			Pos = new Vector2i(reader.Int("posX"),
-							   reader.Int("posY"));
+			Team.Value = (Teams)reader.Int("team");
+			Pos.Value = new Vector2i(reader.Int("posX"),
+							  		 reader.Int("posY"));
 		}
 	}
 
