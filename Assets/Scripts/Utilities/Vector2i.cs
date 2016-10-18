@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-public struct Vector2i
+public struct Vector2i : IEquatable<Vector2i>
 {
 	public static readonly Vector2i Zero = new Vector2i(0, 0);
 
@@ -21,6 +21,7 @@ public struct Vector2i
 	{
 		return lhs.x != rhs.x || lhs.y != rhs.y;
 	}
+	public bool Equals(Vector2i other) { return this == other; }
 	
 	public static Vector2i operator+(Vector2i lhs, Vector2i rhs)
 	{
