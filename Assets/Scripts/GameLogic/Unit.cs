@@ -21,26 +21,14 @@ namespace GameLogic
 			Environment,
 			Monsters,
 		}
-
-
-		/// <summary>
-		/// The parameters are this unit, its old position, and its new position, respectively.
-		/// </summary>
-		public event Action<Unit, Vector2i, Vector2i> OnPosChanged;
-
-		/// <summary>
-		/// The parameters are this unit, its old team, and its new team, respectively.
-		/// Note that this does not inherently change what units are in the Allies/Enemies sets.
-		/// </summary>
-		public event Action<Unit, Teams, Teams> OnTeamChanged;
-
+		
 
 		/// <summary>
 		/// NOTE: This value only determines turn order, not allies/enemies!
 		/// </summary>
-		public Stat<Teams> Team { get; private set; }
+		public Stat<Teams, Unit> Team { get; private set; }
 
-		public Stat<Vector2i> Pos { get; private set; }
+		public Stat<Vector2i, Unit> Pos { get; private set; }
 
 		public UnitSet Allies, Enemies;
 		
@@ -50,8 +38,8 @@ namespace GameLogic
 		public Unit(Map map, Teams team) : this(map, team, new Vector2i(-1, -1)) { }
 		public Unit(Map map, Teams team, Vector2i pos)
 		{
-			Team = new Stat<Teams>(this, team);
-			Pos = new Stat<Vector2i>(this, pos);
+			Team = new Stat<Teams, Unit>(this, team);
+			Pos = new Stat<Vector2i, Unit>(this, pos);
 
 			Owner = map;
 
@@ -154,12 +142,12 @@ namespace GameLogic
 
 		private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
 		{
-			u.OnPosChanged += Callback_UnitMoved;
-			u.OnTeamChanged += Callback_UnitTeamChanged;
+			u.Pos.OnChanged += Callback_UnitMoved;
+			u.Team.OnChanged += Callback_UnitTeamChanged;
 		}
 		private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
 		{
-			u.OnPosChanged -= Callback_UnitMoved;
+			u.Pos.OnChanged -= Callback_UnitMoved;
 		}
 		private void Callback_UnitTeamChanged(Unit u, Unit.Teams oldTeam, Unit.Teams newTeam)
 		{

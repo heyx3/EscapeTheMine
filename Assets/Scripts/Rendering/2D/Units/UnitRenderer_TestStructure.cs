@@ -17,14 +17,14 @@ namespace Rendering.TwoD
 
 			MySprite.sprite = Spr;
 
-			Target.OnPosChanged += Callback_PosChanged;
+			Target.Pos.OnChanged += Callback_PosChanged;
 			Callback_PosChanged(Target, Vector2i.Zero, Target.Pos);
 		}
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
-			Target.OnPosChanged -= Callback_PosChanged;
+			Target.Pos.OnChanged -= Callback_PosChanged;
 		}
 
 		private void Callback_PosChanged(GameLogic.Unit u, Vector2i oldPos, Vector2i newPos)

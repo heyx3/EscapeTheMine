@@ -10,29 +10,26 @@ namespace GameLogic.Units
 {
 	public class PlayerChar : Unit
 	{
-		//TODO: Implement assorted UI stuff for what's been done so far.
-
-
-		public Stat<float> Food, Energy, Health, Strength;
+		public Stat<float, PlayerChar> Food, Energy, Health, Strength;
 
 
 		public PlayerChar(Map newOwner, float food, float energy, float health, float strength)
 			: base(newOwner, Teams.Player)
 		{
-			Food = new Stat<float>(this, food);
-			Energy = new Stat<float>(this, energy);
-			Health = new Stat<float>(this, health);
-			Strength = new Stat<float>(this, strength);
+			Food = new Stat<float, PlayerChar>(this, food);
+			Energy = new Stat<float, PlayerChar>(this, energy);
+			Health = new Stat<float, PlayerChar>(this, health);
+			Strength = new Stat<float, PlayerChar>(this, strength);
 		}
 		public PlayerChar(Map newOwner) : this(newOwner, 0.0f, 0.0f, 0.0f, 0.0f) { }
 
 		protected PlayerChar(Map newOwner, PlayerChar copyFrom)
 			: base(newOwner, copyFrom)
 		{
-			Food = new Stat<float>(this, copyFrom.Food);
-			Energy = new Stat<float>(this, copyFrom.Energy);
-			Health = new Stat<float>(this, copyFrom.Health);
-			Strength = new Stat<float>(this, copyFrom.Strength);
+			Food = new Stat<float, PlayerChar>(this, copyFrom.Food);
+			Energy = new Stat<float, PlayerChar>(this, copyFrom.Energy);
+			Health = new Stat<float, PlayerChar>(this, copyFrom.Health);
+			Strength = new Stat<float, PlayerChar>(this, copyFrom.Strength);
 		}
 		public override Unit Clone(Map newOwner)
 		{
@@ -64,7 +61,7 @@ namespace GameLogic.Units
 				}
 			}
 
-			//TODO: Implement more stuff.
+			//TODO: More features.
 		}
 
 

@@ -84,7 +84,7 @@ namespace GameLogic
 			posToUnits[unit.Pos].Add(unit);
 
 			//Register callbacks for the unit.
-			unit.OnPosChanged += OnUnitMoved;
+			unit.Pos.OnChanged += OnUnitMoved;
 		}
 		private void OnUnitRemoved(LockedSet<Unit> units, Unit unit)
 		{
@@ -101,7 +101,7 @@ namespace GameLogic
 			}
 
 			//Unregister callbacks for the unit.
-			unit.OnPosChanged -= OnUnitMoved;
+			unit.Pos.OnChanged -= OnUnitMoved;
 		}
 
 		private void OnUnitMoved(Unit u, Vector2i oldP, Vector2i newP)

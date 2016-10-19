@@ -9,12 +9,14 @@ namespace MyUI
 	public class ContentUI : Singleton<ContentUI>
 	{
 		/// <summary>
-		/// Prefab for windows.
+		/// Prefabs for windows.
 		/// </summary>
 		public GameObject Window_Options,
 						  Window_SelectUnit,
+
 						  Window_TestChar,
-						  Window_TestStructure;
+						  Window_TestStructure,
+						  Window_PlayerChar;
 
 
 		public Transform TheCanvas
@@ -77,6 +79,8 @@ namespace MyUI
 				return CreateWindowFor(Window_TestChar, (GameLogic.Units.TestChar)unit).gameObject;
 			else if (unit is GameLogic.Units.TestStructure)
 				return CreateWindowFor(Window_TestStructure, (GameLogic.Units.TestStructure)unit).gameObject;
+			else if (unit is GameLogic.Units.PlayerChar)
+				return CreateWindowFor(Window_PlayerChar, (GameLogic.Units.PlayerChar)unit).gameObject;
 			else
 				throw new NotImplementedException(unit.GetType().Name);
 		}

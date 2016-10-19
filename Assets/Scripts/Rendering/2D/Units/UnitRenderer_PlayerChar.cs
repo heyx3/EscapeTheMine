@@ -6,10 +6,10 @@ using UnityEngine;
 
 namespace Rendering.TwoD
 {
-	public class UnitRenderer_TestChar : UnitRenderer<GameLogic.Units.TestChar>
+	public class UnitRenderer_PlayerChar : UnitRenderer<GameLogic.Units.PlayerChar>
 	{
 		public Sprite NormalSprite;
-        public float LowFoodThreshold = 30.0f;
+        public float LowFoodThreshold = 30.0f; //TODO: Make this a setting in the unit itself.
 
         private BlinkSprite lowFoodWarning;
 
@@ -35,25 +35,49 @@ namespace Rendering.TwoD
 
 			Target.Pos.OnChanged += Callback_PosChanged;
 			Callback_PosChanged(Target, Vector2i.Zero, Target.Pos);
-
-            Target.OnFoodChanged += Callback_FoodChanged;
+			
+            Target.Food.OnChanged += Callback_FoodChanged;
             Callback_FoodChanged(Target, 0.0f, Target.Food);
+			
+            Target.Health.OnChanged += Callback_HealthChanged;
+            Callback_HealthChanged(Target, 0.0f, Target.Health);
+			
+            Target.Energy.OnChanged += Callback_EnergyChanged;
+            Callback_EnergyChanged(Target, 0.0f, Target.Energy);
+			
+            Target.Strength.OnChanged += Callback_StrengthChanged;
+            Callback_StrengthChanged(Target, 0.0f, Target.Strength);
 		}
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
 			Target.Pos.OnChanged -= Callback_PosChanged;
-            Target.OnFoodChanged -= Callback_FoodChanged;
+            Target.Food.OnChanged -= Callback_FoodChanged;
+            Target.Health.OnChanged -= Callback_HealthChanged;
+            Target.Energy.OnChanged -= Callback_EnergyChanged;
+            Target.Strength.OnChanged -= Callback_StrengthChanged;
         }
 
 		private void Callback_PosChanged(GameLogic.Unit u, Vector2i oldPos, Vector2i newPos)
 		{
 			MyTr.position = new Vector3(newPos.x + 0.5f, newPos.y + 0.5f, MyTr.position.z);
 		}
-        private void Callback_FoodChanged(GameLogic.Units.TestChar u, float oldFood, float newFood)
+        private void Callback_FoodChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {
             lowFoodWarning.gameObject.SetActive(newFood <= LowFoodThreshold);
+        }
+        private void Callback_HealthChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
+        {
+
+        }
+        private void Callback_EnergyChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
+        {
+
+        }
+        private void Callback_StrengthChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
+        {
+
         }
 	}
 }

@@ -72,15 +72,7 @@ namespace MyUI
 
 		public void Callback_UnitSelected(GameLogic.Unit u)
 		{
-			if (u is GameLogic.Units.TestChar)
-				ContentUI.Instance.CreateWindowFor(ContentUI.Instance.Window_TestChar,
-												   (GameLogic.Units.TestChar)u);
-			else if (u is GameLogic.Units.TestStructure)
-				ContentUI.Instance.CreateWindowFor(ContentUI.Instance.Window_TestStructure,
-												   (GameLogic.Units.TestStructure)u);
-			else
-				throw new NotImplementedException("Unknown type " + u.GetType().Name);
-
+			ContentUI.Instance.CreateWindowFor(u);
 			Callback_Button_Close();
 		}
 
@@ -94,6 +86,8 @@ namespace MyUI
 				typeName = "Test Char";
 			else if (u is GameLogic.Units.TestStructure)
 				typeName = "Test Structure";
+			else if (u is GameLogic.Units.PlayerChar)
+				typeName = "Player Char";
 			else
 				throw new NotImplementedException("Unknown unit type: " + u.GetType().FullName);
 

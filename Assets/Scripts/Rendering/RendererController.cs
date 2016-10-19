@@ -38,8 +38,12 @@ namespace Rendering
 				viewModeToRenderer.Add(entry.Mode, entry.Renderer);
 
 			UnityLogic.Options.OnChanged_ViewMode += Callback_ChangeViewMode;
+		}
+		private void Start()
+		{
 			Callback_ChangeViewMode(UnityLogic.ViewModes.TwoD, UnityLogic.Options.ViewMode);
 		}
+
 		private void Callback_ChangeViewMode(UnityLogic.ViewModes oldMode, UnityLogic.ViewModes newMode)
 		{
 			foreach (KeyValuePair<UnityLogic.ViewModes, GameObject> kvp in viewModeToRenderer)

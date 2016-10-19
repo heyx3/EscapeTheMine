@@ -12,7 +12,8 @@ namespace Rendering.TwoD
 	/// </summary>
 	public class UnitDispatcher : RendererComponent
 	{
-		public GameObject UnitPrefab_TestChar, UnitPrefab_TestStructure;
+		public GameObject UnitPrefab_TestChar, UnitPrefab_TestStructure,
+						  UnitPrefab_PlayerChar;
 
 		private Dictionary<GameLogic.Unit, GameObject> unitToObj = new Dictionary<Unit, GameObject>();
 
@@ -42,6 +43,12 @@ namespace Rendering.TwoD
 				obj = Instantiate(UnitPrefab_TestStructure);
 				obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestStructure>>().Target =
 					(GameLogic.Units.TestStructure)unit;
+			}
+			else if (unit is GameLogic.Units.PlayerChar)
+			{
+				obj = Instantiate(UnitPrefab_PlayerChar);
+				obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.PlayerChar>>().Target =
+					(GameLogic.Units.PlayerChar)unit;
 			}
 			else
 			{

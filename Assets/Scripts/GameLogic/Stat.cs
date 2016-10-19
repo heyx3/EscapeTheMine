@@ -6,35 +6,35 @@ using System.Text;
 namespace GameLogic
 {
 	/// <summary>
-	/// A piece of data owned by a unit.
+	/// A piece of data owned by some object.
 	/// </summary>
-	public class Stat<T>
+	public class Stat<StatType, OwnerType>
 	{
 		/// <summary>
 		/// Raised when this state changes.
-		/// The first parameter is the unit whose stat this is.
+		/// The first parameter is the owner of this stat.
 		/// The second and third arguments are the old and new value, respectively.
 		/// </summary>
-		public Action<Unit, T, T> OnChanged;
+		public Action<OwnerType, StatType, StatType> OnChanged;
 
-		public T Value
+		public StatType Value
 		{
 			get { return val; }
 			set
 			{
-				T oldVal = val;
+				StatType oldVal = val;
 				val = value;
 
 				if (OnChanged != null)
 					OnChanged(Owner, oldVal, val);
 			}
 		}
-		private T val;
+		private StatType val;
 
-		public Unit Owner { get; private set; }
+		public OwnerType Owner { get; private set; }
 
 
-		public Stat(Unit owner, T value)
+		public Stat(OwnerType owner, StatType value)
 		{
 			Owner = owner;
 			val = value;
@@ -44,7 +44,7 @@ namespace GameLogic
 		/// <summary>
 		/// You can implicitly cast this class to the value it contains.
 		/// </summary>
-		public static implicit operator T(Stat<T> s)
+		public static implicit operator StatType(Stat<StatType, OwnerType> s)
 		{
 			return s.val;
 		}
