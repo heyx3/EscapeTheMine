@@ -82,14 +82,13 @@ namespace MyUI
 
 			//Get a display name for the given type.
 			string typeName;
-			if (u is GameLogic.Units.TestChar)
-				typeName = "Test Char";
-			else if (u is GameLogic.Units.TestStructure)
-				typeName = "Test Structure";
-			else if (u is GameLogic.Units.PlayerChar)
-				typeName = "Player Char";
-			else
-				throw new NotImplementedException("Unknown unit type: " + u.GetType().FullName);
+			switch (u.MyType)
+			{
+				case GameLogic.Unit.Types.TestChar: typeName = "Test Char"; break;
+				case GameLogic.Unit.Types.TestStructure: typeName = "Test Structure"; break;
+				case GameLogic.Unit.Types.PlayerChar: typeName = "Player Char"; break;
+				default: throw new NotImplementedException(u.MyType.ToString());
+			}
 
 			//Set up the button for selecting this option.
 			Transform button = Instantiate(OptionButtonPrefab).transform;

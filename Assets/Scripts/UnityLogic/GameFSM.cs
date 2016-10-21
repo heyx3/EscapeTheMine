@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace UnityLogic
 {
+	//TODO: Put all "update" code into a coroutine.
+
 	/// <summary>
 	/// Runs the Finite State Machine controlling the flow of the game.
 	/// </summary>

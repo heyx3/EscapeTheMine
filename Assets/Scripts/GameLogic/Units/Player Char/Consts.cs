@@ -5,6 +5,8 @@ using System.Text;
 
 namespace GameLogic.Units.Player_Char
 {
+	//TODO: Get all this from a file. Maybe "PlayerPrefs" file?
+
 	public static class Consts
 	{
 		public static readonly float MinStart_Health = 18.0f,
@@ -18,5 +20,7 @@ namespace GameLogic.Units.Player_Char
 
 		public static readonly float BaseLossPerTurn_Food = 0.2f;
 		public static readonly float LossPerTurn_Health = 0.2f;
+
+		public static readonly int MovesPerTurn = 5;
 	}
 }

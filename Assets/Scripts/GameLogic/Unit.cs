@@ -70,10 +70,13 @@ namespace GameLogic
 		public abstract Unit Clone(Map newOwner);
 
 
-		public abstract void TakeTurn();
+		/// <summary>
+		/// Runs a coroutine that has this unit take his turn.
+		/// </summary>
+		public abstract System.Collections.IEnumerable TakeTurn();
 
 
-		//Serialization stuff:
+		#region Serialization
 
 		public static void Write(MyData.Writer writer, string name, Unit u)
 		{
@@ -97,13 +100,13 @@ namespace GameLogic
 			return u;
 		}
 
-		protected enum Types
+		public enum Types
 		{
 			TestChar = 0,
 			TestStructure,
 			PlayerChar,
 		}
-		protected abstract Types MyType { get; }
+		public abstract Types MyType { get; }
 
 		public virtual void WriteData(MyData.Writer writer)
 		{
@@ -117,6 +120,8 @@ namespace GameLogic
 			Pos.Value = new Vector2i(reader.Int("posX"),
 							  		 reader.Int("posY"));
 		}
+
+		#endregion
 	}
 
 

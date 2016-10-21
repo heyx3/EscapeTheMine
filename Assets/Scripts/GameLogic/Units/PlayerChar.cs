@@ -8,9 +8,30 @@ using UnityEngine;
 
 namespace GameLogic.Units
 {
+	/// <summary>
+	/// The player's characters.
+	/// Does two kinds of jobs: those that were specifically given to it,
+	///     and those that were designated for anybody to do.
+	/// </summary>
 	public class PlayerChar : Unit
 	{
 		public Stat<float, PlayerChar> Food, Energy, Health, Strength;
+
+
+		/// <summary>
+		/// Raised when a new job is given to this player specifically.
+		/// </summary>
+		public event Action<PlayerChar, Player_Char.Job> OnNewCustomJob;
+
+
+		/// <summary>
+		/// The jobs this player was specifically tasked to do.
+		/// </summary>
+		private List<Player_Char.Job> customJobs = new List<Player_Char.Job>();
+		/// <summary>
+		/// The job this player is currently performing.
+		/// </summary>
+		private Player_Char.Job currentlyDoing = null;
 
 
 		public PlayerChar(Map newOwner, float food, float energy, float health, float strength)
@@ -37,7 +58,7 @@ namespace GameLogic.Units
 		}
 
 
-		public override void TakeTurn()
+		public override System.Collections.IEnumerable TakeTurn()
 		{
 			//Lose food over time.
 			if (Food > 0.0f)
@@ -53,7 +74,7 @@ namespace GameLogic.Units
 				{
 					Health.Value = 0.0f;
 					Owner.Units.Remove(this);
-					return;
+					yield break;
 				}
 				else
 				{
@@ -61,12 +82,85 @@ namespace GameLogic.Units
 				}
 			}
 
-			//TODO: More features.
+
+			//Grab the most pressing job and do it.
+
+			//If no current job exists, find one.
+			if (currentlyDoing == null)
+			{
+				if (customJobs.Count > 0)
+				{
+					//Prioritize "emergency" jobs.
+					Player_Char.Job nextJob = customJobs.FirstOrDefault(j => j.IsEmergency);
+					if (nextJob == null)
+						nextJob = customJobs[0];
+
+					StartDoingJob(nextJob);
+				}
+				else
+				{
+					//TODO: Grab a job from a global queue (held by the map, probably).
+				}
+			}
+			//If we have a job but it isn't an emergency, see if there IS an emergency.
+			else if (!currentlyDoing.IsEmergency)
+			{
+				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
+				if (emergencyJob != null)
+					StartDoingJob(emergencyJob);
+			}
+
+			//Finally, perform the current job.
+			if (currentlyDoing != null)
+				foreach (object o in currentlyDoing.TakeTurn())
+					yield return o;
+		}
+		private void StopDoingJob()
+		{
+			if (currentlyDoing != null)
+			{
+				currentlyDoing.OnJobFinished -= Callback_OnJobFinished;
+				currentlyDoing.Owner.Value = null;
+				currentlyDoing = null;
+			}
+		}
+		private void StartDoingJob(Player_Char.Job job)
+		{
+			StopDoingJob();
+			currentlyDoing = job;
+			currentlyDoing.Owner.Value = this;
+			currentlyDoing.OnJobFinished += Callback_OnJobFinished;
+		}
+		private void Callback_OnJobFinished(Player_Char.Job job)
+		{
+			UnityEngine.Assertions.Assert.IsTrue(customJobs.Contains(job), job.ToString());
+			customJobs.Remove(job);
+
+			StopDoingJob();
+		}
+
+		/// <summary>
+		/// Adds a new job for this specific PlayerChar to do.
+		/// </summary>
+		public void AddJob(Player_Char.Job job)
+		{
+			customJobs.Add(job);
+		}
+		/// <summary>
+		/// Removes a job that was specifically given to this player.
+		/// Returns whether the player actually had this job in the first place.
+		/// </summary>
+		public bool RemoveJob(Player_Char.Job job)
+		{
+			if (currentlyDoing == job)
+				StopDoingJob();
+
+			return customJobs.Remove(job);
 		}
 
 
 		//Serialization.
-		protected override Types MyType { get { return Types.PlayerChar; } }
+		public override Types MyType { get { return Types.PlayerChar; } }
 		public override void WriteData(Writer writer)
 		{
 			base.WriteData(writer);

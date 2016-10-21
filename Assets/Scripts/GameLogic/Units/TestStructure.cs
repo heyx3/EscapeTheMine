@@ -34,7 +34,7 @@ namespace GameLogic.Units
         private float foodGainPerTurn = 0.05f;
 
 		
-		protected override Types MyType { get { return Types.TestStructure; } }
+		public override Types MyType { get { return Types.TestStructure; } }
 
 
 		public TestStructure(Map map) : base(map, Teams.Environment) { }
@@ -51,9 +51,10 @@ namespace GameLogic.Units
 			return new TestStructure(newOwner, this);
 		}
 
-		public override void TakeTurn()
+		public override System.Collections.IEnumerable TakeTurn()
 		{
 			Food += foodGainPerTurn;
+			yield break;
 		}
 	}
 }

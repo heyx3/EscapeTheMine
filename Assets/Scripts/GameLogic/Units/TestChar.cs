@@ -37,7 +37,7 @@ namespace GameLogic.Units
         private float foodLossPerTurn = 0.1f;
 
 
-		protected override Types MyType { get { return Types.TestChar; } }
+		public override Types MyType { get { return Types.TestChar; } }
 
 		
 		public TestChar(Map map, Vector2i pos) : base(map, Teams.Environment, pos) { }
@@ -54,7 +54,7 @@ namespace GameLogic.Units
 			return new TestChar(newOwner, this);
 		}
 
-		public override void TakeTurn()
+		public override System.Collections.IEnumerable TakeTurn()
 		{
 			//If standing on a TestStructure, gain its food.
 			TestStructure ts = Owner.GetUnitsAt(Pos).FirstOrDefault(u => u is TestStructure) as TestStructure;
@@ -69,7 +69,7 @@ namespace GameLogic.Units
 			if (Food <= 0.0f)
 			{
 				Owner.Units.Remove(this);
-				return;
+				yield break;
 			}
 
 

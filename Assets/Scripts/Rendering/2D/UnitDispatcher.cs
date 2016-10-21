@@ -32,29 +32,31 @@ namespace Rendering.TwoD
 		protected void UnitAddedToMap(LockedSet<Unit> collection, Unit unit)
 		{
 			GameObject obj;
-			if (unit is GameLogic.Units.TestChar)
+			switch (unit.MyType)
 			{
-				obj = Instantiate(UnitPrefab_TestChar);
-				obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestChar>>().Target =
-					(GameLogic.Units.TestChar)unit;
+				case Unit.Types.TestChar:
+					{
+						obj = Instantiate(UnitPrefab_TestChar);
+						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestChar>>().Target =
+							(GameLogic.Units.TestChar)unit;
+					} break;
+				case Unit.Types.TestStructure:
+					{
+						obj = Instantiate(UnitPrefab_TestStructure);
+						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestStructure>>().Target =
+							(GameLogic.Units.TestStructure)unit;
+					} break;
+				case Unit.Types.PlayerChar:
+					{
+						obj = Instantiate(UnitPrefab_PlayerChar);
+						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.PlayerChar>>().Target =
+							(GameLogic.Units.PlayerChar)unit;
+					} break;
+				default:
+					{
+						throw new NotImplementedException(unit.GetType().Name);
+					} break;
 			}
-			else if (unit is GameLogic.Units.TestStructure)
-			{
-				obj = Instantiate(UnitPrefab_TestStructure);
-				obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestStructure>>().Target =
-					(GameLogic.Units.TestStructure)unit;
-			}
-			else if (unit is GameLogic.Units.PlayerChar)
-			{
-				obj = Instantiate(UnitPrefab_PlayerChar);
-				obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.PlayerChar>>().Target =
-					(GameLogic.Units.PlayerChar)unit;
-			}
-			else
-			{
-				throw new NotImplementedException(unit.GetType().Name);
-			}
-
 			unitToObj.Add(unit, obj);
 		}
 		protected void UnitRemovedFromMap(LockedSet<Unit> collection, Unit unit)

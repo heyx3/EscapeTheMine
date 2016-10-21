@@ -75,14 +75,17 @@ namespace MyUI
 		/// </summary>
 		public GameObject CreateWindowFor(GameLogic.Unit unit)
 		{
-			if (unit is GameLogic.Units.TestChar)
-				return CreateWindowFor(Window_TestChar, (GameLogic.Units.TestChar)unit).gameObject;
-			else if (unit is GameLogic.Units.TestStructure)
-				return CreateWindowFor(Window_TestStructure, (GameLogic.Units.TestStructure)unit).gameObject;
-			else if (unit is GameLogic.Units.PlayerChar)
-				return CreateWindowFor(Window_PlayerChar, (GameLogic.Units.PlayerChar)unit).gameObject;
-			else
-				throw new NotImplementedException(unit.GetType().Name);
+			switch (unit.MyType)
+			{
+				case GameLogic.Unit.Types.TestChar:
+					return CreateWindowFor(Window_TestChar, (GameLogic.Units.TestChar)unit).gameObject;
+				case GameLogic.Unit.Types.TestStructure:
+					return CreateWindowFor(Window_TestStructure, (GameLogic.Units.TestStructure)unit).gameObject;
+				case GameLogic.Unit.Types.PlayerChar:
+					return CreateWindowFor(Window_PlayerChar, (GameLogic.Units.PlayerChar)unit).gameObject;
+				default:
+					throw new NotImplementedException(unit.MyType.ToString());
+			}
 		}
 	}
 }
