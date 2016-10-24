@@ -52,10 +52,8 @@ namespace Rendering.TwoD
 						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.PlayerChar>>().Target =
 							(GameLogic.Units.PlayerChar)unit;
 					} break;
-				default:
-					{
-						throw new NotImplementedException(unit.GetType().Name);
-					} break;
+
+				default: throw new NotImplementedException(unit.GetType().Name);
 			}
 			unitToObj.Add(unit, obj);
 		}

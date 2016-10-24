@@ -15,6 +15,19 @@ namespace GameLogic.Units
 	/// </summary>
 	public class PlayerChar : Unit
 	{
+		/// <summary>
+		/// Calculates edge length/heuristics for PlayerChar's A* pathfinding.
+		/// </summary>
+		public static void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
+										 Pathfinding.Edge<Vector2i> edge,
+										 out float edgeLength, out float heuristic)
+		{
+			Graph.AStarEdgeCalc(goal, edge, out edgeLength, out heuristic);
+
+			//TODO: Add enemy distances (squared) to heuristic.
+		}
+
+
 		public Stat<float, PlayerChar> Food, Energy, Health, Strength;
 
 

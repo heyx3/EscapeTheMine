@@ -29,6 +29,9 @@ namespace GameLogic.Units.Player_Char
 		public event Action<Job> OnJobFinished;
 
 
+		public Map TheMap { get { return Owner.Value.Owner; } }
+
+
 		public Job(bool isEmergency, PlayerChar owner = null)
 		{
 			Owner = new Stat<PlayerChar, Job>(this, owner);

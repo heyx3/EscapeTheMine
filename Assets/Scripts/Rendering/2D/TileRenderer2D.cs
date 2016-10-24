@@ -96,7 +96,7 @@ namespace Rendering.TwoD
 											new Color(texR.xMin, texR.yMin,
 													  texR.xMax, texR.yMax));
 			}
-
+			 
 			//Set up callbacks.
 			GameFSM.OnNewMap += Callback_StartMap;
 			GameFSM.Map.OnMapCleared += Callback_EndMap;

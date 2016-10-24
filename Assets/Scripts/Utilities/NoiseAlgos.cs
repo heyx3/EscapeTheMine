@@ -42,6 +42,9 @@ public struct PRNG
 		const int b = 9999999;
 		return (float)(NextInt() % b) / (float)b;
 	}
+
+	public override int GetHashCode() { return Seed; }
+	public override bool Equals(object obj) { return (obj is PRNG && ((PRNG)obj).Seed == Seed); }
 }
 
 

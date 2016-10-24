@@ -12,6 +12,7 @@ namespace GameLogic
 
 		public UnitSet Units;
 		public TileGrid Tiles;
+		public Graph PathingGraph;
 
 		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
 		private static List<Unit> emptyUnitList = new List<Unit>();
@@ -21,6 +22,7 @@ namespace GameLogic
 		{
 			Units = new UnitSet(this);
 			Tiles = new TileGrid(mapSizeX, mapSizeY);
+			PathingGraph = new Graph(this);
 
 			RegisterCallbacks();
 		}
@@ -28,6 +30,7 @@ namespace GameLogic
 		{
 			Units = new UnitSet(this);
 			Tiles = new TileGrid(tileGrid);
+			PathingGraph = new Graph(this);
 
 			RegisterCallbacks();
 		}

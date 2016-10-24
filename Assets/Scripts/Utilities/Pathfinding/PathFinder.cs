@@ -3,64 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Graph
+namespace Pathfinding
 {
 	/// <summary>
-	/// Wraps A*/Djikstra. Can be used to find a path from point to point,
-	///     or to just build out a search tree from a given point.
-	/// There are two ways to specify an end for the search:
-	///   1) a function that takes a node and returns whether it is an acceptable destination ("IsEndNodeFunc")
-	///   2) a specific single destination ("End")
-	/// If both "IsEndNodeFunc" and "End" are null, there is no specific destination (i.e. no A* heuristic).
-	/// If both "IsEndNodeFunc" and "End" are not null, both are used for end points. "End" is used for the heuristic.
+	/// Runs A*/Djikstra to find a path from a start to a goal.
+	/// Instances of this class are not thread-safe;
+	///     collections are re-used between calls to "FindPath()" to reduce garbage.
 	/// </summary>
-	/// <typeparam name="N">The type representing a node in the graph.</typeparam>
-	public class PathFinder<N> where N : Node
+	/// <typeparam name="NodeType">
+	/// The "nodes" in the graph.
+	/// It's highly recommended to override GetHashCode() for this type.
+	/// </typeparam>
+	public class PathFinder<NodeType>
+		where NodeType : IEquatable<NodeType>
 	{
-		public bool HasSpecificEnd { get { return End != null; } }
-		public bool HasSeveralEnds { get { return IsEndNodeFunc != null; } }
-		public bool HasAnEnd { get { return HasSpecificEnd || HasSeveralEnds; } }
-
+		public IGraph<NodeType> Graph;
 
 		/// <summary>
-		/// The most recently-calculated path between the start and end nodes.
+		/// Outputs the length of the edge,
+		///     as well as an optional A* heuristic to be added to that length.
 		/// </summary>
-		public List<N> CurrentPath = new List<N>();
-		/// <summary>
-		/// The current path tree -- every key Node indexes to the next Node to travel to
-		/// in order to get back to the starting node as quick as possible.
-		/// </summary>
-		public Dictionary<N, N> PathTree = new Dictionary<N, N>();
-		/// <summary>
-		/// Nodes that have been added to the search space but not yet been checked.
-		/// </summary>
-		public IndexedPriorityQueue<Edge<N>> NodesToSearch = new IndexedPriorityQueue<Edge<N>>(true);
-		/// <summary>
-		/// Indexes every node in the path tree or search frontier by the cost to reach it from Start.
-		/// </summary>
-		public Dictionary<N, float> CostToMoveToNode = new Dictionary<N, float>();
-
-		/// <summary>
-		/// The graph to search.
-		/// </summary>
-		public Graph<N> Graph;
-
-		public N Start;
-
-		//At most one of these may be set to something other than null.
-		public N End = null;
-		public Func<N, bool> IsEndNodeFunc = null;
-
-		/// <summary>
-		/// Returns an Edge connecting the two given nodes.
-		/// Used to construct certain edge-case edges during the pathing algorithm
-		/// that may not represent a real connection.
-		/// </summary>
-		public Func<N, N, Edge<N>> MakeEdge;
-	
-
-		//Data for A*.
-		private N finalDestination = null;
+		public delegate void CostCalculator(Goal<NodeType> goal, Edge<NodeType> edge,
+											out float edgeLength, out float heuristic);
+		public CostCalculator CalcCosts;
 
 
 		/// <summary>
@@ -68,231 +33,210 @@ namespace Graph
 		/// </summary>
 		/// <param name="graph">The graph to search.</param>
 		/// <param name="makeEdge">Constructs an Edge from the given start and end nodes.</param>
-		public PathFinder(Graph<N> graph, Func<N, N, Edge<N>> makeEdge)
+		public PathFinder(IGraph<NodeType> graph, CostCalculator calcCosts)
 		{
 			Graph = graph;
-
-			Start = null;
-			End = null;
-
-			MakeEdge = makeEdge;
+			CalcCosts = calcCosts;
 		}
 
 
 		/// <summary>
-		/// Builds a search tree moving outward from Start. Returns whether a valid end node was actually found.
+		/// Finds the shortest path from the given start to a node that satisfies the given goal.
 		/// </summary>
-		/// <param name="maxSearchCost">The maximum Edge search cost this pathfinder can search from start.
-		/// This can be used to limit the graph search space.
-		/// This is different from the heuristic cost!</param>
-		/// <param name="onlySearchToDestination">If this is true, and the end Node is not null,
-		/// this function will stop building the path tree when the destination is found.
-		/// Otherwise, it will search the entire graph space within the max search cost.</param>
-		/// <param name="setEnd">If true, sets this PathFinder's "End" field to the last node traversed by this algorithm.
-		/// This can be used to see what the pather stopped at in case it never reached its goal.</param>
-		public bool CalculatePathTree(float maxSearchCost, bool onlySearchToDestination, bool setEnd = false)
+		/// <param name="outPath">
+		/// After this method is called, this list contains the path from start to end,
+		///     NOT including the start node itself.
+		/// </param>
+		/// <param name="maxPathLength">
+		/// The maximum path length this method can search from the start node.
+		/// "Path length" is the sum of the lengths of each edge in a path.
+		/// </param>
+		/// <param name="tryMyBest">
+		/// If true, and a path to an actual end can't be found,
+		///     this method will attempt to find the closest path possible.
+		/// </param>
+		public bool FindPath(NodeType start, Goal<NodeType> goal, float maxPathLength,
+							 bool tryMyBest, List<NodeType> outPath)
 		{
-			CurrentPath.Clear();
-			PathTree.Clear();
+			//Note: edge length is referred to as "search" cost,
+			//    while edge length + A* heuristics is referred to as "traversal" cost.
+			
+			//Clear out the collections for this run.
+			pathTree.Clear();
+			nodesToSearch.Clear();
+			cost_traversal.Clear();
+			cost_search.Clear();
+			considered.Clear();
+			connections.Clear();
 
-
-			//Set up A*/Djikstra.
-
-			finalDestination = null;
-
-			List<N> considered = new List<N>();
-
-			List<Edge<N>> connections = new List<Edge<N>>();
-
-			CostToMoveToNode.Clear();
-			Dictionary<N, float> getToNodeSearchCost = new Dictionary<N, float>();
-
-			NodesToSearch.Clear();
-
-
-			KeyValuePair<float, Edge<N>> closest;
-			N closestN = null;
-			float closestCost, tempCost,
-					closestSearchCost, tempSearchCost;
+			//The final stopping place of this path.
+			OptionalVal<NodeType> finalDestination = new OptionalVal<NodeType>();
 
 
 			//Start searching from the source node.
-			NodesToSearch.Push(MakeEdge(null, Start), 0.0f);
-			PathTree.Add(Start, null);
-			CostToMoveToNode.Add(Start, 0.0f);
-			getToNodeSearchCost.Add(Start, 0.0f);
-			considered.Add(Start);
+			considered.Add(start);
+			pathTree.Add(start, new OptionalVal<NodeType>());
+			cost_traversal.Add(start, 0.0f);
+			cost_search.Add(start, 0.0f);
+			//Start the search frontier with a phony edge that "ends" at the start node.
+			nodesToSearch.Push(new Edge<NodeType>(default(NodeType), start), 0.0f);
 
-			bool foundEnd = false;
+			//This is used in case we can't find the actual end node.
+			NodeType lastNodeChecked = default(NodeType);
 
-
-			//While the search frontier is not empty, keep grabbing the nearest Node to search.
-			while (!NodesToSearch.IsEmpty)
+			//As long as there are more edges to search, keep checking them out.
+			while (!nodesToSearch.IsEmpty)
 			{
-				//Get the closest Node.
-				closest = NodesToSearch.Pop();
-				closestN = closest.Value.End;
-				closestCost = closest.Key;
-				closestSearchCost = getToNodeSearchCost[closestN];
+				//Get the edge/node being checked out.
+				KeyValuePair<float, Edge<NodeType>> edgeToCheck = nodesToSearch.Pop();
+				NodeType edgeDestination = edgeToCheck.Value.End;
+				lastNodeChecked = edgeDestination;
+
+				float totalTraversalCost = edgeToCheck.Key;
+				float totalSearchCost = cost_search[edgeDestination];
 
 
-				//Put it into the path.
+				//Put this edge into the path tree.
+				//Note that if it was already in the path,
+				//    then a shorter route to it has already been found.
+				if (!pathTree.ContainsKey(edgeDestination))
+					pathTree.Add(edgeDestination, edgeToCheck.Value.Start);
 
-				//If it was already in the path, then a shorter route to it has already been found.
-				if (!PathTree.ContainsKey(closestN))
-					PathTree.Add(closestN, closest.Value.Start);
-
-				//If the target has been found, exit.
-				if (HasSpecificEnd && closestN.IsEqualTo(End))
+				//If a goal has been found, stop here.
+				if (goal.IsValidEnd(edgeDestination))
 				{
-					foundEnd = true;
-					if (onlySearchToDestination)
-					{
-						break;
-					}
+					finalDestination = edgeDestination;
+					break;
 				}
-				if (HasSeveralEnds && IsEndNodeFunc(closestN))
-				{
-					finalDestination = closestN;
-					if (setEnd)
-					{
-						End = closestN;
-					}
 
-					foundEnd = true;
-					if (onlySearchToDestination)
-					{
-						break;
-					}
-				}
-				if (getToNodeSearchCost[closestN] >= maxSearchCost)
-				{
+				//If we've searched too far, discard this edge.
+				if (totalSearchCost >= maxPathLength)
 					continue;
-				}
 
 
-				//Now process all the connected nodes.
+				//Now process all the edges coming out of this node.
 
-
-				//Grab connected nodes.
 				connections.Clear();
-				Graph.GetConnections(closestN, connections);
-
-				//Go through each of them and add them to the search frontier.
-				for (int i = 0; i < connections.Count; ++i)
+				Graph.GetConnections(edgeDestination, connections);
+				foreach (Edge<NodeType> connection in connections)
 				{
-					//If a node is already on the search frontier, see if the calculated cost is more than this connections' cost.
-					int contains = considered.IndexOf(connections[i].End);
-					tempCost = closestCost + connections[i].GetTraversalCost(this);
-					if (contains == -1)
-					{
-						tempSearchCost = closestSearchCost + connections[i].GetSearchCost(this);
+					//Get the total cost of traversing/searching to this node.
+					float edgeLength, heuristic;
+					CalcCosts(goal, connection, out edgeLength, out heuristic);
+					float costToEdgeEnd_search = edgeLength + totalSearchCost,
+						  costToEdgeEnd_traversal = edgeLength + heuristic + totalTraversalCost;
 
-						//If the search cost is small enough, add the edge to the search space.
-						if (tempSearchCost <= maxSearchCost)
+					//Only check out this node if it's not too far away.
+					if (costToEdgeEnd_search <= maxPathLength)
+					{
+						//If this node hasn't been found yet, add it to the list of nodes to search.
+						if (!considered.Contains(connection.End))
 						{
-							NodesToSearch.Push(connections[i], tempCost);
-							CostToMoveToNode.Add(connections[i].End, tempCost);
-							getToNodeSearchCost.Add(connections[i].End, tempSearchCost);
-							considered.Add(connections[i].End);
+							//Add the edge to the search space.
+							considered.Add(connection.End);
+							cost_traversal.Add(connection.End, costToEdgeEnd_traversal);
+							cost_search.Add(connection.End, costToEdgeEnd_search);
+
+							nodesToSearch.Push(connection, costToEdgeEnd_traversal);
 						}
-					}
-					else if (tempCost < CostToMoveToNode[considered[contains]])
-					{
-						tempSearchCost = closestSearchCost + connections[i].GetSearchCost(this);
-
-						//If the search cost is small enough, update the path tree.
-						if (tempSearchCost <= maxSearchCost)
+						//If it HAS been found already, this must be a longer path.
+						else //if (traversalCostToEdgeEnd < costToMoveToNode[connection.End])
 						{
-							CostToMoveToNode[connections[i].End] = tempCost;
-							getToNodeSearchCost[connections[i].End] = tempSearchCost;
-							PathTree[connections[i].End] = connections[i].Start;
+							UnityEngine.Assertions.Assert.IsTrue(costToEdgeEnd_traversal >=
+																	 cost_traversal[connection.End]);
+							//Update the path tree.
+							//CostToMoveToNode[connections[i].End] = tempCost;
+							//getToNodeSearchCost[connections[i].End] = tempSearchCost;
+							//PathTree[connections[i].End] = connections[i].Start;
 						}
 					}
 				}
 			}
 
-			return foundEnd;
-		}
 
-		/// <summary>
-		/// Gets the End node, or the closest Node to End in the search space if End wasn't found.
-		/// Assumes that End exists.
-		/// </summary>
-		private N GetDest()
-		{
-			if (End != null && PathTree.ContainsKey(End))
-				return End;
-			if (finalDestination != null) return finalDestination;
+			//Now generate the actual path.
 
-
-			//End was too far away from Start for the search tree to find, so get an available node closest to End.
-
-			if (PathTree.Count == 0) return null;
-
-			N bestEnd = null;
-			float bestDist = Single.PositiveInfinity;
-			float tempDist;
-
-			foreach (N n in PathTree.Values)
+			//If we didn't find a valid goal node, pick the closest thing to it.
+			if (!finalDestination.HasValue)
 			{
-				tempDist = MakeEdge(n, End).GetTraversalCost(this);
-				if (tempDist < bestDist)
+				if (!tryMyBest || pathTree.Count == 0)
+					return false;
+
+				//If we can use heuristics to search towards a goal,
+				//    we can abuse those heuristics to find something close to the goal.
+				if (goal.SpecificGoal.HasValue)
 				{
-					bestDist = tempDist;
-					bestEnd = n;
+					OptionalVal<NodeType> bestEnd = new OptionalVal<NodeType>();
+					float bestHeuristic = float.PositiveInfinity;
+
+					foreach (NodeType n in pathTree.Values)
+					{
+						float edgeLength, heuristic;
+						CalcCosts(goal, new Edge<NodeType>(n, goal.SpecificGoal.Value),
+								  out edgeLength, out heuristic);
+						if (heuristic < bestHeuristic)
+						{
+							bestEnd = n;
+							bestHeuristic = heuristic;
+						}
+					}
+					
+					finalDestination = bestEnd.Value;
+				}
+				//Otherwise, there's no way to know how close we are,
+				//    so just use the last node we checked out.
+				else
+				{
+					finalDestination = lastNodeChecked;
 				}
 			}
 
-			return bestEnd;
+			//Build the path using the path tree.
+			outPath.Clear();
+			NodeType counter = finalDestination.Value;
+			while (!counter.Equals(start))
+			{
+				outPath.Add(counter);
+				counter = pathTree[counter];
+			}
+			outPath.Reverse();
+
+			return goal.IsValidEnd(finalDestination.Value);
 		}
-		/// <summary>
-		/// Gets the path from Start to End, assuming the path tree has been computed.
-		/// </summary>
-		/// <returns>A list of the Nodes from Start to End, with the first element being Start
-		/// and the last element being the closest to End the search tree could get.</returns>
-		public void CalculatePath()
-		{
-			if (End == null)
-			{
-				End = GetDest();
-			}
 
-			CurrentPath.Clear();
-
-			//Build backwards from the end to start, since that's how the path was stored.
-			N counter = GetDest();
-			if (counter == null)
-			{
-				CurrentPath.Add(Start);
-				return;
-			}
-			while (counter.IsNotEqualTo(Start))
-			{
-				CurrentPath.Add(counter);
-				counter = PathTree[counter];
-			}
-
-			//Add in the start node.
-			CurrentPath.Add(Start);
-
-			//Reverse the list to put it in the right order.
-			CurrentPath.Reverse();
-		}
+		#region Reused collections
+		
+		//Note: edge length is referred to as "search" cost,
+		//    while edge length + A* heuristics is referred to as "traversal" cost.
 
 		/// <summary>
-		/// Recalculates the path from this PathFinder's start to its end.
-		/// Assumes this pather has both a start and an end.
-		/// Returns whether an end node was successfully found.
+		/// Indexes each node to the very next node in a path back to the start node.
 		/// </summary>
-		/// <param name="maxSearchCost">Any nodes with a higher cost than this value will not be part of the search space.</param>
-		public bool FindPath(float maxSearchCost = Single.PositiveInfinity)
-		{
-			bool foundEnd = CalculatePathTree(maxSearchCost, true, End == null);
+		private Dictionary<NodeType, OptionalVal<NodeType>> pathTree =
+			new Dictionary<NodeType, OptionalVal<NodeType>>();
 
-			CalculatePath();
+		/// <summary>
+		/// The most pressing edges to search, sorted so that lowest-cost edges are at the front.
+		/// </summary>
+		private IndexedPriorityQueue<Edge<NodeType>> nodesToSearch =
+			new IndexedPriorityQueue<Edge<NodeType>>(true);
 
-			return foundEnd;
-		}
+		/// <summary>
+		/// Stores the cost to traverse/search from the start to the given node.
+		/// </summary>
+		private Dictionary<NodeType, float> cost_traversal = new Dictionary<NodeType, float>(),
+											cost_search = new Dictionary<NodeType, float>();
+
+		/// <summary>
+		/// Nodes that have already been considered.
+		/// </summary>
+		private HashSet<NodeType> considered = new HashSet<NodeType>();
+
+		/// <summary>
+		/// Temp list used to hold all edges coming out from a given node.
+		/// </summary>
+		private HashSet<Edge<NodeType>> connections = new HashSet<Edge<NodeType>>();
+
+		#endregion
 	}
 }

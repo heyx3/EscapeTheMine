@@ -13,6 +13,22 @@ namespace GameLogic
 		Entrance, Exit,
 	}
 
+	public static class TileTypesExtensions
+	{
+		public static bool BlocksMovement(this TileTypes t) { return blocksMovement[t]; }
+
+		#region Lookup dictionaries
+		private static readonly Dictionary<TileTypes, bool> blocksMovement = new Dictionary<TileTypes, bool>()
+		{
+			{ TileTypes.Empty, false },
+			{ TileTypes.Wall, true },
+			{ TileTypes.Bedrock, true },
+			{ TileTypes.Entrance, false },
+			{ TileTypes.Exit, false },
+		};
+		#endregion
+	}
+
 
 	public class TileGrid : MyData.IReadWritable
 	{

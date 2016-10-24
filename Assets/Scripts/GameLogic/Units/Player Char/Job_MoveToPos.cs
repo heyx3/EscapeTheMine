@@ -13,18 +13,44 @@ namespace GameLogic.Units.Player_Char
 	{
 		public Stat<Vector2i, Job_MoveToPos> TargetPos;
 
+		private Pathfinding.PathFinder<Vector2i> pathFinder;
+		private List<Vector2i> path = new List<Vector2i>();
+
 
 		public Job_MoveToPos(Vector2i targetPos, bool isEmergency, PlayerChar owner = null)
 			: base(isEmergency, owner)
 		{
 			TargetPos = new Stat<Vector2i, Job_MoveToPos>(this, targetPos);
+			pathFinder = new Pathfinding.PathFinder<Vector2i>(null, PlayerChar.AStarEdgeCalc);
 		}
 
 
 		public override IEnumerable TakeTurn()
 		{
+			//If we made it to the destination, quit.
+			if (Owner.Value.Pos == TargetPos.Value)
+				FinishJob();
+
 			//Use A* to find the best path to the destination from here.
-			//TODO: Implement. Still need to define A* classes for the Map. Each Unit type will need its own heuristics.
+			pathFinder.Graph = TheMap.PathingGraph;
+			bool foundEnd = pathFinder.FindPath(Owner.Value.Pos,
+												new Pathfinding.Goal<Vector2i>(TargetPos),
+												float.PositiveInfinity, false, path);
+
+			//If there is no valid path, give up.
+			if (!foundEnd)
+			{
+				FinishJob();
+				//TODO: Make announcement that a path couldn't be found.
+				yield break;
+			}
+			else
+			{
+				UnityEngine.Assertions.Assert.IsTrue(path.Count > 0);
+			}
+
+			//Move to the next spot in the path.
+			Owner.Value.Pos.Value = path[0];
 
 			//If we made it to the destination, quit.
 			if (Owner.Value.Pos == TargetPos.Value)

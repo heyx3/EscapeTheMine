@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace Graph
+namespace Pathfinding
 {
 	/// <summary>
 	/// A useful data structure.
