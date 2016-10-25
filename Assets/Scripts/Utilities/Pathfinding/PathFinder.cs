@@ -42,6 +42,7 @@ namespace Pathfinding
 
 		/// <summary>
 		/// Finds the shortest path from the given start to a node that satisfies the given goal.
+		/// Returns whether a full path to an acceptable goal was found.
 		/// </summary>
 		/// <param name="outPath">
 		/// After this method is called, this list contains the path from start to end,
@@ -52,8 +53,8 @@ namespace Pathfinding
 		/// "Path length" is the sum of the lengths of each edge in a path.
 		/// </param>
 		/// <param name="tryMyBest">
-		/// If true, and a path to an actual end can't be found,
-		///     this method will attempt to find the closest path possible.
+		/// If this is true, and a path to an actual goal can't be found,
+		///     this method will do extra work to attempt to find the closest path possible.
 		/// </param>
 		public bool FindPath(NodeType start, Goal<NodeType> goal, float maxPathLength,
 							 bool tryMyBest, List<NodeType> outPath)

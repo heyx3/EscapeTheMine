@@ -18,8 +18,8 @@ namespace GameLogic.Units.Player_Char
 									 MinStart_Strength = 1.0f,
 									 MaxStart_Strength = 1.5f;
 
-		public static readonly float BaseLossPerTurn_Food = 0.2f;
-		public static readonly float LossPerTurn_Health = 0.2f;
+		public static readonly float FoodLossPerTurn = 0.2f;
+		public static readonly float StarvationDamagePerTurn = 0.2f;
 
 		public static readonly int MovesPerTurn = 5;
 	}

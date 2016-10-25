@@ -38,13 +38,12 @@ namespace UnityLogic
 		}
 
 
-		public override GameFSM.State Start(GameFSM.State previousState)
+		public override void Start(GameFSM.State previousState)
 		{
 			RunGenerator();
 
 			FSM.SaveWorld();
-
-			return new State_Turn(GameLogic.Unit.Teams.Player);
+			FSM.CurrentState = new State_Turn(GameLogic.Unit.Teams.Player);
 		}
 
 		private void RunGenerator()

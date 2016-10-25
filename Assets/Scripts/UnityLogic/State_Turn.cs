@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -39,58 +40,62 @@ namespace UnityLogic
 		}
 
 
-		public override GameFSM.State Start(GameFSM.State previousState)
+		public override void Start(GameFSM.State previousState)
 		{
 			unitsToUpdate.Clear();
 			unitsToUpdate.AddRange(FSM.Map.Units.Where(u => u.Team == team));
 
 			currentUnit = 0;
 			timeSinceLastUnit = 0.0f;
-
-			return base.Start(previousState);
 		}
-		public override GameFSM.State Update()
+		public override IEnumerable Update()
 		{
 			timeSinceLastUnit += Time.deltaTime;
 
 			//Keep letting units take turns until we've caught up or gone through every unit.
 			while (timeSinceLastUnit >= Options.UnitTurnInterval && currentUnit < unitsToUpdate.Count)
 			{
-				unitsToUpdate[currentUnit].TakeTurn();
+				//Note that some time may elapse during this unit's turn,
+				//    but we don't want to count that towards the time till the next unit.
+				foreach (object o in unitsToUpdate[currentUnit].TakeTurn())
+					yield return o;
 
 				timeSinceLastUnit -= Options.UnitTurnInterval;
 				currentUnit += 1;
 			}
 
 			//If we've gone through every unit, switch to the next turn.
+			//Do this by restarting the current state.
 			if (currentUnit >= unitsToUpdate.Count)
 			{
 				switch (team)
 				{
 					case GameLogic.Unit.Teams.Player:
 						team = GameLogic.Unit.Teams.Environment;
-						return this;
+						FSM.CurrentState = this;
+						break;
+
 					case GameLogic.Unit.Teams.Environment:
 						team = GameLogic.Unit.Teams.Monsters;
-						return this;
+						FSM.CurrentState = this;
+						break;
+
 					case GameLogic.Unit.Teams.Monsters:
 						team = GameLogic.Unit.Teams.Player;
-						return this;
+						FSM.CurrentState = this;
+						break;
+
 					default: throw new NotImplementedException(team.ToString());
 				}
 			}
-
-			return base.Update();
 		}
-		public override GameFSM.State End(GameFSM.State nextState)
+		public override void End(GameFSM.State nextState)
 		{
 			//During normal operation, the next state is actually just this one
 			//    after changing some fields.
-			//However, this can get interrupted by e.x. the player ending the level.
+			//However, this might get interrupted by e.x. the player ending the level.
 			if (nextState != this)
 				DeInit();
-
-			return base.End(nextState);
 		}
 
 		private void Callback_AddUnit(LockedSet<GameLogic.Unit> mapUnits, GameLogic.Unit unit)

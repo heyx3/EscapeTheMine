@@ -11,8 +11,11 @@ namespace GameLogic
 		public event Action<Map> OnMapCleared;
 
 		public UnitSet Units;
+		public GlobalJobs Jobs;
 		public TileGrid Tiles;
-		public Graph PathingGraph;
+
+		private Graph pathingGraph;
+		private Pathfinding.PathFinder<Vector2i> pathing;
 
 		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
 		private static List<Unit> emptyUnitList = new List<Unit>();
@@ -22,7 +25,10 @@ namespace GameLogic
 		{
 			Units = new UnitSet(this);
 			Tiles = new TileGrid(mapSizeX, mapSizeY);
-			PathingGraph = new Graph(this);
+			Jobs = new GlobalJobs(this);
+
+			pathingGraph = new Graph(this);
+			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
 
 			RegisterCallbacks();
 		}
@@ -30,7 +36,10 @@ namespace GameLogic
 		{
 			Units = new UnitSet(this);
 			Tiles = new TileGrid(tileGrid);
-			PathingGraph = new Graph(this);
+			Jobs = new GlobalJobs(this);
+
+			pathingGraph = new Graph(this);
+			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
 
 			RegisterCallbacks();
 		}
@@ -53,9 +62,54 @@ namespace GameLogic
 						emptyUnitList);
 		}
 
+		/// <summary>
+		/// Outputs the shortest path from the given start to the given goal
+		///     into the "outPath" list.
+		/// Does not include the "start" pos in the list.
+		/// Returns whether a path was actually found.
+		/// </summary>
+		/// <param name="heuristicCalc">
+		/// The heuristic/path length calculator,
+		///     or "null" if the default one (manhattan distance) should be used.
+		/// </param>
+		public bool FindPath(Vector2i start, Pathfinding.Goal<Vector2i> goal,
+							 List<Vector2i> outPath,
+							 Pathfinding.PathFinder<Vector2i>.CostCalculator heuristicCalc = null)
+		{
+			if (heuristicCalc == null)
+				pathing.CalcCosts = Graph.AStarEdgeCalc;
+			else
+				pathing.CalcCosts = heuristicCalc;
+
+			return pathing.FindPath(start, goal, float.PositiveInfinity, false, outPath);
+		}
+		/// <summary>
+		/// Finds the shortest path from the given start to the given goal.
+		/// Does not include the "start" pos in the list.
+		/// Returns "null" if a path wasn't found.
+		/// IMPORTANT: The returned list is reused for other calls to this method,
+		///     so treat it as a temp variable!
+		/// </summary>
+		/// <param name="heuristicCalc">
+		/// The heuristic/path length calculator,
+		///     or "null" if the default one (manhattan distance) should be used.
+		/// </param>
+		public List<Vector2i> FindPath(Vector2i start, Pathfinding.Goal<Vector2i> goal,
+									   Pathfinding.PathFinder<Vector2i>.CostCalculator heuristicCalc = null)
+		{
+			return (FindPath(start, goal, tempPath, heuristicCalc) ?
+						tempPath :
+						null);
+		}
+		private List<Vector2i> tempPath = new List<Vector2i>();
+
+		/// <summary>
+		/// Wipes out all units and jobs.
+		/// </summary>
 		public void Clear()
 		{
 			Units.Clear();
+			Jobs.Clear();
 
 			if (OnMapCleared != null)
 				OnMapCleared(this);
@@ -67,13 +121,15 @@ namespace GameLogic
 		{
 			writer.Structure(Units, "units");
 			writer.Structure(Tiles, "tiles");
+			writer.Structure(Jobs, "jobs");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
-			Units.Clear();
-			reader.Structure(Units, "units");
+			Clear();
 
+			reader.Structure(Units, "units");
 			reader.Structure(Tiles, "tiles");
+			reader.Structure(Jobs, "jobs");
 		}
 
 

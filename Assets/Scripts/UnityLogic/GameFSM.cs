@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,8 +7,6 @@ using UnityEngine;
 
 namespace UnityLogic
 {
-	//TODO: Put all "update" code into a coroutine.
-
 	/// <summary>
 	/// Runs the Finite State Machine controlling the flow of the game.
 	/// </summary>
@@ -16,32 +15,12 @@ namespace UnityLogic
 		public abstract class State
 		{
 			protected static GameFSM FSM { get { return GameFSM.Instance; } }
+			
+			public virtual void Start(State previousState) { }
+			public virtual void End(State nextState) { }
 
-
-			/// <summary>
-			/// Called when this state starts up.
-			/// If everything is normal, the method should return null.
-			/// However, if this state should be replaced by a different one,
-			///     that different state should be returned instead.
-			/// Default behavior: returns null.
-			/// </summary>
-			public virtual State Start(State previousState) { return null; }
-			/// <summary>
-			/// Called every time Unity does an update.
-			/// If everything is normal, the method should return null.
-			/// However, if this state should be replaced by a different one,
-			///     that different state should be returned instead.
-			/// Default behavior: returns null.
-			/// </summary>
-			public virtual State Update() { return null; }
-			/// <summary>
-			/// Called when this state is about to be replaced by a new one.
-			/// If everything is normal, the method should return null.
-			/// However, if the new state should be replaced by a different one,
-			///     that different state should be returned instead.
-			/// Default behavior: returns null.
-			/// </summary>
-			public virtual State End(State nextState) { return null; }
+			//"Update()" is a coroutine.
+			public virtual IEnumerable Update() { yield break; }
 		}
 
 		public class WorldProgress : MyData.IReadWritable
@@ -146,29 +125,17 @@ namespace UnityLogic
 			get { return currState; }
 			set
 			{
-				//Tell the current state that it's ending.
 				State oldState = currState;
+
+				//Tell the current state that it's ending.
 				if (currState != null)
-				{
-					//The current state can tell us to use a different state in place of the new one.
-					State replacement = currState.End(value);
-					if (replacement != null)
-						value = replacement;
-				}
+					currState.End(value);
 
 				currState = value;
 
 				//Tell the new state that it's starting.
 				if (currState != null)
-				{
-					//The new state can tell us to use a different state in place of itself.
-					State replacement = currState.Start(oldState);
-					while (replacement != null)
-					{
-						currState = replacement;
-						replacement = currState.Start(oldState);
-					}
-				}
+					currState.Start(oldState);
 			}
 		}
 		private State currState = null;
@@ -259,13 +226,21 @@ namespace UnityLogic
 		{
 			Map = new GameLogic.Map();
 		}
-		private void Update()
+		private void Start()
 		{
-			if (CurrentState != null)
+			StartCoroutine(StateMachineCoroutine());
+		}
+
+		private System.Collections.IEnumerator StateMachineCoroutine()
+		{
+			while (true)
 			{
-				State replacement = CurrentState.Update();
-				if (replacement != null)
-					CurrentState = replacement;
+				if (CurrentState != null)
+				{
+					foreach (object o in CurrentState.Update())
+						yield return o;
+				}
+				yield return null;
 			}
 		}
 	}

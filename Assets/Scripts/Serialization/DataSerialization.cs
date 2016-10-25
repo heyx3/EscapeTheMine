@@ -37,6 +37,13 @@ namespace MyData
 		public abstract void Structure(IReadWritable value, string name);
 		
 
+		public void Vec2i(Vector2i v, string name)
+		{
+			IntSerializerWrapper ints = new IntSerializerWrapper();
+			ints.Add("x", v.x);
+			ints.Add("y", v.y);
+			Structure(ints, name);
+		}
 		public void Vec2f(UnityEngine.Vector2 v, string name)
 		{
 			FloatSerializerWrapper floats = new FloatSerializerWrapper();
@@ -125,6 +132,15 @@ namespace MyData
 		public abstract void Structure(IReadWritable outValue, string name);
 		
 
+		public Vector2i Vec2i(string name)
+		{
+			IntSerializerWrapper ints = new IntSerializerWrapper();
+			ints.Add("x", 0);
+			ints.Add("y", 0);
+			Structure(ints, name);
+			return new Vector2i(ints.ValuesByName[0].Value,
+								ints.ValuesByName[1].Value);
+		}
 		public UnityEngine.Vector2 Vec2f(string name)
 		{
 			FloatSerializerWrapper floats = new FloatSerializerWrapper();
@@ -213,27 +229,48 @@ namespace MyData
 
 	
 	#region Helpers for reading/writing special types.
+
 	/// <summary>
 	/// Helper class for DataReader/DataWriter. Please ignore.
 	/// </summary>
-	public class FloatSerializerWrapper : IReadWritable
+	public abstract class VectorSerializerWrapper<ComponentType> : IReadWritable
 	{
-		public List<KeyValuePair<string, float>> ValuesByName = new List<KeyValuePair<string, float>>();
-		public void Add(string name, float val) { ValuesByName.Add(new KeyValuePair<string, float>(name, val)); }
+		public List<KeyValuePair<string, ComponentType>> ValuesByName =
+			new List<KeyValuePair<string, ComponentType>>();
+		public void Add(string name, ComponentType val) { ValuesByName.Add(new KeyValuePair<string, ComponentType>(name, val)); }
 		public void ReadData(Reader reader)
 		{
 			for (int i = 0; i < ValuesByName.Count; ++i)
 			{
-				float f = reader.Float(ValuesByName[i].Key);
-				ValuesByName[i] = new KeyValuePair<string, float>(ValuesByName[i].Key, f);
+				ComponentType val = Read(reader, ValuesByName[i].Key);
+				ValuesByName[i] = new KeyValuePair<string, ComponentType>(ValuesByName[i].Key, val);
 			}
 		}
 		public void WriteData(Writer writer)
 		{
-			foreach (KeyValuePair<string, float> kvp in ValuesByName)
-				writer.Float(kvp.Value, kvp.Key);
+			foreach (KeyValuePair<string, ComponentType> kvp in ValuesByName)
+				Write(writer, kvp.Key, kvp.Value);
 		}
+		protected abstract ComponentType Read(Reader reader, string name);
+		protected abstract void Write(Writer writer, string name, ComponentType value);
 	}
+	/// <summary>
+	/// Helper class for DataReader/DataWriter. Please ignore.
+	/// </summary>
+	public class FloatSerializerWrapper : VectorSerializerWrapper<float>
+	{
+		protected override float Read(Reader reader, string name) { return reader.Float(name); }
+		protected override void Write(Writer writer, string name, float value) { writer.Float(value, name); }
+	}
+	/// <summary>
+	/// Helper class for DataReader/DataWriter. Please ignore.
+	/// </summary>
+	public class IntSerializerWrapper : VectorSerializerWrapper<int>
+	{
+		protected override int Read(Reader reader, string name) { return reader.Int(name); }
+		protected override void Write(Writer writer, string name, int value) { writer.Int(value, name); }
+	}
+
 	/// <summary>
 	/// Helper class for DataReader/DataWriter. Please ignore.
 	/// </summary>
@@ -302,5 +339,6 @@ namespace MyData
 			}
 		}
 	}
+
 	#endregion
 }

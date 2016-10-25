@@ -57,7 +57,7 @@ namespace GameLogic.Units
 		public override System.Collections.IEnumerable TakeTurn()
 		{
 			//If standing on a TestStructure, gain its food.
-			TestStructure ts = Owner.GetUnitsAt(Pos).FirstOrDefault(u => u is TestStructure) as TestStructure;
+			TestStructure ts = TheMap.GetUnitsAt(Pos).FirstOrDefault(u => u is TestStructure) as TestStructure;
 			if (ts != null)
 			{
 				Food += ts.Food;
@@ -68,7 +68,7 @@ namespace GameLogic.Units
             Food -= foodLossPerTurn;
 			if (Food <= 0.0f)
 			{
-				Owner.Units.Remove(this);
+				TheMap.Units.Remove(this);
 				yield break;
 			}
 
@@ -78,13 +78,13 @@ namespace GameLogic.Units
 			List<Vector2i> validPoses = new List<Vector2i>();
 
 			Vector2i pos = Pos;
-			if (Owner.Tiles.IsValid(pos.LessX) && CanMoveTo(Owner.Tiles[pos.LessX]))
+			if (TheMap.Tiles.IsValid(pos.LessX) && CanMoveTo(TheMap.Tiles[pos.LessX]))
 				validPoses.Add(pos.LessX);
-			if (Owner.Tiles.IsValid(pos.MoreX) && CanMoveTo(Owner.Tiles[pos.MoreX]))
+			if (TheMap.Tiles.IsValid(pos.MoreX) && CanMoveTo(TheMap.Tiles[pos.MoreX]))
 				validPoses.Add(pos.MoreX);
-			if (Owner.Tiles.IsValid(pos.LessY) && CanMoveTo(Owner.Tiles[pos.LessY]))
+			if (TheMap.Tiles.IsValid(pos.LessY) && CanMoveTo(TheMap.Tiles[pos.LessY]))
 				validPoses.Add(pos.LessY);
-			if (Owner.Tiles.IsValid(pos.MoreY) && CanMoveTo(Owner.Tiles[pos.MoreY]))
+			if (TheMap.Tiles.IsValid(pos.MoreY) && CanMoveTo(TheMap.Tiles[pos.MoreY]))
 				validPoses.Add(pos.MoreY);
 			
 			if (validPoses.Count > 0)

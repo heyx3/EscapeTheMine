@@ -32,7 +32,7 @@ namespace GameLogic
 
 		public UnitSet Allies, Enemies;
 		
-		public Map Owner { get; private set; }
+		public Map TheMap { get; private set; }
 
 
 		public Unit(Map map, Teams team) : this(map, team, new Vector2i(-1, -1)) { }
@@ -41,15 +41,15 @@ namespace GameLogic
 			Team = new Stat<Teams, Unit>(this, team);
 			Pos = new Stat<Vector2i, Unit>(this, pos);
 
-			Owner = map;
+			TheMap = map;
 
-			Allies = new UnitSet(Owner);
+			Allies = new UnitSet(TheMap);
 			Allies.OnElementAdded += (allies, ally) =>
 				{
 					Enemies.Remove(ally);
 				};
 
-			Enemies = new UnitSet(Owner);
+			Enemies = new UnitSet(TheMap);
 			Enemies.OnElementAdded += (enemies, enemy) =>
 				{
 					Allies.Remove(enemy);
@@ -58,7 +58,7 @@ namespace GameLogic
 
 		protected Unit(Map map, Unit copyFrom)
 		{
-			Owner = map;
+			TheMap = map;
 			Team = copyFrom.Team;
 			Pos = copyFrom.Pos;
 		}
@@ -111,14 +111,12 @@ namespace GameLogic
 		public virtual void WriteData(MyData.Writer writer)
 		{
 			writer.Int((int)Team.Value, "team");
-			writer.Int(Pos.Value.x, "posX");
-			writer.Int(Pos.Value.y, "posY");
+			writer.Vec2i(Pos, "pos");
 		}
 		public virtual void ReadData(MyData.Reader reader)
 		{
 			Team.Value = (Teams)reader.Int("team");
-			Pos.Value = new Vector2i(reader.Int("posX"),
-							  		 reader.Int("posY"));
+			Pos.Value = reader.Vec2i("pos");
 		}
 
 		#endregion

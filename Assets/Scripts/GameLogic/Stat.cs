@@ -12,7 +12,7 @@ namespace GameLogic
 	{
 		/// <summary>
 		/// Raised when this state changes.
-		/// The first parameter is the owner of this stat.
+		/// The first argument is the owner of this stat.
 		/// The second and third arguments are the old and new value, respectively.
 		/// </summary>
 		public Action<OwnerType, StatType, StatType> OnChanged;
