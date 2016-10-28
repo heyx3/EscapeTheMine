@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using PlayerConsts = GameLogic.Units.Player_Char.Consts;
+
 
 namespace Rendering.TwoD
 {
 	public class UnitRenderer_PlayerChar : UnitRenderer<GameLogic.Units.PlayerChar>
 	{
 		public Sprite NormalSprite;
-        public float LowFoodThreshold = 30.0f; //TODO: Make this a setting in the unit itself.
 
         private BlinkSprite lowFoodWarning;
 
@@ -65,7 +66,8 @@ namespace Rendering.TwoD
 		}
         private void Callback_FoodChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {
-            lowFoodWarning.gameObject.SetActive(newFood <= LowFoodThreshold);
+            lowFoodWarning.gameObject.SetActive(
+				newFood <= PlayerConsts.Instance.InitialLowFoodThreshold);
         }
         private void Callback_HealthChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {

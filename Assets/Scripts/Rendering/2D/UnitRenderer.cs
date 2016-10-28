@@ -27,7 +27,9 @@ namespace Rendering.TwoD
 		}
 		protected virtual void OnDestroy()
 		{
-			UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved -= Callback_OnElementRemoved;
+			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
+			if (UnityLogic.GameFSM.InstanceExists)
+				UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved -= Callback_OnElementRemoved;
 		}
 
 		private void Callback_OnElementRemoved(LockedSet<GameLogic.Unit> worldUnits,

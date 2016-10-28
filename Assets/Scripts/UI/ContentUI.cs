@@ -14,6 +14,8 @@ namespace MyUI
 		public GameObject Window_Options,
 						  Window_SelectUnit,
 
+						  Window_ConfirmDialog,
+
 						  Window_TestChar,
 						  Window_TestStructure,
 						  Window_PlayerChar;
@@ -36,7 +38,7 @@ namespace MyUI
 		/// Starts the window in the center of the screen.
 		/// Closes any other windows that are editing the same target.
 		/// </summary>
-		public Window<T> CreateWindowFor<T>(GameObject prefab, T target)
+		public Window<T> CreateWindow<T>(GameObject prefab, T target)
 			where T : class
 		{
 			GameObject go = Instantiate(prefab);
@@ -53,11 +55,12 @@ namespace MyUI
 			return wnd;
 		}
 
+
 		/// <summary>
 		/// Creates a window that has no target.
 		/// Starts the window in the center of the screen.
 		/// </summary>
-		public Window_Global CreateWindow(GameObject prefab)
+		public Window_Global CreateGlobalWindow(GameObject prefab)
 		{
 			GameObject go = Instantiate(prefab);
 
@@ -73,19 +76,46 @@ namespace MyUI
 		/// Creates the correct window for editing the given unit.
 		/// Returns the window's GameObject.
 		/// </summary>
-		public GameObject CreateWindowFor(GameLogic.Unit unit)
+		public GameObject CreateUnitWindow(GameLogic.Unit unit)
 		{
 			switch (unit.MyType)
 			{
 				case GameLogic.Unit.Types.TestChar:
-					return CreateWindowFor(Window_TestChar, (GameLogic.Units.TestChar)unit).gameObject;
+					return CreateWindow(Window_TestChar,
+										(GameLogic.Units.TestChar)unit).gameObject;
 				case GameLogic.Unit.Types.TestStructure:
-					return CreateWindowFor(Window_TestStructure, (GameLogic.Units.TestStructure)unit).gameObject;
+					return CreateWindow(Window_TestStructure,
+										(GameLogic.Units.TestStructure)unit).gameObject;
 				case GameLogic.Unit.Types.PlayerChar:
-					return CreateWindowFor(Window_PlayerChar, (GameLogic.Units.PlayerChar)unit).gameObject;
+					return CreateWindow(Window_PlayerChar,
+										(GameLogic.Units.PlayerChar)unit).gameObject;
 				default:
 					throw new NotImplementedException(unit.MyType.ToString());
 			}
+		}
+
+		/// <summary>
+		/// Creates an "OK/Cancel"-type dialog.
+		/// Destroys it once an option was selected.
+		/// </summary>
+		public Window_ConfirmDialog CreateDialog(string title, string message,
+												 Action onConfirm, Action onDeny = null,
+												 string OK = "OK", string cancel = "cancel")
+		{
+			Action<Window_ConfirmDialog, bool> onDone = (_wnd, _result) =>
+			{
+				if (_result && onConfirm != null)
+					onConfirm();
+				else if (!_result && onDeny != null)
+					onDeny();
+
+				Destroy(_wnd.gameObject);
+			};
+
+			Window_ConfirmDialog wcd = (Window_ConfirmDialog)CreateWindow(Window_ConfirmDialog, onDone);
+			wcd.Init(title, message, OK, cancel);
+
+			return wcd;
 		}
 	}
 }

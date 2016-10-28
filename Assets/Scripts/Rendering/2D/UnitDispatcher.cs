@@ -25,8 +25,12 @@ namespace Rendering.TwoD
 		}
 		private void OnDisable()
 		{
-			GameFSM.Map.Units.OnElementAdded -= UnitAddedToMap;
-			GameFSM.Map.Units.OnElementRemoved -= UnitRemovedFromMap;
+			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
+			if (UnityLogic.GameFSM.InstanceExists)
+			{
+				GameFSM.Map.Units.OnElementAdded -= UnitAddedToMap;
+				GameFSM.Map.Units.OnElementRemoved -= UnitRemovedFromMap;
+			}
 		}
 
 		protected void UnitAddedToMap(LockedSet<Unit> collection, Unit unit)

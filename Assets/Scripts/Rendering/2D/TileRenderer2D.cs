@@ -108,12 +108,16 @@ namespace Rendering.TwoD
 			tileGridTex.Resize(1, 1);
 			tileGridTex.Apply();
 			tileGridTex = null;
-			
+
+			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
 			//Clean up callbacks.
-			GameFSM.OnNewMap -= Callback_StartMap;
-			GameFSM.Map.OnMapCleared -= Callback_EndMap;
-			GameFSM.Map.Tiles.OnTileChanged -= Callback_TileChanged;
-			GameFSM.Map.Tiles.OnTileGridResized -= Callback_TileGridResized;
+			if (UnityLogic.GameFSM.InstanceExists)
+			{
+				GameFSM.OnNewMap -= Callback_StartMap;
+				GameFSM.Map.OnMapCleared -= Callback_EndMap;
+				GameFSM.Map.Tiles.OnTileChanged -= Callback_TileChanged;
+				GameFSM.Map.Tiles.OnTileGridResized -= Callback_TileGridResized;
+			}
 		}
 
 

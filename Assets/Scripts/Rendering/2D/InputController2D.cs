@@ -42,12 +42,12 @@ namespace Rendering.TwoD
                 List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
                 if (clickedUnits.Count == 1)
                 {
-                    MyUI.ContentUI.Instance.CreateWindowFor(clickedUnits[0]);
+                    MyUI.ContentUI.Instance.CreateUnitWindow(clickedUnits[0]);
                 }
                 else if (clickedUnits.Count > 1)
                 {
-                    MyUI.ContentUI.Instance.CreateWindowFor(MyUI.ContentUI.Instance.Window_SelectUnit,
-                                                            clickedUnits);
+                    MyUI.ContentUI.Instance.CreateWindow(MyUI.ContentUI.Instance.Window_SelectUnit,
+                                                         clickedUnits);
                 }
             }
 		}

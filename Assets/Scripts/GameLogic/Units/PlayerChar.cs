@@ -27,6 +27,8 @@ namespace GameLogic.Units
 			//TODO: Add enemy distances (squared) to heuristic.
 		}
 
+		private Player_Char.Consts Consts {  get { return Player_Char.Consts.Instance; } }
+
 
 		/// <summary>
 		/// Raised when a new job is given to this PlayerChar specifically.
@@ -42,6 +44,9 @@ namespace GameLogic.Units
 		public Stat<float, PlayerChar> Energy { get; private set; }
 		public Stat<float, PlayerChar> Health { get; private set; }
 		public Stat<float, PlayerChar> Strength { get; private set; }
+
+		public Stat<float, PlayerChar> LowFoodThreshold { get; private set; }
+
 
 		public Player_Char.JobQualifications Career { get; private set; }
 
@@ -63,6 +68,9 @@ namespace GameLogic.Units
 			Energy = new Stat<float, PlayerChar>(this, energy);
 			Health = new Stat<float, PlayerChar>(this, health);
 			Strength = new Stat<float, PlayerChar>(this, strength);
+
+			LowFoodThreshold =
+				new Stat<float, PlayerChar>(this, Consts.InitialLowFoodThreshold);
 
 			Career = new Player_Char.JobQualifications(this);
 		}
@@ -89,13 +97,13 @@ namespace GameLogic.Units
 			//Lose food over time.
 			if (Food > 0.0f)
 			{
-				float newFood = Food - (Player_Char.Consts.FoodLossPerTurn / Strength.Value);
+				float newFood = Food - Consts.FoodLossPerTurn(Strength);
 				Food.Value = Mathf.Max(0.0f, newFood);
 			}
 			//If no food is left, lose health over time (i.e. starvation).
 			else
 			{
-				float newHealth = Health - Player_Char.Consts.StarvationDamagePerTurn;
+				float newHealth = Health - Consts.StarvationDamagePerTurn;
 				if (newHealth <= 0.0f)
 				{
 					Health.Value = 0.0f;

@@ -10,11 +10,15 @@ namespace MyUI
 	{
 		public void Callback_Button_Save()
 		{
-			//TODO: Save the game.
+			FSM.SaveWorld();
 		}
 		public void Callback_Button_Quit()
 		{
-			//TODO: Show an "are you sure?" dialogue.
+			//Ask the player for confirmation, and then quit the world.
+			//TODO: Localize.
+			ContentUI.Instance.CreateDialog("Quit?",
+											"Are you sure you want to quit?\nMake sure to save first!",
+											() => FSM.QuitWorld());
 		}
 	}
 }

@@ -12,6 +12,8 @@ namespace GameLogic.Units.Player_Char
 	/// </summary>
 	public abstract class Job : MyData.IReadWritable
 	{
+		public static Consts PlayerConsts {  get { return Player_Char.Consts.Instance; } }
+
 		/// <summary>
 		/// The PlayerChar that is actively doing this job.
 		/// Is "null" if no PlayerChar is actively doing this job.

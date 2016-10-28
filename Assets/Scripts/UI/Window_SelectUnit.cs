@@ -30,13 +30,14 @@ namespace MyUI
 		{
 			base.OnDestroy();
 
-			if (!UnityLogic.GameFSM.InstanceExists)
-				return;
-
-			FSM.Map.OnMapCleared -= Callback_MapCleared;
-			FSM.Map.Units.OnElementAdded -= Callback_NewUnit;
-			FSM.Map.Units.OnElementRemoved -= Callback_UnitDies;
-			FSM.Map.Units.OnUnitMoved -= Callback_UnitMoves;
+			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
+			if (UnityLogic.GameFSM.InstanceExists)
+			{
+				FSM.Map.OnMapCleared -= Callback_MapCleared;
+				FSM.Map.Units.OnElementAdded -= Callback_NewUnit;
+				FSM.Map.Units.OnElementRemoved -= Callback_UnitDies;
+				FSM.Map.Units.OnUnitMoved -= Callback_UnitMoves;
+			}
 		}
 
 		public void Callback_NewUnit(LockedSet<GameLogic.Unit> units, GameLogic.Unit unit)
@@ -72,7 +73,7 @@ namespace MyUI
 
 		public void Callback_UnitSelected(GameLogic.Unit u)
 		{
-			ContentUI.Instance.CreateWindowFor(u);
+			ContentUI.Instance.CreateUnitWindow(u);
 			Callback_Button_Close();
 		}
 

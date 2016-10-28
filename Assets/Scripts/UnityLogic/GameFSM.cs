@@ -165,6 +165,20 @@ namespace UnityLogic
 		private bool isPaused = false;
 		
 
+		public void QuitWorld()
+		{
+			Map.Clear();
+
+			Progress.ExitedUnits.Clear();
+			Progress.Level = 0;
+
+			Settings = new WorldSettings();
+
+			CurrentState = null;
+
+			MenuController.Instance.Activate(MenuController.Instance.Menu_Main);
+		}
+
 		public void GenerateWorld()
 		{
 			Map.Clear();

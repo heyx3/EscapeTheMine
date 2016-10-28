@@ -76,6 +76,9 @@ namespace MyData
 			writer.WriteEndObject();
 		}
 		
+		/// <summary>
+		/// Flushes all serialized data to the JSON file, then closes this writer.
+		/// </summary>
 		public void Dispose()
 		{
 			writer.WriteEndObject();

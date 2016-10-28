@@ -38,7 +38,7 @@ namespace GameLogic.Units.Player_Char
 			}
 
 			//Move some number of spaces along the path.
-			int nMoves = Math.Min(Consts.MovesPerTurn, path.Count);
+			int nMoves = Math.Min(PlayerConsts.MovesPerTurn, path.Count);
 			for (int i = 0; i < nMoves; ++i)
 			{
 				Owner.Value.Pos.Value = path[i];
