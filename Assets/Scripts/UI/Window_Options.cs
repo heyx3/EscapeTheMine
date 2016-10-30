@@ -15,9 +15,8 @@ namespace MyUI
 		public void Callback_Button_Quit()
 		{
 			//Ask the player for confirmation, and then quit the world.
-			//TODO: Localize.
-			ContentUI.Instance.CreateDialog("Quit?",
-											"Are you sure you want to quit?\nMake sure to save first!",
+			ContentUI.Instance.CreateDialog(Localization.Get("WINDOW_CONFIRMQUIT_TITLE"),
+											Localization.Get("WINDOW_CONFIRMQUIT_MESSAGE"),
 											() => FSM.QuitWorld());
 		}
 	}

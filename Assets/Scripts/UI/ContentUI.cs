@@ -100,7 +100,7 @@ namespace MyUI
 		/// </summary>
 		public Window_ConfirmDialog CreateDialog(string title, string message,
 												 Action onConfirm, Action onDeny = null,
-												 string OK = "OK", string cancel = "cancel")
+												 string OK = null, string cancel = null)
 		{
 			Action<Window_ConfirmDialog, bool> onDone = (_wnd, _result) =>
 			{

@@ -28,12 +28,12 @@ namespace GameLogic.Units.Player_Char
 			List<Vector2i> path =
 				TheMap.Value.FindPath(Owner.Value.Pos,
 									  new Pathfinding.Goal<Vector2i>(TargetPos),
-									  PlayerChar.AStarEdgeCalc);
+									  Owner.Value.AStarEdgeCalc);
 			
 			//If there is no valid path, give up.
 			if (path == null)
 			{
-				EndJob(false, "Couldn't find path"); //TODO: Localize.
+				EndJob(false, Localization.Get("NO_PATH_JOB"));
 				yield break;
 			}
 

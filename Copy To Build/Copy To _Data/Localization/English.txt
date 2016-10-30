@@ -1,0 +1,7 @@
+NO_PATH_JOB:Couldn't find a path
+INTERRUPT_JOB_EMERGENCY:Job interrupted by emergency: %s
+INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
+DIALOG_DEFAULT_OK:OK
+DIALOG_DEFAULT_CANCEL:Cancel
+WINDOW_CONFIRMQUIT_TITLE:Quit?
+WINDOW_CONFIRMQUIT_MESSAGE:Are you sure you want to quit?\nMake sure to save first!

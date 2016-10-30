@@ -18,13 +18,15 @@ namespace GameLogic.Units
 		/// <summary>
 		/// Calculates edge length/heuristics for PlayerChar's A* pathfinding.
 		/// </summary>
-		public static void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
-										 Pathfinding.Edge<Vector2i> edge,
-										 out float edgeLength, out float heuristic)
+		public void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
+								  Pathfinding.Edge<Vector2i> edge,
+								  out float edgeLength, out float heuristic)
 		{
 			Graph.AStarEdgeCalc(goal, edge, out edgeLength, out heuristic);
 
-			//TODO: Add enemy distances (squared) to heuristic.
+            //Subtract enemy distances squared from the heuristic.
+            foreach (Unit enemy in Enemies)
+                heuristic -= enemy.Pos.Value.DistanceSqr(Pos);
 		}
 
 		private Player_Char.Consts Consts {  get { return Player_Char.Consts.Instance; } }
@@ -151,8 +153,8 @@ namespace GameLogic.Units
 
 				if (emergencyJob != null)
 				{
-					StartDoingJob(emergencyJob,
-								  "Interrupted by emergency: " + emergencyJob.ToString()); //TODO: Localize.
+                    StartDoingJob(emergencyJob,
+                                  Localization.Get("INTERRUPT_JOB_EMERGENCY", emergencyJob.ToString()));
 				}
 			}
 
@@ -263,7 +265,7 @@ namespace GameLogic.Units
 		private void Callback_JobOwnerChanged(Player_Char.Job job, PlayerChar oldP, PlayerChar newP)
 		{
 			UnityEngine.Assertions.Assert.IsTrue(currentlyDoing == job);
-			StopDoingJob("Interrupted by " + job.ToString()); //TODO: Localize.
+			StopDoingJob(Localization.Get("INTERRUPT_JOB_UNKNOWN", job.ToString()));
 		}
 		private void Callback_OnJobFinished(Player_Char.Job job, bool succeeded, string message)
 		{

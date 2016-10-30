@@ -16,8 +16,13 @@ namespace MyUI
 
 
 		public void Init(string title, string message,
-						 string affirmative = "OK", string negative = "Cancel") //TODO: Localize.
+						 string affirmative = null, string negative = null)
 		{
+            if (affirmative == null)
+                affirmative = Localization.Get("DIALOG_DEFAULT_OK");
+            if (negative == null)
+                negative = Localization.Get("DIALOG_DEFAULT_CANCEL");
+
 			MessageLabel.text = message;
 			TitleLabel.text = title;
 			AffirmativeLabel.text = affirmative;
