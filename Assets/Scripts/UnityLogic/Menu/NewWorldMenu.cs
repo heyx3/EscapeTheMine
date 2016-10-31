@@ -34,7 +34,7 @@ namespace UnityLogic
 			//If the name is invalid, swap out the bad characters with underscores.
 			if (ui_WorldName.text.Any(c => Path.GetInvalidFileNameChars().Contains(c)))
 			{
-				SetMessage("Invalid characters in name", 5.0f);
+				SetMessage(Localization.Get("NEWWORLDMENU_MSG_INVALIDCHARS"), 5.0f);
 				resetWorldName = true;
 				
 				UnityEngine.Assertions.Assert.IsFalse(Path.GetInvalidFileNameChars().Contains('_'));
@@ -44,8 +44,9 @@ namespace UnityLogic
 			//If a file with that name already exists, warn.
 			else if (File.Exists(MenuConsts.Instance.GetSaveFilePath(Settings.Name)))
 			{
-				SetMessage("A world with that name already exists", 2.0f);
-			}
+				SetMessage(Localization.Get("NEWWORLDMENU_MSG_WORLDEXISTS"), 2.0f);
+
+            }
 			else
 			{
 				SetMessage("");
@@ -61,8 +62,8 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid size", 1.0f);
-			}
+				SetMessage(Localization.Get("NEWWORLDMENU_MSG_INVALIDSIZE"), 1.0f);
+            }
 		}
 		public void Callback_StartNewGame()
 		{

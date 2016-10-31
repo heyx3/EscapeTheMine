@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-
+//TODO: Finish localizing World Gen Settings Menu GameObject, then localize Load World menu.
 namespace UnityLogic
 {
 	public class WorldGenSettingsMenu : Singleton<WorldGenSettingsMenu>
@@ -51,8 +51,9 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
-			}
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_0"));
+
+            }
 		}
 		public void Callback_BiomeNoiseScaleChanged(string newValue)
 		{
@@ -64,7 +65,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE"));
 			}
 		}
 		public void Callback_BiomeNoisePersistenceChanged(string newValue)
@@ -77,7 +78,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE"));
 			}
 		}
 		public void Callback_RoomsNumberChanged(string newValue)
@@ -90,7 +91,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_0"));
 			}
 		}
 		public void Callback_RoomsSpacingChanged(string newValue)
@@ -103,7 +104,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_0"));
 			}
 		}
 		public void Callback_CA_NIterationsChanged(string newValue)
@@ -116,7 +117,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_POS"));
 			}
 		}
 		public void Callback_RoomsMinCircPerRoomChanged(string newValue)
@@ -129,7 +130,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_0"));
 			}
 		}
 		public void Callback_RoomsMaxCircPerRoomChanged(string newValue)
@@ -142,7 +143,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_MINCIRCLES"));
 			}
 		}
 		public void Callback_CircPosVarianceChanged(string newValue)
@@ -155,7 +156,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_01"));
 			}
 		}
 		public void Callback_CircMinRadiusChanged(string newValue)
@@ -168,7 +169,7 @@ namespace UnityLogic
 			}
 			else
 			{
-				SetMessage("Invalid value");
+				SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_POS"));
 			}
 		}
 		public void Callback_CircMaxRadiusChanged(string newValue)
@@ -180,9 +181,9 @@ namespace UnityLogic
 				SetMessage("");
 			}
 			else
-			{
-				SetMessage("Invalid value");
-			}
+            {
+                SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_CIRCLEMINRAD"));
+            }
 		}
 		public void Callback_CA_TileVariationChanged(string newValue)
 		{
@@ -193,9 +194,9 @@ namespace UnityLogic
 				SetMessage("");
 			}
 			else
-			{
-				SetMessage("Invalid value");
-			}
+            {
+                SetMessage(Localization.Get("WORLDGENMENU_MSG_INVALIDVALUE_01"));
+            }
 		}
 
 		private void OnEnable()

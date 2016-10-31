@@ -11,10 +11,14 @@ using UnityEngine;
 [RequireComponent(typeof(UnityEngine.UI.Text))]
 public class Localizer : MonoBehaviour
 {
-    //TODO: Display localized text in editor using OnValidate() and private serializable string field.
-
+    [SerializeField]
+    private string key = "MAINMENU_TITLE";
 
     private UnityEngine.UI.Text txt;
+
+
+    public string Key { get { return key; } }
+
 
     protected virtual void Awake()
     {
@@ -23,11 +27,15 @@ public class Localizer : MonoBehaviour
     }
     protected virtual void Start()
     {
-        txt.text = Localize(txt.text);
+        txt.text = Localize(key);
     }
     protected virtual void OnDestroyed()
     {
         Localization.Language.OnChanged -= Callback_OnLangChanged;
+    }
+    public virtual void OnValidate()
+    {
+        GetComponent<UnityEngine.UI.Text>().text = Localize(key);
     }
 
     /// <summary>
@@ -43,6 +51,7 @@ public class Localizer : MonoBehaviour
     /// </summary>
     protected virtual void Callback_OnLangChanged(object ignoreThis, SystemLanguage oldLang, SystemLanguage newLang)
     {
-        txt.text = Localize(txt.text);
+        txt.text = Localize(key);
     }
+
 }

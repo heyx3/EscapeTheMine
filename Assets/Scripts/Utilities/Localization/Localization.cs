@@ -5,15 +5,25 @@ using System.Text;
 using System.IO;
 using UnityEngine;
 
+//TODO: Skip empty lines.
 
 public static class Localization
 {
+    /// <summary>
+    /// Gets the localized text for the given key.
+    /// Optionally takes string.Format parameters.
+    /// Returns "null" if the given key couldn't be found.
+    /// </summary>
     public static string Get(string key, params object[] formatValues)
     {
         Init();
 
         SystemLanguage lang = langToClosestExisting[Language.Value];
+
+        if (!itemsByLang[lang].ContainsKey(key))
+            return null;
         string value = itemsByLang[lang][key];
+
         value = value.Replace("\\n", "\n");
         return string.Format(value, formatValues);
     }
@@ -31,6 +41,12 @@ public static class Localization
 
     public static IEnumerable<SystemLanguage> SupportedLanguages { get { Init();  return itemsByLang.Keys; } }
     public static bool IsSupported(SystemLanguage lang) { Init();  return itemsByLang.ContainsKey(lang); }
+
+    public static void ReloadLocalization()
+    {
+        isInitialized = false;
+        Init();
+    }
 
 
     private static Dictionary<SystemLanguage, Dictionary<string, string>> itemsByLang;
@@ -55,7 +71,6 @@ public static class Localization
         DirectoryInfo dir = new DirectoryInfo(folderPath);
         foreach (FileInfo file in dir.GetFiles())
         {
-            Debug.LogError(file.Name);
             itemsByLang.Add(ToSysLang(Path.GetFileNameWithoutExtension(file.Name)),
                             ReadFile(file));
         }
