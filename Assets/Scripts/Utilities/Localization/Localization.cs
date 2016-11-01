@@ -5,7 +5,6 @@ using System.Text;
 using System.IO;
 using UnityEngine;
 
-//TODO: Skip empty lines.
 
 public static class Localization
 {
@@ -294,8 +293,11 @@ public static class Localization
         foreach (string line in File.ReadAllLines(langFile.FullName))
         {
             int splitter = line.IndexOf(':');
-            outItems.Add(line.Substring(0, splitter),
-                         line.Substring(splitter + 1));
+			if (splitter > -1)
+			{
+				outItems.Add(line.Substring(0, splitter),
+							 line.Substring(splitter + 1));
+			}
         }
 
         return outItems;

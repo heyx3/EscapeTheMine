@@ -1,14 +1,34 @@
+	## NOTE -- any line without a colon in it is ignored.
+## This essentially allows for "comments" like this one.
+## The double-pound sign at the beginning of comments is just to make them stand out.
+
+## Job messages
 NO_PATH_JOB:Couldn't find a path
 INTERRUPT_JOB_EMERGENCY:Job interrupted by emergency: %s
 INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
+
+## Dialogs and windows
 DIALOG_DEFAULT_OK:OK
 DIALOG_DEFAULT_CANCEL:Cancel
 WINDOW_CONFIRMQUIT_TITLE:Quit?
 WINDOW_CONFIRMQUIT_MESSAGE:Are you sure you want to quit?\nMake sure to save first!
+WINDOW_OPTIONS_TITLE:Options
+WINDOW_OPTIONS_BUTTON_SAVE:Save
+WINDOW_OPTIONS_BUTTON_QUIT:Quit
+WINDOW_PLAYERCHAR_TITLE:Player Character
+WINDOW_PLAYERCHAR_FOODAMNT:Food: {0}
+WINDOW_PLAYERCHAR_STRENGTHAMNT:Strength: {0}
+WINDOW_PLAYERCHAR_ENERGYAMNT:Energy: {0}
+WINDOW_PLAYERCHAR_HEALTHAMNT:Health: {0}
+WINDOW_UNITSELECTOR_TITLE:Select Unit
+
+## Main Menu
 MAINMENU_TITLE:Escape The Mine
 MAINMENU_NEWGAME:New Game
 MAINMENU_LOADGAME:Load Game
 MAINMENU_QUIT:Quit
+
+## "New World" Menu
 NEWWORLDMENU_TITLE:New World
 NEWWORLDMENU_LABEL_NAME:World Name
 NEWWORLDMENU_LABEL_SIZE:World Size
@@ -18,10 +38,23 @@ NEWWORLDMENU_BUTTON_START:Start
 NEWWORLDMENU_MSG_INVALIDCHARS:Invalid characters in name
 NEWWORLDMENU_MSG_WORLDEXISTS:A world with that name already exists
 NEWWORLDMENU_MSG_INVALIDSIZE:Invalid world size: must be at least 32
+
+## "World Gen" Menu
 WORLDGENMENU_TITLE:World Gen Settings
+WORLDGENMENU_LABEL_BIOMES:Biomes
+WORLDGENMENU_LABEL_NUMBNOISEOCTAVES:Number of\nNoise Octaves
+WORLDGENMENU_LABEL_NOISESTARTSCALE:Noise Starting\nScale
+WORLDGENMENU_LABEL_NOISEPERSISTENCE:Noise Persistence
+WORLDGENMENU_BUTTON_BACK:Back
 WORLDGENMENU_MSG_INVALIDVALUE:Invalid value.
 WORLDGENMENU_MSG_INVALIDVALUE_0:Invalid value. Must be larger than 0.
 WORLDGENMENU_MSG_INVALIDVALUE_POS:Invalid value. Must not be negative.
 WORLDGENMENU_MSG_INVALIDVALUE_01:Invalid value. Must be between 0 and 1.
 WORLDGENMENU_MSG_INVALIDVALUE_MINCIRCLES:Invalid value. Must be at least as large as "Min Circles Per Room".
 WORLDGENMENU_MSG_INVALIDVALUE_CIRCLEMINRAD:Invalid value. Must be at least as large as "Circle Min Radius".
+
+## "Load World" Menu
+LOADWORLDMENU_TITLE:Load World
+LOADWORLDMENU_BUTTON_BACK:Back
+LOADWORLDMENU_BUTTON_START:Start
+LOADWORLDMENU_BUTTON_DELETE:Delete

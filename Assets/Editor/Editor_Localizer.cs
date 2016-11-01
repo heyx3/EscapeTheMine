@@ -17,7 +17,7 @@ public class Editor_Localizer : Editor
 
         GUILayout.Space(15.0f);
 
-        string localizedString = Localization.Get(myLoc.Key);
+		string localizedString = myLoc.Value;
         if (localizedString == null)
             localizedString = "KEY NOT FOUND";
 

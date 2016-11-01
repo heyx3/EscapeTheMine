@@ -119,6 +119,8 @@ namespace UnityLogic
 		public WorldSettings Settings = new WorldSettings();
 		public int NThreads = 5;
 
+		public GameLogic.Unit.Teams CurrentTurn = GameLogic.Unit.Teams.Player;
+
 
 		public State CurrentState
 		{
@@ -200,19 +202,26 @@ namespace UnityLogic
                 OnNewMap(Map);
         }
 		
-		public void LoadWorld(string filePath)
+		public void LoadWorld(string name)
 		{
+			string filePath = MenuConsts.Instance.GetSaveFilePath(name);
 			try
 			{
 				MyData.JSONReader reader = new MyData.JSONReader(filePath);
+
 				reader.Structure(Progress, "progress");
 				reader.Structure(Map, "map");
 				reader.Structure(Settings, "worldSettings");
+
+				CurrentTurn = (GameLogic.Unit.Teams)reader.Int("currentTurn");
 			}
 			catch (MyData.Reader.ReadException e)
 			{
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
             }
+
+			//TODO: See if fixing the following exploit isn't too painful: you could have units take more than one turn per turn by saving/quitting/reloading in the middle of the turn, because the newly-loaded "State_Turn" doesn't know who already took their turn before the game was saved.
+			CurrentState = new State_Turn();
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -227,6 +236,7 @@ namespace UnityLogic
 					writer.Structure(Progress, "progress");
 					writer.Structure(Map, "map");
 					writer.Structure(Settings, "worldSettings");
+					writer.Int((int)CurrentTurn, "currentTurn");
 				}
 				catch (MyData.Writer.WriteException e)
 				{
@@ -239,6 +249,14 @@ namespace UnityLogic
 		private void Awake()
 		{
 			Map = new GameLogic.Map();
+			Progress = new WorldProgress();
+		}
+		private void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.Escape) && CurrentState is State_Turn)
+			{
+				MyUI.ContentUI.Instance.CreateGlobalWindow(MyUI.ContentUI.Instance.Window_Options);
+			}
 		}
 		private void Start()
 		{

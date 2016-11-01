@@ -214,14 +214,16 @@ namespace MyData
 			return sList.Data;
 		}
 		public CollectionType Collection<T, CollectionType>(string name,
-													  ListElementReader<T> readElementWithName,
-													  Func<int, CollectionType> createWithCapacity)
+														    ListElementReader<T> readElementWithName,
+														    Func<int, CollectionType> createWithCapacity,
+															Action<int, CollectionType, T> insertAtEnd = null)
 			where CollectionType : ICollection<T>
 		{
 			EnumerableSerializerWrapper<T, CollectionType> sColl =
 				new EnumerableSerializerWrapper<T, CollectionType>();
 			sColl.ElementReader = readElementWithName;
 			sColl.CollectionFactoryFromCapacity = createWithCapacity;
+			sColl.InsertAtEnd = insertAtEnd;
 			Structure(sColl, name);
 			return sColl.Data;
 		}
@@ -315,6 +317,7 @@ namespace MyData
 
 		public Reader.ListElementReader<T> ElementReader = null;
 		public Func<int, CollectionType> CollectionFactoryFromCapacity = null;
+		public Action<int, CollectionType, T> InsertAtEnd = null;
 
 		public void ReadData(Reader reader)
 		{
@@ -325,7 +328,11 @@ namespace MyData
 			{
 				T t = default(T);
 				ElementReader(reader, ref t, (i + 1).ToString());
-				Data.Add(t);
+
+				if (InsertAtEnd == null)
+					Data.Add(t);
+				else
+					InsertAtEnd(i, Data, t);
 			}
 		}
 		public void WriteData(Writer writer)

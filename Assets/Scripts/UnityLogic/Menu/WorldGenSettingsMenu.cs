@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-//TODO: Finish localizing World Gen Settings Menu GameObject, then localize Load World menu.
+
 namespace UnityLogic
 {
 	public class WorldGenSettingsMenu : Singleton<WorldGenSettingsMenu>

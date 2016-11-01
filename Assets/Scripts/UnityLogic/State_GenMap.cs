@@ -43,7 +43,9 @@ namespace UnityLogic
 			RunGenerator();
 
 			FSM.SaveWorld();
-			FSM.CurrentState = new State_Turn(GameLogic.Unit.Teams.Player);
+
+			FSM.CurrentTurn = GameLogic.Unit.Teams.Player;
+			FSM.CurrentState = new State_Turn();
 		}
 
 		private void RunGenerator()

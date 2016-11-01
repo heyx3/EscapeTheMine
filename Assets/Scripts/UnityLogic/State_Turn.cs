@@ -13,16 +13,13 @@ namespace UnityLogic
 	/// </summary>
 	public class State_Turn : GameFSM.State
 	{
-		private GameLogic.Unit.Teams team;
-
 		private List<GameLogic.Unit> unitsToUpdate = new List<GameLogic.Unit>();
-		private int currentUnit;
+		private int currentUnit = 0;
 		private float timeSinceLastUnit;
 
 
-		public State_Turn(GameLogic.Unit.Teams _team)
+		public State_Turn()
 		{
-			team = _team;
 			Init();
 		}
 
@@ -43,9 +40,8 @@ namespace UnityLogic
 		public override void Start(GameFSM.State previousState)
 		{
 			unitsToUpdate.Clear();
-			unitsToUpdate.AddRange(FSM.Map.Units.Where(u => u.Team == team));
-
-			currentUnit = 0;
+			unitsToUpdate.AddRange(FSM.Map.Units.Where(u => u.Team == GameFSM.Instance.CurrentTurn));
+			
 			timeSinceLastUnit = 0.0f;
 		}
 		public override IEnumerable Update()
@@ -68,25 +64,26 @@ namespace UnityLogic
 			//Do this by restarting the current state.
 			if (currentUnit >= unitsToUpdate.Count)
 			{
-				switch (team)
+				currentUnit = 0;
+				
+				switch (FSM.CurrentTurn)
 				{
 					case GameLogic.Unit.Teams.Player:
-						team = GameLogic.Unit.Teams.Environment;
-						FSM.CurrentState = this;
+						FSM.CurrentTurn = GameLogic.Unit.Teams.Environment;
 						break;
 
 					case GameLogic.Unit.Teams.Environment:
-						team = GameLogic.Unit.Teams.Monsters;
-						FSM.CurrentState = this;
+						FSM.CurrentTurn = GameLogic.Unit.Teams.Monsters;
 						break;
 
 					case GameLogic.Unit.Teams.Monsters:
-						team = GameLogic.Unit.Teams.Player;
-						FSM.CurrentState = this;
+						FSM.CurrentTurn = GameLogic.Unit.Teams.Player;
 						break;
 
-					default: throw new NotImplementedException(team.ToString());
+					default: throw new NotImplementedException(FSM.CurrentTurn.ToString());
 				}
+
+				FSM.CurrentState = this;
 			}
 		}
 		public override void End(GameFSM.State nextState)
@@ -100,7 +97,7 @@ namespace UnityLogic
 
 		private void Callback_AddUnit(LockedSet<GameLogic.Unit> mapUnits, GameLogic.Unit unit)
 		{
-			if (unit.Team == team)
+			if (unit.Team == FSM.CurrentTurn)
 				unitsToUpdate.Add(unit);
 		}
 		private void Callback_RemoveUnit(LockedSet<GameLogic.Unit> mapUnits, GameLogic.Unit unit)
@@ -116,14 +113,16 @@ namespace UnityLogic
 		private void Callback_UnitTeamChanged(GameLogic.UnitSet set, GameLogic.Unit unit,
 											  GameLogic.Unit.Teams oldTeam, GameLogic.Unit.Teams newTeam)
 		{
+			GameLogic.Unit.Teams currentTeam = FSM.CurrentTurn;
+
 			//Remove the unit if it used to be on this team.
-			if (oldTeam == team && newTeam != team)
+			if (oldTeam == currentTeam && newTeam != currentTeam)
 			{
 				UnityEngine.Assertions.Assert.IsTrue(unitsToUpdate.Contains(unit));
 				Callback_RemoveUnit(set, unit);
 			}
 			//Add the unit if it just got put onto this team.
-			else if (oldTeam != team && newTeam == team)
+			else if (oldTeam != currentTeam && newTeam == currentTeam)
 			{
 				UnityEngine.Assertions.Assert.IsFalse(unitsToUpdate.Contains(unit));
 				Callback_AddUnit(set, unit);

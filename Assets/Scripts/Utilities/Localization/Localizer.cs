@@ -6,52 +6,87 @@ using UnityEngine;
 
 /// <summary>
 /// Localizes a uGUI Text string using its initial value as the key.
-/// Children can inherit from this to add string format arguments.
 /// </summary>
 [RequireComponent(typeof(UnityEngine.UI.Text))]
 public class Localizer : MonoBehaviour
 {
+	/// <summary>
+	/// The arguments to string.Format() when getting the localized string.
+	/// If set to null, no arguments will be supplied.
+	/// </summary>
+	public object[] Args = null;
+
+
     [SerializeField]
     private string key = "MAINMENU_TITLE";
 
-    private UnityEngine.UI.Text txt;
+    private UnityEngine.UI.Text txt = null;
 
 
-    public string Key { get { return key; } }
+    public string Key
+	{
+		get { return key; }
+		set
+		{
+			key = value;
+			OnValidate();
+		}
+	}
+	public string Value
+	{
+		get
+		{
+#if UNITY_EDITOR
+			if (_editor_nArgs <= 0)
+				Args = null;
+			else if (Args == null || Args.Length != _editor_nArgs)
+				Args = new object[_editor_nArgs];
+#endif
+
+			return (Args == null ?
+						Localization.Get(Key) :
+						Localization.Get(Key, Args));
+		}
+	}
 
 
-    protected virtual void Awake()
+	/// <summary>
+	/// Updates the text. Automatically gets called whenever the language changes.
+	/// </summary>
+    public void OnValidate()
     {
-        txt = GetComponent<UnityEngine.UI.Text>();
+		if (txt == null)
+			txt = GetComponent<UnityEngine.UI.Text>();
+		txt.text = Value;
+    }
+
+    private void Awake()
+    {
         Localization.Language.OnChanged += Callback_OnLangChanged;
     }
-    protected virtual void Start()
-    {
-        txt.text = Localize(key);
-    }
-    protected virtual void OnDestroyed()
+    private void OnDestroyed()
     {
         Localization.Language.OnChanged -= Callback_OnLangChanged;
     }
-    public virtual void OnValidate()
+    private void Start()
     {
-        GetComponent<UnityEngine.UI.Text>().text = Localize(key);
+		OnValidate();
     }
-
-    /// <summary>
-    /// Override this to do something more complex,
-    ///     like provide formatting arguments to the localization function.
-    /// </summary>
-    protected virtual string Localize(string key)
-    {
-        return Localization.Get(key);
-    }
+	
     /// <summary>
     /// Called when the user's language changes.
     /// </summary>
-    protected virtual void Callback_OnLangChanged(object ignoreThis, SystemLanguage oldLang, SystemLanguage newLang)
+    private void Callback_OnLangChanged(object ignoreThis, SystemLanguage oldLang, SystemLanguage newLang)
     {
-        txt.text = Localize(key);
+		OnValidate();
     }
 
+
+	//In the editor, provide a way to set the number of arguments that Localization should expect.
+	//This is so that the preview of the localized value in-editor doesn't crash
+	//    for strings that should have at least one argument.
+#if UNITY_EDITOR
+	[SerializeField]
+	private int _editor_nArgs = 0;
+#endif
 }

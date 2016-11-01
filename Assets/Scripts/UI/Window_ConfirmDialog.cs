@@ -11,27 +11,20 @@ namespace MyUI
 	/// </summary>
 	public class Window_ConfirmDialog : Window<Action<Window_ConfirmDialog, bool>>
 	{
-		public UnityEngine.UI.Text MessageLabel, TitleLabel,
-								   AffirmativeLabel, NegativeLabel;
+		public Localizer Label_Message, Label_Title,
+						 Label_Affirmative, Label_Negative;
 
 
-		public void Init(string title, string message,
-						 string affirmative = null, string negative = null)
+		protected override void Awake()
 		{
-            if (affirmative == null)
-                affirmative = Localization.Get("DIALOG_DEFAULT_OK");
-            if (negative == null)
-                negative = Localization.Get("DIALOG_DEFAULT_CANCEL");
-
-			MessageLabel.text = message;
-			TitleLabel.text = title;
-			AffirmativeLabel.text = affirmative;
-			NegativeLabel.text = negative;
+			base.Awake();
+			Label_Affirmative.Key = "DIALOG_DEFAULT_OK";
+			Label_Negative.Key = "DIALOG_DEFAULT_CANCEL";
 		}
 
-		public void Callback_Click(bool result)
+		public void Callback_FinishDialogue(bool okOrCancel)
 		{
-			Target(this, result);
+			Target(this, okOrCancel);
 		}
 	}
 }

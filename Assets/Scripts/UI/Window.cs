@@ -56,9 +56,11 @@ namespace MyUI
 		{
 			MyTr = transform;
 			allWindows.Add(this);
+			FSM.Map.OnMapCleared += Callback_MapCleared;
 		}
 		protected virtual void OnDestroy()
 		{
+			FSM.Map.OnMapCleared -= Callback_MapCleared;
 			allWindows.Remove(this);
 		}
 
@@ -86,6 +88,14 @@ namespace MyUI
 
 			if (OnWindowDragged != null)
 				OnWindowDragged(this, oldPos, newPos);
+		}
+
+		/// <summary>
+		/// Default behavior: closes this window.
+		/// </summary>
+		protected virtual void Callback_MapCleared(GameLogic.Map theMap)
+		{
+			Destroy(gameObject);
 		}
 
 		#endregion

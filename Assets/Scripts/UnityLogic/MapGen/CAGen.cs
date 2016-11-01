@@ -200,7 +200,8 @@ namespace UnityLogic.MapGen
 				"tileChangeChances",
 				(MyData.Reader r, ref Keyframe outVal, string name) =>
 					{ r.Structure(kfs, name); outVal = kfs.Kf; },
-				(size) => new Keyframe[size]);
+				(size) => new Keyframe[size],
+				(i, _kfs, kf) => _kfs[i] = kf);
 			TileChangeChances.keys = keyframes;
 		}
 

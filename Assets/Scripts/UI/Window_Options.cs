@@ -15,9 +15,9 @@ namespace MyUI
 		public void Callback_Button_Quit()
 		{
 			//Ask the player for confirmation, and then quit the world.
-			ContentUI.Instance.CreateDialog(Localization.Get("WINDOW_CONFIRMQUIT_TITLE"),
-											Localization.Get("WINDOW_CONFIRMQUIT_MESSAGE"),
-											() => FSM.QuitWorld());
+			var wnd = ContentUI.Instance.CreateDialog(() => FSM.QuitWorld());
+			wnd.Label_Title.Key = "WINDOW_CONFIRMQUIT_TITLE";
+			wnd.Label_Message.Key = "WINDOW_CONFIRMQUIT_MESSAGE";
 		}
 	}
 }

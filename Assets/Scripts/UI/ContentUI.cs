@@ -98,9 +98,7 @@ namespace MyUI
 		/// Creates an "OK/Cancel"-type dialog.
 		/// Destroys it once an option was selected.
 		/// </summary>
-		public Window_ConfirmDialog CreateDialog(string title, string message,
-												 Action onConfirm, Action onDeny = null,
-												 string OK = null, string cancel = null)
+		public Window_ConfirmDialog CreateDialog(Action onConfirm, Action onDeny = null)
 		{
 			Action<Window_ConfirmDialog, bool> onDone = (_wnd, _result) =>
 			{
@@ -112,10 +110,7 @@ namespace MyUI
 				Destroy(_wnd.gameObject);
 			};
 
-			Window_ConfirmDialog wcd = (Window_ConfirmDialog)CreateWindow(Window_ConfirmDialog, onDone);
-			wcd.Init(title, message, OK, cancel);
-
-			return wcd;
+			return (Window_ConfirmDialog)CreateWindow(Window_ConfirmDialog, onDone);
 		}
 	}
 }
