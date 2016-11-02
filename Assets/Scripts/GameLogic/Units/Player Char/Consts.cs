@@ -11,92 +11,7 @@ namespace GameLogic.Units.Player_Char
 	[Serializable]
 	public class Consts : MyData.IReadWritable
 	{
-		public static Consts Instance = new Consts();
-		private Consts()
-		{
-			//Try to read the constants from a file.
-			const string fileName = "PlayerConsts.consts";
-			string filePath = Path.Combine(Application.dataPath, fileName);
-			if (File.Exists(filePath))
-			{
-				try
-				{
-					MyData.JSONReader reader = new MyData.JSONReader(filePath);
-					reader.Structure(this, "consts");
-				}
-				catch (MyData.Reader.ReadException e)
-				{
-					Debug.LogError("Error reading data file \"" + filePath + "\": " +
-								   e.Message + "||" + e.StackTrace);
-				}
-			}
-			//If we're in a standalone build and the file doesn't exist, create it.
-			else if (!Application.isEditor)
-			{
-				MyData.JSONWriter writer = null;
-				try
-				{
-					writer = new MyData.JSONWriter(filePath);
-					writer.Structure(this, "consts");
-				}
-				catch (MyData.Writer.WriteException e)
-				{
-					Debug.LogError("Error writing data file \"" + filePath + "\": " +
-									   e.Message + "||" + e.StackTrace);
-				}
-				finally
-				{
-					if (writer != null)
-						writer.Dispose();
-				}
-			}
-		}
-
-
-		public float MinStart_Food { get { return minStart_Food; } }
-		public float MaxStart_Food { get { return maxStart_Food; } }
-
-		public float MinStart_Energy { get { return minStart_Energy; } }
-		public float MaxStart_Energy { get { return maxStart_Energy; } }
-
-		public float MinStart_Strength { get { return minStart_Strength; } }
-		public float MaxStart_Strength { get { return maxStart_Strength; } }
-
-		public float InitialLowFoodThreshold { get { return initialLowFoodThreshold; } }
-
-		public float Max_Health { get { return max_health; } }
-
-		public float MaxFood(float strengthStat) { return maxFood.Evaluate(strengthStat); }
-		public float MaxEnergy(float strengthStat) { return maxEnergy.Evaluate(strengthStat); }
-
-		public float FoodLossPerTurn(float strengthStat) { return foodLossPerTurn.Evaluate(strengthStat); }
-		public float StarvationDamagePerTurn { get { return starvationDamagePerTurn; } }
-
-		public int MovesPerTurn { get { return movesPerTurn; } }
-
-
-		private float minStart_Food = 200.0f,
-					  maxStart_Food = 300.0f,
-					  minStart_Energy = 100.0f,
-					  maxStart_Energy = 200.0f,
-					  minStart_Strength = 0.0f,
-					  maxStart_Strength = 0.5f;
-
-		private float initialLowFoodThreshold = 25.0f;
-
-		private float max_health = 1.0f;
-
-		private float starvationDamagePerTurn = 0.2f;
-		
-		//Loss in food goes down as strength increases.
-		private AsymptoteValue foodLossPerTurn = new AsymptoteValue(0.2f, 0.0f, 2.0f);
-
-		//Maximum-possible energy and food go up as strength increases.
-		private ScaledValue maxFood = new ScaledValue(0.5f, 25.0f, 300.0f),
-							maxEnergy = new ScaledValue(0.5f, 50.0f, 200.0f);
-
-		private int movesPerTurn = 5;
-
+		#region Helper classes
 
 		/// <summary>
 		/// Represents a value that is calculated as ((Stat^exp) * scale) + offset, where:
@@ -189,6 +104,99 @@ namespace GameLogic.Units.Player_Char
 				Slope = reader.Float("slope");
 			}
 		}
+
+		#endregion
+
+
+		public static Consts Instance = new Consts();
+		private Consts()
+		{
+			//Try to read the constants from a file.
+			const string fileName = "PlayerConsts.consts";
+			string filePath = Path.Combine(Application.dataPath, fileName);
+			if (File.Exists(filePath))
+			{
+				try
+				{
+					MyData.JSONReader reader = new MyData.JSONReader(filePath);
+					reader.Structure(this, "consts");
+				}
+				catch (MyData.Reader.ReadException e)
+				{
+					Debug.LogError("Error reading data file \"" + filePath + "\": " +
+								   e.Message + "||" + e.StackTrace);
+				}
+			}
+			//If we're in a standalone build and the file doesn't exist, create it.
+			else if (!Application.isEditor)
+			{
+				MyData.JSONWriter writer = null;
+				try
+				{
+					writer = new MyData.JSONWriter(filePath);
+					writer.Structure(this, "consts");
+				}
+				catch (MyData.Writer.WriteException e)
+				{
+					Debug.LogError("Error writing data file \"" + filePath + "\": " +
+									   e.Message + "||" + e.StackTrace);
+				}
+				finally
+				{
+					if (writer != null)
+						writer.Dispose();
+				}
+			}
+		}
+
+
+		public float MinStart_Food { get { return minStart_Food; } }
+		public float MaxStart_Food { get { return maxStart_Food; } }
+
+		public float MinStart_Energy { get { return minStart_Energy; } }
+		public float MaxStart_Energy { get { return maxStart_Energy; } }
+
+		public float MinStart_Strength { get { return minStart_Strength; } }
+		public float MaxStart_Strength { get { return maxStart_Strength; } }
+
+		public float Max_Health { get { return max_health; } }
+
+		public float InitialLowFoodThreshold { get { return initialLowFoodThreshold; } }
+
+		public float MaxFood(float strengthStat) { return maxFood.Evaluate(strengthStat); }
+		public float MaxEnergy(float strengthStat) { return maxEnergy.Evaluate(strengthStat); }
+
+		public float FoodLossPerTurn(float strengthStat) { return foodLossPerTurn.Evaluate(strengthStat); }
+		public float StarvationDamagePerTurn { get { return starvationDamagePerTurn; } }
+
+		public int MovesPerTurn { get { return movesPerTurn; } }
+
+
+		#region Private fields
+
+		private float minStart_Food = 200.0f,
+					  maxStart_Food = 300.0f,
+					  minStart_Energy = 100.0f,
+					  maxStart_Energy = 200.0f,
+					  minStart_Strength = 0.0f,
+					  maxStart_Strength = 0.5f;
+
+		private float initialLowFoodThreshold = 25.0f;
+
+		private float max_health = 1.0f;
+
+		private float starvationDamagePerTurn = 0.2f;
+		
+		//Loss in food goes down as strength increases.
+		private AsymptoteValue foodLossPerTurn = new AsymptoteValue(0.2f, 0.0f, 2.0f);
+
+		//Maximum-possible energy and food go up as strength increases.
+		private ScaledValue maxFood = new ScaledValue(0.5f, 25.0f, 300.0f),
+							maxEnergy = new ScaledValue(0.5f, 50.0f, 200.0f);
+
+		private int movesPerTurn = 5;
+
+		#endregion
 
 
 		public void WriteData(MyData.Writer writer)

@@ -57,9 +57,12 @@ namespace UnityLogic
 			public string Name = "My World";
 			public int Size = 250;
 			public string Seed = "abc123";
+
 			public MapGen.BiomeGenSettings Biome = new MapGen.BiomeGenSettings();
+			public MapGen.DepositGenSettings Deposits = new MapGen.DepositGenSettings();
 			public MapGen.RoomGenSettings Rooms = new MapGen.RoomGenSettings();
 			public MapGen.CAGenSettings CA = new MapGen.CAGenSettings();
+			public MapGen.PlayerCharGenSettings PlayerChars = new MapGen.PlayerCharGenSettings();
 
 			public void ReadData(MyData.Reader reader)
 			{
@@ -68,8 +71,10 @@ namespace UnityLogic
 				Seed = reader.String("seed");
 
 				reader.Structure(Biome, "biome");
+				reader.Structure(Deposits, "deposits");
 				reader.Structure(Rooms, "rooms");
 				reader.Structure(CA, "ca");
+				reader.Structure(PlayerChars, "playerChars");
 			}
 			public void WriteData(MyData.Writer writer)
 			{
@@ -78,8 +83,10 @@ namespace UnityLogic
 				writer.String(Seed, "seed");
 
 				writer.Structure(Biome, "biome");
+				writer.Structure(Deposits, "deposits");
 				writer.Structure(Rooms, "rooms");
 				writer.Structure(CA, "ca");
+				writer.Structure(PlayerChars, "playerChars");
 			}
 		}
 
@@ -185,8 +192,7 @@ namespace UnityLogic
 		{
 			Map.Clear();
 			Progress = new WorldProgress();
-			CurrentState = new State_GenMap(true, Settings.Seed.GetHashCode(), NThreads,
-											Settings.Biome, Settings.Rooms, Settings.CA);
+			CurrentState = new State_GenMap(true, Settings.Seed.GetHashCode(), NThreads);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -195,8 +201,7 @@ namespace UnityLogic
 		{
 			Map.Clear();
 			Progress.Level += 1;
-			CurrentState = new State_GenMap(false, Settings.Seed.GetHashCode(), NThreads,
-											Settings.Biome, Settings.Rooms, Settings.CA);
+			CurrentState = new State_GenMap(false, Settings.Seed.GetHashCode(), NThreads);
 
             if (OnNewMap != null)
                 OnNewMap(Map);
@@ -219,8 +224,7 @@ namespace UnityLogic
 			{
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
             }
-
-			//TODO: See if fixing the following exploit isn't too painful: you could have units take more than one turn per turn by saving/quitting/reloading in the middle of the turn, because the newly-loaded "State_Turn" doesn't know who already took their turn before the game was saved.
+			
 			CurrentState = new State_Turn();
 
             if (OnNewMap != null)

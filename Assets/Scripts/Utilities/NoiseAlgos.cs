@@ -43,6 +43,20 @@ public struct PRNG
 		return (float)(NextInt() % b) / (float)b;
 	}
 
+	/// <summary>
+	/// Returns a random value between -1 and 1 with a roughly normal distribution,
+	///     a.k.a a Gaussian with the maximum at 0.
+	/// </summary>
+	public float NextFloat_Normal()
+	{
+		//Using the second approach from here:
+		//https://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
+		return (1.0f / 6.0f) *
+			   (NextFloat() + NextFloat() + NextFloat() + NextFloat() +
+			    NextFloat() + NextFloat() + NextFloat() + NextFloat() +
+				NextFloat() + NextFloat() + NextFloat() + NextFloat() - 6.0f);
+	}
+
 	public override int GetHashCode() { return Seed; }
 	public override bool Equals(object obj) { return (obj is PRNG && ((PRNG)obj).Seed == Seed); }
 }

@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace UnityLogic
 {
+	//TODO: Remove TestStruct and TestChar.
+
 	public class State_GenMap : GameFSM.State
 	{
 		/// <summary>
@@ -17,30 +19,19 @@ namespace UnityLogic
 		public int Seed;
 		public int NThreads;
 
-		public MapGen.BiomeGenSettings BiomeSettings;
-		public MapGen.RoomGenSettings RoomSettings;
-		public MapGen.CAGenSettings CASettings;
 
-
-		public State_GenMap(bool fromScratch, int seed, int nThreads,
-							MapGen.BiomeGenSettings biomeSettings,
-							MapGen.RoomGenSettings roomSettings,
-							MapGen.CAGenSettings caSettings)
+		public State_GenMap(bool fromScratch, int seed, int nThreads)
 		{
 			FromScratch = fromScratch;
 
 			Seed = seed;
 			NThreads = nThreads;
-
-			BiomeSettings = biomeSettings;
-			RoomSettings = roomSettings;
-			CASettings = caSettings;
 		}
 
 
 		public override void Start(GameFSM.State previousState)
 		{
-			RunGenerator();
+			RunGenerator(FSM.Settings, FSM.Progress, FSM.Map);
 
 			FSM.SaveWorld();
 
@@ -48,64 +39,74 @@ namespace UnityLogic
 			FSM.CurrentState = new State_Turn();
 		}
 
-		private void RunGenerator()
+		private void RunGenerator(GameFSM.WorldSettings settings, GameFSM.WorldProgress progress,
+								  GameLogic.Map map)
 		{
-			int mapSize = FSM.Settings.Size;
+			int mapSize = settings.Size;
 
 			//Run the generators.
-			var biomes = BiomeSettings.Generate(mapSize, mapSize, NThreads, Seed);
-			var rooms = RoomSettings.Generate(biomes, NThreads, Seed);
-			var ca = CASettings.Generate(biomes, rooms, NThreads, Seed);
+			var biomes = settings.Biome.Generate(mapSize, mapSize, NThreads, unchecked(Seed * 462315));
+			var deposits = settings.Deposits.Generate(mapSize, mapSize, NThreads, unchecked(Seed * 123));
+			var rooms = settings.Rooms.Generate(biomes, NThreads, Seed);
+			var finalWalls = settings.CA.Generate(biomes, rooms, NThreads, unchecked(Seed * 3468));
 
 			//Convert that to actual tiles.
 			GameLogic.TileTypes[,] tiles = new GameLogic.TileTypes[mapSize, mapSize];
 			for (int y = 0; y < mapSize; ++y)
+			{
 				for (int x = 0; x < mapSize; ++x)
+				{
 					if (y == 0 || y == mapSize - 1 || x == 0 || x == mapSize - 1)
 						tiles[x, y] = GameLogic.TileTypes.Bedrock;
-					else if (ca[x, y])
-						tiles[x, y] = GameLogic.TileTypes.Wall;
+					else if (finalWalls[x, y])
+						tiles[x, y] = (deposits[x, y] ? GameLogic.TileTypes.Deposit : GameLogic.TileTypes.Wall);
 					else
 						tiles[x, y] = GameLogic.TileTypes.Empty;
+				}
+			}
 
-			FSM.Map.Tiles = new GameLogic.TileGrid(tiles);
+			map.Tiles = new GameLogic.TileGrid(tiles);
+
+
+			//Choose a room and place the level's "entrance" into the middle of it.
+			List<Vector2i> entranceSpaces = new List<Vector2i>();
+			{
+				PRNG roomPlacer = new PRNG(unchecked(Seed * 8957));
+				Vector2i entrance = rooms[roomPlacer.NextInt() % rooms.Count].OriginalBounds.Center;
+				entrance = new Vector2i(Mathf.Clamp(entrance.x, 1, mapSize - 2),
+										Mathf.Clamp(entrance.y, 1, mapSize - 2));
+
+				//Carve a small circle out of the map for the entrance.
+				const float entranceRadius = 1.75f,
+							entranceRadiusSqr = entranceRadius * entranceRadius;
+				int entranceRadiusCeil = Mathf.CeilToInt(entranceRadius);
+				Vector2i entranceRegionMin = entrance - new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil),
+						 entranceRegionMax = entrance + new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil);
+				entranceRegionMin = new Vector2i(Mathf.Clamp(entranceRegionMin.x, 0, mapSize - 1),
+												 Mathf.Clamp(entranceRegionMin.y, 0, mapSize - 1));
+				entranceRegionMax = new Vector2i(Mathf.Clamp(entranceRegionMax.x, 0, mapSize - 1),
+												 Mathf.Clamp(entranceRegionMax.y, 0, mapSize - 1));
+
+				for (int y = entranceRegionMin.y; y <= entranceRegionMax.y; ++y)
+					for (int x = entranceRegionMin.x; x <= entranceRegionMax.x; ++x)
+						if (entrance.DistanceSqr(new Vector2i(x, y)) < entranceRadiusSqr)
+						{
+							entranceSpaces.Add(new Vector2i(x, y));
+							map.Tiles[x, y] = GameLogic.TileTypes.Empty;
+						}
+			}
 
 			//Generate units.
-			if (FromScratch)
-			{
-				//Some debug units:
-				Vector2i firstPos, secondPos;
-				var emptyTiles = FSM.Map.Tiles.GetTiles((pos, tile) => tile == GameLogic.TileTypes.Empty);
-				firstPos = emptyTiles.First();
-				secondPos = emptyTiles.Skip(1).First();
-				FSM.Map.Units.Add(new GameLogic.Units.TestChar(FSM.Map, firstPos));
-				FSM.Map.Units.Add(new GameLogic.Units.TestStructure(FSM.Map, secondPos));
+			var newUnits = settings.PlayerChars.Generate(
+							   entranceSpaces,
+							   (FromScratch ? null : progress.ExitedUnits),
+							   FSM.Map, NThreads, Seed);
+			progress.ExitedUnits.Clear();
 
-				//TODO: Generate actual units.
-			}
-			else
-			{
-				//Clone each unit and store it in a dictionary.
-				Dictionary<GameLogic.Unit, GameLogic.Unit> oldUnitToNewUnit =
-					new Dictionary<GameLogic.Unit, GameLogic.Unit>();
-				foreach (GameLogic.Unit unit in FSM.Progress.ExitedUnits)
-					oldUnitToNewUnit.Add(unit, unit.Clone(FSM.Map));
 
-				//Give each new unit the proper allies/enemies.
-				foreach (KeyValuePair<GameLogic.Unit, GameLogic.Unit> kvp in oldUnitToNewUnit)
-				{
-					foreach (GameLogic.Unit oldAlly in kvp.Key.Allies)
-						kvp.Value.Allies.Add(oldUnitToNewUnit[oldAlly]);
-					foreach (GameLogic.Unit oldEnemy in kvp.Key.Enemies)
-						kvp.Value.Enemies.Add(oldUnitToNewUnit[oldEnemy]);
-				}
-
-				//Finally, add all the new units to the map.
-				foreach (GameLogic.Unit newUnit in oldUnitToNewUnit.Values)
-					FSM.Map.Units.Add(newUnit);
-				
-				FSM.Progress.ExitedUnits.Clear();
-			}
+			//TODO: Make the camera focus in on the units. Provide some kind of "ZoomToUnits()" method on the Content2D/3D classes.
 		}
 	}
 }

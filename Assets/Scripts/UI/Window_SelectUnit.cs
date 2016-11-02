@@ -20,8 +20,7 @@ namespace MyUI
 
 			UnityEngine.Assertions.Assert.IsTrue(Target.Count > 0, "No items to select from");
 			TilePos = Target.First().Pos;
-
-			FSM.Map.OnMapCleared += Callback_MapCleared;
+			
 			FSM.Map.Units.OnElementAdded += Callback_NewUnit;
 			FSM.Map.Units.OnElementRemoved += Callback_UnitDies;
 			FSM.Map.Units.OnUnitMoved += Callback_UnitMoves;
@@ -33,7 +32,6 @@ namespace MyUI
 			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
 			if (UnityLogic.GameFSM.InstanceExists)
 			{
-				FSM.Map.OnMapCleared -= Callback_MapCleared;
 				FSM.Map.Units.OnElementAdded -= Callback_NewUnit;
 				FSM.Map.Units.OnElementRemoved -= Callback_UnitDies;
 				FSM.Map.Units.OnUnitMoved -= Callback_UnitMoves;
@@ -66,8 +64,9 @@ namespace MyUI
 			}
 		}
 
-		public void Callback_MapCleared(GameLogic.Map map)
+		protected override void Callback_MapCleared(GameLogic.Map map)
 		{
+			base.Callback_MapCleared(map);
 			Callback_Button_Close();
 		}
 

@@ -81,7 +81,7 @@ namespace Rendering.TwoD
 			Vector2 texel_TileSize = texel * tileAtlasSize,
 					texel_Border = texel * tileAtlasBorder,
 					texel_Spacing = texel * tileAtlasSpacing;
-			int nTilesY = (tileAtlas.texture.height - tileAtlasBorder - tileAtlasBorder) / tileAtlasSize;
+			int nTilesY = tileAtlas.texture.height / (tileAtlasSize + tileAtlasBorder + tileAtlasBorder);
 			for (int i = 0; i < tileAtlases.Length; ++i)
 			{
 				//Make sure no duplicate tiles exist in the atlas array.
@@ -90,7 +90,7 @@ namespace Rendering.TwoD
 						Debug.LogError("Tile atlases " + i + " and " + j + " use the same tile type");
 
 				Rect texR = new Rect(texel_Border.x + (tileAtlases[i].TileX * (texel_Spacing.x + texel_TileSize.x)),
-									 texel_Border.y + ((nTilesY - tileAtlases[i].TileY) * (texel_Spacing.y + texel_TileSize.y)),
+									 texel_Border.y + ((nTilesY - tileAtlases[i].TileY - 1) * (texel_Spacing.y + texel_TileSize.y)),
 									 texel_TileSize.x, texel_TileSize.y);
 				tileTypeToMaterialParam.Add(tileAtlases[i].TileType,
 											new Color(texR.xMin, texR.yMin,

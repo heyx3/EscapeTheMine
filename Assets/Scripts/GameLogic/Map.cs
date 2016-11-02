@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace GameLogic
 {
+	//TODO: Make the map hold a set of "Group"s instead of bare "Unit"s. Each Group has a "turn priority" int, and a "bool TakeNextTurn()". This allows us to make special "Group"s later on that have high-level stuff all their units work toward. Also make allies/enemies at the Group level. The Player Group will now contain the global jobs. This also nicely moves turn-taking meta into the GameLogic namespace where it belongs.
+
 	public class Map : MyData.IReadWritable
 	{
 		public event Action<Map> OnMapCleared;

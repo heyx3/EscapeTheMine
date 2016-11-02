@@ -63,20 +63,21 @@ namespace GameLogic.Units
 		private Player_Char.Job currentlyDoing = null;
 
 
-		public PlayerChar(Map newOwner, float food, float energy, float health, float strength)
+		public PlayerChar(Map newOwner, float food, float energy, float strength)
 			: base(newOwner, Teams.Player)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
 			Energy = new Stat<float, PlayerChar>(this, energy);
-			Health = new Stat<float, PlayerChar>(this, health);
 			Strength = new Stat<float, PlayerChar>(this, strength);
+
+			Health = new Stat<float, PlayerChar>(this, Consts.Max_Health);
 
 			LowFoodThreshold =
 				new Stat<float, PlayerChar>(this, Consts.InitialLowFoodThreshold);
 
 			Career = new Player_Char.JobQualifications(this);
 		}
-		public PlayerChar(Map newOwner) : this(newOwner, 0.0f, 0.0f, 0.0f, 0.0f) { }
+		public PlayerChar(Map newOwner) : this(newOwner, 0.0f, 0.0f, 0.0f) { }
 
 		protected PlayerChar(Map newOwner, PlayerChar copyFrom)
 			: base(newOwner, copyFrom)

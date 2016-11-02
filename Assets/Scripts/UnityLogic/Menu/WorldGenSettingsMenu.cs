@@ -7,11 +7,16 @@ using UnityEngine;
 
 namespace UnityLogic
 {
+	//TODO: Use a tab-based system for this window -- one tab for each generator setting class.
+
 	public class WorldGenSettingsMenu : Singleton<WorldGenSettingsMenu>
 	{
-		public UnityLogic.MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.Settings.Biome; } }
-		public UnityLogic.MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.Settings.Rooms; } }
-		public UnityLogic.MapGen.CAGenSettings CA {  get { return GameFSM.Instance.Settings.CA; } }
+		public MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.Settings.Biome; } }
+		public MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.Settings.Rooms; } }
+		public MapGen.CAGenSettings CA { get { return GameFSM.Instance.Settings.CA; } }
+		public MapGen.DepositGenSettings Deposit { get { return GameFSM.Instance.Settings.Deposits; } }
+		public MapGen.PlayerCharGenSettings PlayerChars {  get { return GameFSM.Instance.Settings.PlayerChars; } }
+
 
 		[SerializeField]
 		private UnityEngine.UI.Text ui_Message,

@@ -28,6 +28,8 @@ public struct RectI
 	public Vector2i MinXMaxY { get { return new Vector2i(MinX, MaxY); } }
 	public Vector2i MaxXMinY { get { return new Vector2i(MaxX, MinY); } }
 
+	public Vector2i Center { get { return new Vector2i(MinX + (SizeX / 2), MinY + (SizeY / 2)); } }
+
 	
 	public RectI(int minX, int minY, int sizeX, int sizeY)
 	{

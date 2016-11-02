@@ -29,15 +29,16 @@ namespace UnityLogic.MapGen
 	[Serializable]
 	public class BiomeGenSettings : MyData.IReadWritable
 	{
-		public NoiseOctaves Noise = new NoiseOctaves();
+		public NoiseOctaves Noise = new NoiseOctaves(3, 0.1f, 0.5f);
 
 		public BiomeTile[,] Generate(int sizeX, int sizeY, int nThreads, int seed)
 		{
 			BiomeTile[,] tiles = new BiomeTile[sizeX, sizeY];
 
-			Func<Vector2, float, float> sampler = (pos, scale) =>
-				NoiseAlgos2D.LinearNoise(pos * scale);
+			Func<Vector3, float, float> sampler = (pos, scale) =>
+				NoiseAlgos3D.LinearNoise(pos * scale);
 
+			float seedF = (float)seed;
 			ThreadedRunner.Run(nThreads, sizeY,
 				(startY, endY) =>
 				{
@@ -49,7 +50,8 @@ namespace UnityLogic.MapGen
 							float xF = (float)x;
 
 							tiles[x, y] = new BiomeTile();
-							tiles[x, y].CaveSmoothness = Noise.Sample(new Vector2(xF, yF), sampler);
+							tiles[x, y].CaveSmoothness = Noise.Sample(new Vector3(xF, yF, seedF),
+																	  sampler);
 						}
 					}
 				});

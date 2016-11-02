@@ -9,8 +9,7 @@ namespace GameLogic
 	public enum TileTypes
 	{
 		Empty = 0,
-		Wall, Bedrock,
-		Entrance, Exit,
+		Wall, Deposit, Bedrock,
 	}
 
 	public static class TileTypesExtensions
@@ -22,9 +21,8 @@ namespace GameLogic
 		{
 			{ TileTypes.Empty, false },
 			{ TileTypes.Wall, true },
+			{ TileTypes.Deposit, true },
 			{ TileTypes.Bedrock, true },
-			{ TileTypes.Entrance, false },
-			{ TileTypes.Exit, false },
 		};
 		#endregion
 	}
@@ -61,12 +59,13 @@ namespace GameLogic
 			set
 			{
 				TileTypes oldVal = this[tilePos];
-				this[tilePos] = value;
+				grid[tilePos.x, tilePos.y] = value;
 
 				if (OnTileChanged != null)
 					OnTileChanged(this, tilePos, oldVal, value);
 			}
 		}
+		public TileTypes this[int x, int y] { get { return this[new Vector2i(x, y)]; } set { this[new Vector2i(x, y)] = value; } }
 
 
 		public TileGrid(TileTypes[,] _grid)

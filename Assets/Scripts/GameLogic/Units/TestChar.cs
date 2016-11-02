@@ -95,10 +95,9 @@ namespace GameLogic.Units
 			switch (tile)
 			{
 				case TileTypes.Empty:
-				case TileTypes.Exit:
-				case TileTypes.Entrance:
 					return true;
 				case TileTypes.Wall:
+				case TileTypes.Deposit:
 				case TileTypes.Bedrock:
 					return false;
 				default: throw new NotImplementedException(tile.ToString());
