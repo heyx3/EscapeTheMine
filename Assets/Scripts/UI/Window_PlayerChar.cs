@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using GameLogic;
+using GameLogic.Units.Player_Char;
+
 
 namespace MyUI
 {
@@ -14,7 +17,7 @@ namespace MyUI
 		}
 		private static string FormatHealth(float f)
 		{
-			float maxHealth = GameLogic.Units.Player_Char.Consts.Instance.Max_Health;
+			float maxHealth = Consts.Instance.Max_Health;
 			int healthPercent = Mathf.RoundToInt(100.0f * f / maxHealth);
 			return healthPercent.ToString() + "%";
 		}
@@ -31,7 +34,56 @@ namespace MyUI
 		public Localizer Label_FoodValue, Label_HealthValue,
 						 Label_EnergyValue, Label_StrengthValue;
 
+
+		#region Helper types/field for Editor serialization of tabTypeToObj
+		public enum TabTypes
+		{
+			JobSelection,
+			Stats,
+		}
+		[Serializable]
+		private class TabTypeAndObj
+		{
+			public TabTypes Type;
+			public UITab Obj;
+			public TabTypeAndObj() { }
+			public TabTypeAndObj(TabTypes t, UITab o) { Type = t; Obj = o; }
+		}
+		[SerializeField]
+		private List<TabTypeAndObj> tabs = new List<TabTypeAndObj>()
+		{
+			new TabTypeAndObj(TabTypes.JobSelection, null),
+			new TabTypeAndObj(TabTypes.Stats, null),
+		};
+		#endregion
+
+		[SerializeField]
+		private TabTypes firstTab = TabTypes.Stats;
+
+		private Dictionary<TabTypes, UITab> tabTypeToObj;
+
 		
+		public void SwitchToTab(TabTypes type)
+		{
+			foreach (var kvp in tabTypeToObj)
+				if (kvp.Key == type)
+					kvp.Value.SelectMe();
+				else
+					kvp.Value.DeselectMe();
+		}
+
+		protected override void Awake()
+		{
+			base.Awake();
+
+			tabTypeToObj = new Dictionary<TabTypes, UITab>();
+			foreach (var tabTypeAndObj in tabs)
+			{
+				tabTypeToObj.Add(tabTypeAndObj.Type, tabTypeAndObj.Obj);
+				tabTypeAndObj.Obj.OnClicked += Callback_TabClicked;
+			}
+			tabs = null;
+		}
 		private void Start()
 		{
 			Target.Food.OnChanged += OnFoodChanged;
@@ -49,6 +101,8 @@ namespace MyUI
 			Target.Strength.OnChanged += OnStrengthChanged;
 			Label_StrengthValue.Args = new object[] { FormatStrength(Target.Strength.Value) };
 			OnStrengthChanged(Target, Target.Strength, Target.Strength);
+
+			SwitchToTab(firstTab);
 		}
 		protected override void OnDestroy()
 		{
@@ -79,6 +133,34 @@ namespace MyUI
 		{
 			Label_StrengthValue.Args[0] = FormatStrength(newVal);
 			Label_StrengthValue.OnValidate();
+		}
+
+		public void Callback_TabClicked(UITab tab)
+		{
+			//Find the type of tab that was clicked on and select it.
+			foreach (var kvp in tabTypeToObj)
+				if (kvp.Value == tab)
+				{
+					SwitchToTab(kvp.Key);
+					return;
+				}
+
+			throw new ArgumentException(tab.name);
+		}
+
+		public void Callback_NewJob_MoveToPos()
+		{
+			//Ask the player to select a tile to move to.
+			var data = new Window_SelectTile.TileSelectionData(
+				(tilePos) =>
+				{
+					if (tilePos.HasValue)
+						Target.AddJob(new Job_MoveToPos(tilePos.Value, false, FSM.Map)); //TODO: Optionally make it an emergency.
+				},
+				(tilePos) => { return !FSM.Map.Tiles[tilePos].BlocksMovement(); },
+				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
+
+			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
 	}
 }

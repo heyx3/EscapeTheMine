@@ -10,18 +10,18 @@ using System.Text;
 /// </summary>
 public class CancelableEvent<EventDataType>
 {
-    private List<Func<object, EventDataType, bool>> toRaise = new List<Func<object, EventDataType, bool>>();
+    private List<Func<EventDataType, bool>> toRaise = new List<Func<EventDataType, bool>>();
 
 
     /// <summary>
     /// Adds a new responder to the event that gets executed before all current responders.
     /// If it returns "true", it will prevent the event from reaching those other responders.
     /// </summary>
-    public void Add(Func<object, EventDataType, bool> newResponder)
+    public void Add(Func<EventDataType, bool> newResponder)
     {
         toRaise.Add(newResponder);
     }
-    public void Remove(Func<object, EventDataType, bool> responder)
+    public void Remove(Func<EventDataType, bool> responder)
     {
         toRaise.Remove(responder);
     }
@@ -33,7 +33,7 @@ public class CancelableEvent<EventDataType>
     public bool Raise(EventDataType data)
     {
         for (int i = toRaise.Count - 1; i >= 0; --i)
-            if (toRaise[i](this, data))
+            if (toRaise[i](data))
                 return true;
         return false;
     }

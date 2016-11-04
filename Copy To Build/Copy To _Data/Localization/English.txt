@@ -1,4 +1,4 @@
-	## NOTE -- any line without a colon in it is ignored.
+## NOTE -- any line without a colon in it is ignored.
 ## This essentially allows for "comments" like this one.
 ## The double-pound sign at the beginning of comments is just to make them stand out.
 
@@ -10,6 +10,8 @@ INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
 ## Dialogs and windows
 DIALOG_DEFAULT_OK:OK
 DIALOG_DEFAULT_CANCEL:Cancel
+DIALOG_SELECTTILE_SELECT:Select
+DIALOG_SELECTTILE_CANCEL:Cancel
 WINDOW_CONFIRMQUIT_TITLE:Quit?
 WINDOW_CONFIRMQUIT_MESSAGE:Are you sure you want to quit?\nMake sure to save first!
 WINDOW_OPTIONS_TITLE:Options
@@ -20,6 +22,11 @@ WINDOW_PLAYERCHAR_FOODAMNT:Food: {0}
 WINDOW_PLAYERCHAR_STRENGTHAMNT:Strength: {0}
 WINDOW_PLAYERCHAR_ENERGYAMNT:Energy: {0}
 WINDOW_PLAYERCHAR_HEALTHAMNT:Health: {0}
+WINDOW_PLAYERCHAR_TAB_NEWJOBS:Add Job
+WINDOW_PLAYERCHAR_TAB_STATS:Stats
+WINDOW_PLAYERCHAR_BUTTON_NEWJOB_MOVETOPOS:Move to Tile
+WINDOW_MOVETOPOS_TITLE:Choose Destination
+WINDOW_MOVETOPOS_MESSAGE:Click on the destination to move to.
 WINDOW_UNITSELECTOR_TITLE:Select Unit
 
 ## Main Menu

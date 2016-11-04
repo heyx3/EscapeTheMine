@@ -13,6 +13,7 @@ namespace MyUI
 		/// </summary>
 		public GameObject Window_Options,
 						  Window_SelectUnit,
+						  Window_SelectTile,
 
 						  Window_ConfirmDialog,
 
@@ -39,7 +40,6 @@ namespace MyUI
 		/// Closes any other windows that are editing the same target.
 		/// </summary>
 		public Window<T> CreateWindow<T>(GameObject prefab, T target)
-			where T : class
 		{
 			GameObject go = Instantiate(prefab);
 
