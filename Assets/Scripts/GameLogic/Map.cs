@@ -6,15 +6,14 @@ using UnityEngine;
 
 namespace GameLogic
 {
-	//TODO: Make the map hold a set of "Group"s instead of bare "Unit"s. Each Group has a "turn priority" int, and a "bool TakeNextTurn()". This allows us to make special "Group"s later on that have high-level stuff all their units work toward. Also make allies/enemies at the Group level. The Player Group will now contain the global jobs. This also nicely moves turn-taking meta into the GameLogic namespace where it belongs.
-
 	public class Map : MyData.IReadWritable
 	{
 		public event Action<Map> OnMapCleared;
 
-		public UnitSet Units;
-		public GlobalJobs Jobs;
+		public Group.GroupSet Groups;
 		public TileGrid Tiles;
+
+        public Stat<bool, Map> IsPaused;
 
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
@@ -25,9 +24,10 @@ namespace GameLogic
 
 		public Map(int mapSizeX, int mapSizeY)
 		{
-			Units = new UnitSet(this);
+            Groups = new Group.GroupSet(this);
 			Tiles = new TileGrid(mapSizeX, mapSizeY);
-			Jobs = new GlobalJobs(this);
+
+            IsPaused = new Stat<bool, Map>(this, false);
 
 			pathingGraph = new Graph(this);
 			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
@@ -35,12 +35,13 @@ namespace GameLogic
 			RegisterCallbacks();
 		}
 		public Map(TileTypes[,] tileGrid)
-		{
-			Units = new UnitSet(this);
-			Tiles = new TileGrid(tileGrid);
-			Jobs = new GlobalJobs(this);
+        {
+            Groups = new Group.GroupSet(this);
+            Tiles = new TileGrid(tileGrid);
 
-			pathingGraph = new Graph(this);
+            IsPaused = new Stat<bool, Map>(this, false);
+
+            pathingGraph = new Graph(this);
 			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
 
 			RegisterCallbacks();
@@ -49,8 +50,8 @@ namespace GameLogic
 
 		private void RegisterCallbacks()
 		{
-			Units.OnElementAdded += OnUnitAdded;
-			Units.OnElementRemoved += OnUnitRemoved;
+            Groups.OnElementAdded += OnGroupAdded;
+            Groups.OnElementRemoved += OnGroupRemoved;
 		}
 
 
@@ -62,6 +63,18 @@ namespace GameLogic
 			return (posToUnits.ContainsKey(tilePos) ?
 						posToUnits[tilePos] :
 						emptyUnitList);
+		}
+
+		/// <summary>
+		/// Wipes out all units and jobs.
+		/// </summary>
+		public void Clear()
+		{
+			Groups.Clear();
+            IsPaused.Value = true;
+
+			if (OnMapCleared != null)
+				OnMapCleared(this);
 		}
 
 		/// <summary>
@@ -105,38 +118,36 @@ namespace GameLogic
 		}
 		private List<Vector2i> tempPath = new List<Vector2i>();
 
-		/// <summary>
-		/// Wipes out all units and jobs.
-		/// </summary>
-		public void Clear()
+        #region Serialization
+
+        public void WriteData(MyData.Writer writer)
 		{
-			Units.Clear();
-			Jobs.Clear();
-
-			if (OnMapCleared != null)
-				OnMapCleared(this);
-		}
-
-
-		//Serialization stuff:
-		public void WriteData(MyData.Writer writer)
-		{
-			writer.Structure(Units, "units");
+			writer.Structure(Groups, "groups");
 			writer.Structure(Tiles, "tiles");
-			writer.Structure(Jobs, "jobs");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
 			Clear();
 
-			reader.Structure(Units, "units");
+			reader.Structure(Groups, "groups");
 			reader.Structure(Tiles, "tiles");
-			reader.Structure(Jobs, "jobs");
 		}
+        
+        #endregion
 
+        #region Callbacks
 
-		#region Callbacks
-		
+        private void OnGroupAdded(LockedSet<Group> groups, Group group)
+        {
+            group.Units.OnElementAdded += OnUnitAdded;
+            group.Units.OnElementRemoved += OnUnitRemoved;
+        }
+        private void OnGroupRemoved(LockedSet<Group> groups, Group group)
+        {
+            group.Units.OnElementAdded -= OnUnitAdded;
+            group.Units.OnElementRemoved -= OnUnitRemoved;
+        }
+
 		private void OnUnitAdded(LockedSet<Unit> units, Unit unit)
 		{
 			//Add the unit to the "posToUnits" lookup.

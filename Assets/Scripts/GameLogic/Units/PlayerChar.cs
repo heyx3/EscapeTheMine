@@ -25,11 +25,10 @@ namespace GameLogic.Units
 			Graph.AStarEdgeCalc(goal, edge, out edgeLength, out heuristic);
 
             //Subtract enemy distances squared from the heuristic.
-            foreach (Unit enemy in Enemies)
-                heuristic -= enemy.Pos.Value.DistanceSqr(Pos);
+            foreach (ulong enemyGroupID in MyGroup.EnemiesByID)
+                foreach (Unit enemyUnit in TheMap.Groups.Get(enemyGroupID).Units)
+                    heuristic -= enemyUnit.Pos.Value.DistanceSqr(Pos);
 		}
-
-		private Player_Char.Consts Consts {  get { return Player_Char.Consts.Instance; } }
 
 
 		/// <summary>
@@ -63,36 +62,21 @@ namespace GameLogic.Units
 		private Player_Char.Job currentlyDoing = null;
 
 
-		public PlayerChar(Map newOwner, float food, float energy, float strength)
-			: base(newOwner, Teams.Player)
+		public PlayerChar(Group group, float food, float energy, float strength)
+			: base(group)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
 			Energy = new Stat<float, PlayerChar>(this, energy);
 			Strength = new Stat<float, PlayerChar>(this, strength);
 
-			Health = new Stat<float, PlayerChar>(this, Consts.Max_Health);
+			Health = new Stat<float, PlayerChar>(this, Player_Char.Consts.Max_Health);
 
 			LowFoodThreshold =
-				new Stat<float, PlayerChar>(this, Consts.InitialLowFoodThreshold);
+				new Stat<float, PlayerChar>(this, Player_Char.Consts.InitialLowFoodThreshold);
 
 			Career = new Player_Char.JobQualifications(this);
 		}
-		public PlayerChar(Map newOwner) : this(newOwner, 0.0f, 0.0f, 0.0f) { }
-
-		protected PlayerChar(Map newOwner, PlayerChar copyFrom)
-			: base(newOwner, copyFrom)
-		{
-			Food = new Stat<float, PlayerChar>(this, copyFrom.Food);
-			Energy = new Stat<float, PlayerChar>(this, copyFrom.Energy);
-			Health = new Stat<float, PlayerChar>(this, copyFrom.Health);
-			Strength = new Stat<float, PlayerChar>(this, copyFrom.Strength);
-
-			Career = new Player_Char.JobQualifications(this);
-		}
-		public override Unit Clone(Map newOwner)
-		{
-			return new PlayerChar(newOwner, this);
-		}
+		public PlayerChar(Group group) : this(group, 0.0f, 0.0f, 0.0f) { }
 
 
 		public override System.Collections.IEnumerable TakeTurn()
@@ -100,13 +84,13 @@ namespace GameLogic.Units
 			//Lose food over time.
 			if (Food > 0.0f)
 			{
-				float newFood = Food - Consts.FoodLossPerTurn(Strength);
+				float newFood = Food - Player_Char.Consts.FoodLossPerTurn(Strength);
 				Food.Value = Mathf.Max(0.0f, newFood);
 			}
 			//If no food is left, lose health over time (i.e. starvation).
 			else
 			{
-				float newHealth = Health - Consts.StarvationDamagePerTurn;
+				float newHealth = Health - Player_Char.Consts.StarvationDamagePerTurn;
 				if (newHealth <= 0.0f)
 				{
 					Health.Value = 0.0f;

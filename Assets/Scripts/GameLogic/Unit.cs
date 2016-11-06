@@ -12,62 +12,24 @@ namespace GameLogic
 	/// </summary>
 	public abstract class Unit : MyData.IReadWritable
 	{
-		/// <summary>
-		/// NOTE: This enum only determines turn order, not allies/enemies!
-		/// </summary>
-		public enum Teams
-		{
-			Player,
-			Environment,
-			Monsters,
-		}
-		
-
-		/// <summary>
-		/// NOTE: This value only determines turn order, not allies/enemies!
-		/// </summary>
-		public Stat<Teams, Unit> Team { get; private set; }
-
 		public Stat<Vector2i, Unit> Pos { get; private set; }
 
-		public UnitSet Allies, Enemies;
-		
-		public Map TheMap { get; private set; }
+        public Group MyGroup { get; private set; }
+        public Map TheMap { get { return MyGroup.TheMap; } }
 
 
-		public Unit(Map map, Teams team) : this(map, team, new Vector2i(-1, -1)) { }
-		public Unit(Map map, Teams team, Vector2i pos)
+		public Unit(Group g) : this(g, new Vector2i(-1, -1)) { }
+		public Unit(Group g, Vector2i pos)
 		{
-			Team = new Stat<Teams, Unit>(this, team);
+            MyGroup = g;
 			Pos = new Stat<Vector2i, Unit>(this, pos);
-
-			TheMap = map;
-
-			Allies = new UnitSet(TheMap);
-			Allies.OnElementAdded += (allies, ally) =>
-				{
-					Enemies.Remove(ally);
-				};
-
-			Enemies = new UnitSet(TheMap);
-			Enemies.OnElementAdded += (enemies, enemy) =>
-				{
-					Allies.Remove(enemy);
-				};
 		}
 
-		protected Unit(Map map, Unit copyFrom)
+		protected Unit(Group g, Unit copyFrom)
 		{
-			TheMap = map;
-			Team = copyFrom.Team;
+            MyGroup = g;
 			Pos = copyFrom.Pos;
 		}
-
-		/// <summary>
-		/// Creates a clone of this unit that belongs to the given map.
-		/// Note that this does NOT copy over events or allies/enemies.
-		/// </summary>
-		public abstract Unit Clone(Map newOwner);
 
 
 		/// <summary>
@@ -110,12 +72,10 @@ namespace GameLogic
 
 		public virtual void WriteData(MyData.Writer writer)
 		{
-			writer.Int((int)Team.Value, "team");
 			writer.Vec2i(Pos, "pos");
 		}
 		public virtual void ReadData(MyData.Reader reader)
 		{
-			Team.Value = (Teams)reader.Int("team");
 			Pos.Value = reader.Vec2i("pos");
 		}
 
@@ -128,7 +88,6 @@ namespace GameLogic
 		public Map Owner { get; private set; }
 
 		public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
-		public event Action<UnitSet, Unit, Unit.Teams, Unit.Teams> OnUnitTeamChanged;
 
 
 		public UnitSet(Map owner)
@@ -146,16 +105,10 @@ namespace GameLogic
 		private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
 		{
 			u.Pos.OnChanged += Callback_UnitMoved;
-			u.Team.OnChanged += Callback_UnitTeamChanged;
 		}
 		private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
 		{
 			u.Pos.OnChanged -= Callback_UnitMoved;
-		}
-		private void Callback_UnitTeamChanged(Unit u, Unit.Teams oldTeam, Unit.Teams newTeam)
-		{
-			if (OnUnitTeamChanged != null)
-				OnUnitTeamChanged(this, u, oldTeam, newTeam);
 		}
 		private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
 		{

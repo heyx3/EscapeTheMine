@@ -11,104 +11,7 @@ namespace GameLogic.Units.Player_Char
 	[Serializable]
 	public class Consts : MyData.IReadWritable
 	{
-		#region Helper classes
-
-		/// <summary>
-		/// Represents a value that is calculated as ((Stat^exp) * scale) + offset, where:
-		/// "Stat" is some stat, like "Strength", whose value strongly influences this value.
-		/// "exp" is an exponent that affects how quickly the stat grows.
-		/// "scale" is a scale that adjusts how the input stat maps to the output value.
-		/// "offset" is the "base" stat that you get when X is 0.
-		/// </summary>
-		[Serializable]
-		public class ScaledValue : MyData.IReadWritable
-		{
-			public float Exp, Scale, Offset;
-
-			public ScaledValue(float exp, float scale, float offset)
-			{
-				Exp = exp;
-				Scale = scale;
-				Offset = offset;
-			}
-
-			public float Evaluate(float stat, float? min = null, float? max = null)
-			{
-				float result = Offset + (Scale * Mathf.Pow(stat, Exp));
-
-				if (min.HasValue)
-					result = Math.Max(result, min.Value);
-				if (max.HasValue)
-					result = Math.Min(result, max.Value);
-
-				return result;
-			}
-			public void WriteData(MyData.Writer writer)
-			{
-				writer.Float(Exp, "exp");
-				writer.Float(Scale, "scale");
-				writer.Float(Offset, "offset");
-			}
-			public void ReadData(MyData.Reader reader)
-			{
-				Exp = reader.Float("exp");
-				Scale = reader.Float("scale");
-				Offset = reader.Float("offset");
-			}
-		}
-		/// <summary>
-		/// Represents a value that asymptotically approaches some "boundary" value
-		///     from above or below as a stat (e.x. "Strength") increases.
-		/// The actual basic function used is (1/(x + 1)) - 1.
-		/// </summary>
-		[Serializable]
-		public class AsymptoteValue : MyData.IReadWritable
-		{
-			/// <summary>
-			/// "Start" is the value when the stat is 0.
-			/// "End" is the value when the stat is infinity
-			///     (note: if the stat is actually float.PositiveInfinity, it will NOT result in "End").
-			/// </summary>
-			public float Start, End;
-			/// <summary>
-			/// The larger the value, the more extreme the initial departure from the starting value.
-			/// </summary>
-			public float Slope;
-
-			public AsymptoteValue(float start, float end, float slope)
-			{
-				Start = start;
-				End = end;
-				Slope = slope;
-			}
-
-			public float Evaluate(float stat)
-			{
-				//Figured out how to do this thanks to Wolfram Alpha.
-
-				//Asymptotic growth from 0 towards 1 based on "stat".
-				float t = -((1.0f / ((stat * Slope) + 1.0f)) - 1.0f);
-				//Manual lerp to skip Unity's automatic clamp in Mathf.Lerp().
-				return Start + ((End - Start) * t);
-			}
-			public void WriteData(MyData.Writer writer)
-			{
-				writer.Float(Start, "start");
-				writer.Float(End, "end");
-				writer.Float(Slope, "slope");
-			}
-			public void ReadData(MyData.Reader reader)
-			{
-				Start = reader.Float("start");
-				End = reader.Float("end");
-				Slope = reader.Float("slope");
-			}
-		}
-
-		#endregion
-
-
-		public static Consts Instance = new Consts();
+		private static Consts instance = new Consts();
 		private Consts()
 		{
 			//Try to read the constants from a file.
@@ -147,29 +50,31 @@ namespace GameLogic.Units.Player_Char
 						writer.Dispose();
 				}
 			}
+
+            instance = this;
 		}
 
 
-		public float MinStart_Food { get { return minStart_Food; } }
-		public float MaxStart_Food { get { return maxStart_Food; } }
+		public static float MinStart_Food { get { return instance.minStart_Food; } }
+		public static float MaxStart_Food { get { return instance.maxStart_Food; } }
 
-		public float MinStart_Energy { get { return minStart_Energy; } }
-		public float MaxStart_Energy { get { return maxStart_Energy; } }
+		public static float MinStart_Energy { get { return instance.minStart_Energy; } }
+		public static float MaxStart_Energy { get { return instance.maxStart_Energy; } }
 
-		public float MinStart_Strength { get { return minStart_Strength; } }
-		public float MaxStart_Strength { get { return maxStart_Strength; } }
+		public static float MinStart_Strength { get { return instance.minStart_Strength; } }
+		public static float MaxStart_Strength { get { return instance.maxStart_Strength; } }
 
-		public float Max_Health { get { return max_health; } }
+		public static float Max_Health { get { return instance.max_health; } }
 
-		public float InitialLowFoodThreshold { get { return initialLowFoodThreshold; } }
+		public static float InitialLowFoodThreshold { get { return instance.initialLowFoodThreshold; } }
 
-		public float MaxFood(float strengthStat) { return maxFood.Evaluate(strengthStat); }
-		public float MaxEnergy(float strengthStat) { return maxEnergy.Evaluate(strengthStat); }
+		public static float MaxFood(float strengthStat) { return instance.maxFood.Evaluate(strengthStat); }
+		public static float MaxEnergy(float strengthStat) { return instance.maxEnergy.Evaluate(strengthStat); }
 
-		public float FoodLossPerTurn(float strengthStat) { return foodLossPerTurn.Evaluate(strengthStat); }
-		public float StarvationDamagePerTurn { get { return starvationDamagePerTurn; } }
+		public static float FoodLossPerTurn(float strengthStat) { return instance.foodLossPerTurn.Evaluate(strengthStat); }
+		public static float StarvationDamagePerTurn { get { return instance.starvationDamagePerTurn; } }
 
-		public int MovesPerTurn { get { return movesPerTurn; } }
+		public static int MovesPerTurn { get { return instance.movesPerTurn; } }
 
 
 		#region Private fields

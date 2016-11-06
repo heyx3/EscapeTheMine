@@ -48,7 +48,17 @@ namespace MyData
 			writer.WritePropertyName(name);
 			writer.WriteValue(value);
 		}
-		public override void Float(float value, string name)
+        public override void Int64(long value, string name)
+        {
+            writer.WritePropertyName(name);
+            writer.WriteValue(value);
+        }
+        public override void UInt64(ulong value, string name)
+        {
+            writer.WritePropertyName(name);
+            writer.WriteValue(value);
+        }
+        public override void Float(float value, string name)
 		{
 			writer.WritePropertyName(name);
 			writer.WriteValue(value);
@@ -120,7 +130,15 @@ namespace MyData
 		{
 			return root.Value<uint>(name);
 		}
-		public override float Float(string name)
+        public override long Int64(string name)
+        {
+            return root.Value<long>(name);
+        }
+        public override ulong UInt64(string name)
+        {
+            return root.Value<ulong>(name);
+        }
+        public override float Float(string name)
 		{
 			return root.Value<float>(name);
 		}

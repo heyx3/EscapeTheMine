@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MyData;
 
 
 /// <summary>
@@ -31,7 +32,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 	///     1. It gets added to this collection.
 	///     2. The OnElementAdded" event gets raised.
 	/// </summary>
-	public void Add(T t)
+	public virtual void Add(T t)
 	{
 		if (elements.Add(t))
 		{
@@ -46,7 +47,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 	///     2. The OnElementRemoved" event gets raised.
 	/// Returns whether it was removed.
 	/// </summary>
-	public bool Remove(T t)
+	public virtual bool Remove(T t)
 	{
 		if (elements.Remove(t))
 		{
@@ -92,7 +93,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 
 	//Serialization:
 
-	public void WriteData(MyData.Writer writer)
+	public virtual void WriteData(MyData.Writer writer)
 	{
 		writer.Int(Count, "count");
 		int count = 0;
@@ -102,7 +103,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 			count += 1;
 		}
 	}
-	public void ReadData(MyData.Reader reader)
+	public virtual void ReadData(MyData.Reader reader)
 	{
 		int count = reader.Int("count");
 
@@ -122,7 +123,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 }
 
 
-public class LockedSet_Int : LockedSet<int>
+public class IntSet : LockedSet<int>
 {
 	protected override void Write(MyData.Writer writer, int value, string name)
 	{
@@ -133,7 +134,18 @@ public class LockedSet_Int : LockedSet<int>
 		return reader.Int(name);
 	}
 }
-public class LockedSet_Float : LockedSet<float>
+public class UlongSet : LockedSet<ulong>
+{
+    protected override void Write(Writer writer, ulong value, string name)
+    {
+        writer.UInt64(value, name);
+    }
+    protected override ulong Read(Reader reader, string name)
+    {
+        return reader.UInt64(name);
+    }
+}
+public class FloatSet : LockedSet<float>
 {
 	protected override void Write(MyData.Writer writer, float value, string name)
 	{
@@ -144,7 +156,7 @@ public class LockedSet_Float : LockedSet<float>
 		return reader.Float(name);
 	}
 }
-public class LockedSet_String : LockedSet<string>
+public class StringSet : LockedSet<string>
 {
 	protected override void Write(MyData.Writer writer, string value, string name)
 	{

@@ -29,6 +29,8 @@ namespace MyData
 		public abstract void Byte(byte value, string name);
 		public abstract void Int(int value, string name);
 		public abstract void UInt(uint value, string name);
+        public abstract void Int64(long value, string name);
+        public abstract void UInt64(ulong value, string name);
 		public abstract void Float(float value, string name);
 		public abstract void Double(double value, string name);
 		public abstract void String(string value, string name);
@@ -124,7 +126,9 @@ namespace MyData
 		public abstract byte Byte(string name);
 		public abstract int Int(string name);
 		public abstract uint UInt(string name);
-		public abstract float Float(string name);
+        public abstract long Int64(string name);
+        public abstract ulong UInt64(string name);
+        public abstract float Float(string name);
 		public abstract double Double(string name);
 		public abstract string String(string name);
 		public abstract byte[] Bytes(string name);
