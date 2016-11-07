@@ -14,21 +14,27 @@ namespace GameLogic
 	{
 		public Stat<Vector2i, Unit> Pos { get; private set; }
 
-        public Group MyGroup { get; private set; }
-        public Map TheMap { get { return MyGroup.TheMap; } }
+		public Group MyGroup { get; private set; }
+		public ulong ID { get; private set; }
+
+		public Map TheMap { get { return MyGroup.TheMap; } }
 
 
 		public Unit(Group g) : this(g, new Vector2i(-1, -1)) { }
 		public Unit(Group g, Vector2i pos)
 		{
-            MyGroup = g;
+			MyGroup = g;
 			Pos = new Stat<Vector2i, Unit>(this, pos);
+
+			ID = ulong.MaxValue;
 		}
 
-		protected Unit(Group g, Unit copyFrom)
+		private bool registeredYet = false;
+		public void RegisterID(ulong myID)
 		{
-            MyGroup = g;
-			Pos = copyFrom.Pos;
+			UnityEngine.Assertions.Assert.IsFalse(registeredYet);
+			registeredYet = true;
+			ID = myID;
 		}
 
 
@@ -45,15 +51,13 @@ namespace GameLogic
 			writer.UInt((uint)u.MyType, name + "_Type");
 			writer.Structure(u, name + "_Value");
 		}
-		public static Unit Read(MyData.Reader reader, Map map, string name)
+		public static Unit Read(MyData.Reader reader, Group group, string name)
 		{
 			Unit u = null;
 			Types type = (Types)reader.UInt(name + "_Type");
 			switch (type)
 			{
-				case Types.TestChar: u = new Units.TestChar(map); break;
-				case Types.TestStructure: u = new Units.TestStructure(map); break;
-				case Types.PlayerChar: u = new Units.PlayerChar(map); break;
+				case Types.PlayerChar: u = new Units.PlayerChar(group); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -80,50 +84,58 @@ namespace GameLogic
 		}
 
 		#endregion
-	}
 
 
-	public class UnitSet : LockedSet<Unit>
-	{
-		public Map Owner { get; private set; }
+		#region UnitSet class
 
-		public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
-
-
-		public UnitSet(Map owner)
+		public class UnitSet : IDCollection<Unit>
 		{
-			Owner = owner;
+			public Group Owner { get; private set; }
+			public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
 
-			OnElementAdded += Callback_UnitAdded;
-			OnElementRemoved += Callback_UnitRemoved;
+			public UnitSet(Group owner)
+			{
+				Owner = owner;
 
-			foreach (Unit u in this)
-				Callback_UnitAdded(this, u);
+				OnElementAdded += Callback_UnitAdded;
+				OnElementRemoved += Callback_UnitRemoved;
+
+				foreach (Unit u in this)
+					Callback_UnitAdded(this, u);
+			}
+
+			private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
+			{
+				u.Pos.OnChanged += Callback_UnitMoved;
+			}
+			private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
+			{
+				u.Pos.OnChanged -= Callback_UnitMoved;
+			}
+			private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
+			{
+				if (OnUnitMoved != null)
+					OnUnitMoved(this, u, oldPos, newPos);
+			}
+			
+			protected override ulong GetID(Unit owner)
+			{
+				return owner.ID;
+			}
+			protected override void SetID(ref Unit owner, ulong id)
+			{
+				owner.ID = id;
+			}
+			protected override void Write(MyData.Writer writer, Unit value, string name)
+			{
+				Unit.Write(writer, name, value);
+			}
+			protected override Unit Read(MyData.Reader reader, string name)
+			{
+				return Unit.Read(reader, Owner, name);
+			}
 		}
 
-
-		private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
-		{
-			u.Pos.OnChanged += Callback_UnitMoved;
-		}
-		private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
-		{
-			u.Pos.OnChanged -= Callback_UnitMoved;
-		}
-		private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
-		{
-			if (OnUnitMoved != null)
-				OnUnitMoved(this, u, oldPos, newPos);
-		}
-
-		//Serialization stuff.
-		protected override void Write(MyData.Writer writer, Unit value, string name)
-		{
-			Unit.Write(writer, name, value);
-		}
-		protected override Unit Read(MyData.Reader reader, string name)
-		{
-			return Unit.Read(reader, Owner, name);
-		}
+		#endregion
 	}
 }

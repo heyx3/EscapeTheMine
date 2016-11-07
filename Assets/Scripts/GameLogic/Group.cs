@@ -22,7 +22,7 @@ namespace GameLogic
         public ulong ID { get; private set; }
         public Map TheMap { get; private set; }
 
-        public UnitSet Units { get; private set; }
+        public Unit.UnitSet Units { get; private set; }
         public UlongSet AlliesByID { get; private set; }
         public UlongSet EnemiesByID { get; private set; }
 
@@ -31,7 +31,7 @@ namespace GameLogic
         {
             TheMap = theMap;
             TurnPriority = new Stat<int, Group>(this, turnPriority);
-            Units = new UnitSet(TheMap);
+            Units = new Unit.UnitSet(this);
             AlliesByID = new UlongSet();
             EnemiesByID = new UlongSet();
 
@@ -130,7 +130,7 @@ namespace GameLogic
             Units.Clear();
             reader.Collection("units",
                               (MyData.Reader r, ref Unit outUnit, string name) =>
-                                  { outUnit = Unit.Read(r, TheMap, name); },
+                                  { outUnit = Unit.Read(r, this, name); },
                               (size) => Units);
 
             AlliesByID.Clear();
@@ -159,7 +159,7 @@ namespace GameLogic
             switch (type)
             {
                 case Types.PlayerChars:
-                    //TODO: Create an instance.
+					g = new Groups.PlayerGroup(theMap);
                     break;
 
                 default: throw new NotImplementedException(type.ToString());

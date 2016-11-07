@@ -41,9 +41,10 @@ namespace UnityLogic.MapGen
 			HashSet<Unit> chars = new HashSet<Unit>();
 
 			//Either generate new units or clone the old ones.
-			ICollection<Unit> newUnits;
+			GameLogic.Groups.PlayerGroup playerGroup = null;
 			if (toClone == null)
 			{
+				playerGroup = new GameLogic.Groups.PlayerGroup(newMap);
 				HashSet<Unit> units = new HashSet<Unit>();
 
 				PRNG prng = new PRNG(seed);
@@ -69,57 +70,36 @@ namespace UnityLogic.MapGen
 
 					float strength = totalPoints;
 
-					energy = Mathf.Lerp(PlayerConsts.Instance.MinStart_Energy,
-										PlayerConsts.Instance.MaxStart_Energy,
+					energy = Mathf.Lerp(PlayerConsts.MinStart_Energy,
+										PlayerConsts.MaxStart_Energy,
 										energy);
-					food = Mathf.Lerp(PlayerConsts.Instance.MinStart_Food,
-									  PlayerConsts.Instance.MaxStart_Food,
+					food = Mathf.Lerp(PlayerConsts.MinStart_Food,
+									  PlayerConsts.MaxStart_Food,
 									  food);
-					strength = Mathf.Lerp(PlayerConsts.Instance.MinStart_Strength,
-										  PlayerConsts.Instance.MaxStart_Strength,
+					strength = Mathf.Lerp(PlayerConsts.MinStart_Strength,
+										  PlayerConsts.MaxStart_Strength,
 										  strength);
 
 
-					PlayerChar chr = new PlayerChar(newMap, food, energy, strength);
-					newMap.Units.Add(chr);
+					PlayerChar chr = new PlayerChar(playerGroup, food, energy, strength);
+					playerGroup.Units.Add(chr);
 					units.Add(chr);
 				}
-
-				//Make all these units allies with each other.
-				foreach (Unit u in units)
-				{
-					foreach (Unit u2 in units)
-						if (u != u2)
-							u.Allies.Add(u2);
-				}
-
-				newUnits = units;
 			}
 			else
 			{
-				//Clone each unit and associate each original with its clone.
-				Dictionary<Unit, Unit> oldUnitToNew = new Dictionary<Unit, Unit>(toClone.Count);
-				foreach (Unit unit in toClone)
-					oldUnitToNew.Add(unit, unit.Clone(newMap));
+				playerGroup = newMap.FindPlayerGroup();
+				UnityEngine.Assertions.Assert.IsNotNull(playerGroup);
 
-				//Give each new unit the proper allies/enemies.
-				foreach (KeyValuePair<GameLogic.Unit, GameLogic.Unit> kvp in oldUnitToNew)
-				{
-					foreach (GameLogic.Unit oldAlly in kvp.Key.Allies)
-						kvp.Value.Allies.Add(oldUnitToNew[oldAlly]);
-					foreach (GameLogic.Unit oldEnemy in kvp.Key.Enemies)
-						kvp.Value.Enemies.Add(oldUnitToNew[oldEnemy]);
-				}
-
-				newUnits = oldUnitToNew.Values;
+				playerGroup.Clear();
 			}
 
 			//Position the units.
 			UnityEngine.Assertions.Assert.IsTrue(entranceSpaces.Count > 0);
-			int unitsPerSpace = newUnits.Count / entranceSpaces.Count;
+			int unitsPerSpace = playerGroup.Units.Count / entranceSpaces.Count;
 			int unitI = 0,
 				posI = 0;
-			foreach (Unit unit in newUnits)
+			foreach (Unit unit in playerGroup.Units)
 			{
 				unit.Pos.Value = entranceSpaces[posI];
 

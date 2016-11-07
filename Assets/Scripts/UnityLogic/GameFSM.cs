@@ -12,17 +12,6 @@ namespace UnityLogic
 	/// </summary>
 	public class GameFSM : MonoBehaviour
 	{
-		public abstract class State
-		{
-			protected static GameFSM FSM { get { return GameFSM.Instance; } }
-			
-			public virtual void Start(State previousState) { }
-			public virtual void End(State nextState) { }
-
-			//"Update()" is a coroutine.
-			public virtual IEnumerable Update() { yield break; }
-		}
-
 		public class WorldProgress : MyData.IReadWritable
 		{
 			/// <summary>
@@ -32,22 +21,24 @@ namespace UnityLogic
 			/// <summary>
 			/// The units that have exited the current map and are ready to go to the next one.
 			/// </summary>
-			public HashSet<GameLogic.Unit> ExitedUnits = new HashSet<GameLogic.Unit>();
+			public UlongSet ExitedUnitIDs = new UlongSet();
 
 			public void WriteData(MyData.Writer writer)
 			{
 				writer.Int(Level, "level");
-				writer.Collection(ExitedUnits, "exitedUnits",
-								  (MyData.Writer wr, GameLogic.Unit u, string name) =>
-									  GameLogic.Unit.Write(wr, name, u));
+				writer.Collection(ExitedUnitIDs, "exitedUnitIDs",
+								  (MyData.Writer wr, ulong val, string name) =>
+									  wr.UInt64(val, name));
 			}
 			public void ReadData(MyData.Reader reader)
 			{
 				Level = reader.Int("level");
-				ExitedUnits = reader.Collection("exitedUnits",
-												(MyData.Reader rd, ref GameLogic.Unit u, string name) =>
-													u = GameLogic.Unit.Read(rd, GameFSM.Instance.Map, name),
-												i => new HashSet<GameLogic.Unit>());
+
+				ExitedUnitIDs.Clear();
+				reader.Collection("exitedUnitIDs",
+								  (MyData.Reader rd, ref ulong id, string name) =>
+									  { id = rd.UInt64(name); },
+								  i => ExitedUnitIDs);
 			}
 		}
 
@@ -116,74 +107,32 @@ namespace UnityLogic
 
         public event Action<GameLogic.Map> OnNewMap;
 
-		/// <summary>
-		/// Called when the game is paused or unpaused.
-		/// The parameter indicates whether the game is now paused.
-		/// </summary>
-		public event Action<bool> OnPauseToggle;
-
 
 		public WorldSettings Settings = new WorldSettings();
 		public int NThreads = 5;
 
-		public GameLogic.Unit.Teams CurrentTurn = GameLogic.Unit.Teams.Player;
-
-
-		public State CurrentState
-		{
-			get { return currState; }
-			set
-			{
-				State oldState = currState;
-
-				//Tell the current state that it's ending.
-				if (currState != null)
-					currState.End(value);
-
-				currState = value;
-
-				//Tell the new state that it's starting.
-				if (currState != null)
-					currState.Start(oldState);
-			}
-		}
-		private State currState = null;
 
         /// <summary>
         /// Note that this Map is persistent; it never gets a new value assigned to it after creation.
         /// This means that Map callbacks never have to be re-added wheneve e.x. a new map is loaded.
         /// </summary>
 		public GameLogic.Map Map { get; private set; }
-
+		/// <summary>
+		/// The world's current state.
+		/// </summary>
 		public WorldProgress Progress { get; private set; }
 		
 
-		public bool IsPaused
-		{
-			get { return isPaused; }
-			set
-			{
-				if (isPaused == value)
-					return;
-				isPaused = value;
-
-				if (OnPauseToggle != null)
-					OnPauseToggle(isPaused);
-			}
-		}
-		private bool isPaused = false;
-		
+		//TODO: Refactor all this to use the new, refactored GameLogic interface.
 
 		public void QuitWorld()
 		{
 			Map.Clear();
 
-			Progress.ExitedUnits.Clear();
+			Progress.ExitedUnitIDs.Clear();
 			Progress.Level = 0;
 
 			Settings = new WorldSettings();
-
-			CurrentState = null;
 
 			MenuController.Instance.Activate(MenuController.Instance.Menu_Main);
 		}

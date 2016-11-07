@@ -94,7 +94,7 @@ namespace GameLogic.Units
 				if (newHealth <= 0.0f)
 				{
 					Health.Value = 0.0f;
-					TheMap.Units.Remove(this);
+					MyGroup.Units.Remove(this);
 					yield break;
 				}
 				else
@@ -122,7 +122,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				else
 				{
-					Player_Char.Job nextJob = TheMap.Jobs.Take(this, false);
+					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, false);
 					if (nextJob != null)
 						StartDoingJob(nextJob, null);
 				}
@@ -134,7 +134,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
 				if (emergencyJob == null)
-					emergencyJob = TheMap.Jobs.Take(this, true);
+					emergencyJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
 
 				if (emergencyJob != null)
 				{
@@ -276,6 +276,11 @@ namespace GameLogic.Units
 			writer.Float(Strength, "strength");
 
 			writer.Structure(Career, "career");
+
+			writer.Collection<Player_Char.Job, List<Player_Char.Job>>(
+				customJobs, "customJobs",
+				(w, valToWrite, name) =>
+					Player_Char.Job.Write(w, valToWrite, name));
 			
 			if (currentlyDoing != null)
 			{
@@ -295,6 +300,13 @@ namespace GameLogic.Units
 			Strength.Value = reader.Float("strength");
 
 			reader.Structure(Career, "career");
+
+			customJobs.Clear();
+			reader.Collection<Player_Char.Job, List<Player_Char.Job>>(
+				"customJobs",
+				(MyData.Reader r, ref Player_Char.Job outVal, string name) =>
+					outVal = Player_Char.Job.Read(r, name, TheMap),
+				(size) => customJobs);
 			
 			if (reader.Bool("hasJob"))
 				StartDoingJob(Player_Char.Job.Read(reader, "currentJob", TheMap), null);

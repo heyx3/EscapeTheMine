@@ -15,8 +15,12 @@ namespace GameLogic
 
         public Stat<bool, Map> IsPaused;
 
+		private ulong nextID = 0;
+
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
+
+		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
 
 		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
 		private static List<Unit> emptyUnitList = new List<Unit>();
@@ -64,6 +68,12 @@ namespace GameLogic
 						posToUnits[tilePos] :
 						emptyUnitList);
 		}
+
+		public Groups.PlayerGroup FindPlayerGroup()
+		{
+			return (Groups.PlayerGroup)Groups.FirstOrDefault(g => (g is Groups.PlayerGroup));
+		}
+
 
 		/// <summary>
 		/// Wipes out all units and jobs.
@@ -141,15 +151,27 @@ namespace GameLogic
         {
             group.Units.OnElementAdded += OnUnitAdded;
             group.Units.OnElementRemoved += OnUnitRemoved;
+
+			foreach (Unit u in group.Units)
+				OnUnitAdded(group.Units, u);
         }
         private void OnGroupRemoved(LockedSet<Group> groups, Group group)
         {
+			foreach (Unit u in group.Units)
+				OnUnitRemoved(group.Units, u);
+
             group.Units.OnElementAdded -= OnUnitAdded;
             group.Units.OnElementRemoved -= OnUnitRemoved;
         }
 
 		private void OnUnitAdded(LockedSet<Unit> units, Unit unit)
 		{
+			//Give the unit an ID.
+			ulong newID = nextID;
+			nextID += 1;
+			unit.RegisterID(newID);
+			idToUnit.Add(newID, unit);
+
 			//Add the unit to the "posToUnits" lookup.
 			if (!posToUnits.ContainsKey(unit.Pos))
 				posToUnits.Add(unit.Pos, new List<Unit>());
@@ -160,6 +182,9 @@ namespace GameLogic
 		}
 		private void OnUnitRemoved(LockedSet<Unit> units, Unit unit)
 		{
+			//Remove its id from the registry.
+			idToUnit.Remove(unit.ID);
+
 			//Remove the unit from the "posToUnits" lookup.
 			//If there's no units left at that position, remove that entry entirely.
 			if (posToUnits[unit.Pos].Count == 1)
