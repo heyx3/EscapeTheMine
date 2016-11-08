@@ -23,6 +23,12 @@ namespace UnityLogic
 			/// </summary>
 			public UlongSet ExitedUnitIDs = new UlongSet();
 
+			public void Clear()
+			{
+				ExitedUnitIDs.Clear();
+				Level = 0;
+			}
+
 			public void WriteData(MyData.Writer writer)
 			{
 				writer.Int(Level, "level");
@@ -105,7 +111,12 @@ namespace UnityLogic
 		public static bool InstanceExists { get { return _instance != null; } }
 
 
-        public event Action<GameLogic.Map> OnNewMap;
+		/// <summary>
+		/// "OnStart" is called when a new level is being started/reloaded.
+		/// "OnEnd" is called when a level is being ended,
+		///     e.x. if the player moved to the next level or quit the game.
+		/// </summary>
+		public event Action OnStart, OnEnd;
 
 
 		public WorldSettings Settings = new WorldSettings();
@@ -121,39 +132,59 @@ namespace UnityLogic
 		/// The world's current state.
 		/// </summary>
 		public WorldProgress Progress { get; private set; }
+
+		public bool IsInGame { get; private set; }
 		
 
-		//TODO: Refactor all this to use the new, refactored GameLogic interface.
-
+		/// <summary>
+		/// Quits the current world without saving and goes back to the main menu.
+		/// </summary>
 		public void QuitWorld()
 		{
+			IsInGame = false;
+
+			if (OnEnd != null)
+				OnEnd();
+
 			Map.Clear();
-
-			Progress.ExitedUnitIDs.Clear();
-			Progress.Level = 0;
-
+			Progress.Clear();
 			Settings = new WorldSettings();
 
 			MenuController.Instance.Activate(MenuController.Instance.Menu_Main);
 		}
 
+		/// <summary>
+		/// Generates a new world using the current settings,
+		///     then starts the first level.
+		/// </summary>
 		public void GenerateWorld()
 		{
-			Map.Clear();
-			Progress = new WorldProgress();
-			CurrentState = new State_GenMap(true, Settings.Seed.GetHashCode(), NThreads);
+			IsInGame = true;
 
-            if (OnNewMap != null)
-                OnNewMap(Map);
+			Map.Clear();
+			Progress.Clear();
+
+			GenerateMap(true);
+
+			if (OnStart != null)
+				OnStart();
 		}
+		/// <summary>
+		/// Generates and starts the next level in the world
+		///     using the current settings and progress.
+		/// </summary>
 		public void GenerateNextMap()
 		{
+			if (OnEnd != null)
+				OnEnd();
+
 			Map.Clear();
 			Progress.Level += 1;
-			CurrentState = new State_GenMap(false, Settings.Seed.GetHashCode(), NThreads);
 
-            if (OnNewMap != null)
-                OnNewMap(Map);
+			GenerateMap(false);
+
+			if (OnStart != null)
+				OnStart();
         }
 		
 		public void LoadWorld(string name)
@@ -166,18 +197,16 @@ namespace UnityLogic
 				reader.Structure(Progress, "progress");
 				reader.Structure(Map, "map");
 				reader.Structure(Settings, "worldSettings");
-
-				CurrentTurn = (GameLogic.Unit.Teams)reader.Int("currentTurn");
 			}
 			catch (MyData.Reader.ReadException e)
 			{
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
             }
-			
-			CurrentState = new State_Turn();
 
-            if (OnNewMap != null)
-                OnNewMap(Map);
+			IsInGame = true;
+
+			if (OnStart != null)
+				OnStart();
         }
 		public void SaveWorld()
 		{
@@ -189,7 +218,6 @@ namespace UnityLogic
 					writer.Structure(Progress, "progress");
 					writer.Structure(Map, "map");
 					writer.Structure(Settings, "worldSettings");
-					writer.Int((int)CurrentTurn, "currentTurn");
 				}
 				catch (MyData.Writer.WriteException e)
 				{
@@ -198,35 +226,95 @@ namespace UnityLogic
 			}
 		}
 
+		private void GenerateMap(bool fromScratch)
+		{
+			//Run the various generators.
+			int seed = Settings.Seed.GetHashCode();
+			var biomes = Settings.Biome.Generate(Settings.Size, Settings.Size,
+												 NThreads, unchecked(seed * 462315));
+			var deposits = Settings.Deposits.Generate(Settings.Size, Settings.Size,
+													  NThreads, unchecked(seed * 123));
+			var rooms = Settings.Rooms.Generate(biomes, NThreads, seed);
+			var finalWalls = Settings.CA.Generate(biomes, rooms, NThreads, unchecked(seed * 3468));
+
+			//Convert the generated data to actual game tiles.
+			GameLogic.TileTypes[,] tiles = new GameLogic.TileTypes[Settings.Size, Settings.Size];
+			for (int y = 0; y < tiles.GetLength(1); ++y)
+			{
+				for (int x = 0; x < tiles.GetLength(0); ++x)
+				{
+					if (x == 0 || x == Settings.Size - 1 || y == 0 || y == Settings.Size - 1)
+						tiles[x, y] = GameLogic.TileTypes.Bedrock;
+					else if (finalWalls[x, y])
+						tiles[x, y] = (deposits[x, y] ? GameLogic.TileTypes.Deposit : GameLogic.TileTypes.Wall);
+					else
+						tiles[x, y] = GameLogic.TileTypes.Empty;
+				}
+			}
+
+			//Choose a room and place the level's "entrance" into the middle of it.
+			List<Vector2i> entranceSpaces = new List<Vector2i>();
+			{
+				PRNG roomPlacer = new PRNG(unchecked(seed * 8957));
+				Vector2i entrance = rooms[roomPlacer.NextInt() % rooms.Count].OriginalBounds.Center;
+				entrance = new Vector2i(Mathf.Clamp(entrance.x, 1, Settings.Size - 2),
+										Mathf.Clamp(entrance.y, 1, Settings.Size - 2));
+
+				//Carve a small circle out of the map for the entrance.
+				const float entranceRadius = 1.75f,
+							entranceRadiusSqr = entranceRadius * entranceRadius;
+				int entranceRadiusCeil = Mathf.CeilToInt(entranceRadius);
+				Vector2i entranceRegionMin = entrance - new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil),
+						 entranceRegionMax = entrance + new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil);
+				entranceRegionMin = new Vector2i(Mathf.Clamp(entranceRegionMin.x, 0, Settings.Size - 1),
+												 Mathf.Clamp(entranceRegionMin.y, 0, Settings.Size - 1));
+				entranceRegionMax = new Vector2i(Mathf.Clamp(entranceRegionMax.x, 0, Settings.Size - 1),
+												 Mathf.Clamp(entranceRegionMax.y, 0, Settings.Size - 1));
+
+				for (int y = entranceRegionMin.y; y <= entranceRegionMax.y; ++y)
+					for (int x = entranceRegionMin.x; x <= entranceRegionMax.x; ++x)
+						if (entrance.DistanceSqr(new Vector2i(x, y)) < entranceRadiusSqr)
+						{
+							entranceSpaces.Add(new Vector2i(x, y));
+							Map.Tiles[x, y] = GameLogic.TileTypes.Empty;
+						}
+			}
+
+			Map.Tiles.Reset(tiles);
+
+			//Generate units.
+			//TODO: Fix.
+			var newUnits = Settings.PlayerChars.Generate(
+							   entranceSpaces,
+							   (fromScratch ? null : Progress.ExitedUnitIDs),
+							   Map, NThreads, unchecked(seed * 135789));
+			Progress.ExitedUnitIDs.Clear();
+
+			//TODO: Run the Map's coroutine.
+
+			//TODO: Make the camera focus in on the units. Provide some kind of "ZoomToUnits()" method on the Content2D/3D classes.
+			SaveWorld();
+		}
 
 		private void Awake()
 		{
 			Map = new GameLogic.Map();
 			Progress = new WorldProgress();
+
+			IsInGame = false;
 		}
 		private void Update()
 		{
-			if (Input.GetKeyDown(KeyCode.Escape) && CurrentState is State_Turn)
+			if (Input.GetKeyDown(KeyCode.Escape))
 			{
 				MyUI.ContentUI.Instance.CreateGlobalWindow(MyUI.ContentUI.Instance.Window_Options);
 			}
 		}
 		private void Start()
 		{
-			StartCoroutine(StateMachineCoroutine());
-		}
 
-		private System.Collections.IEnumerator StateMachineCoroutine()
-		{
-			while (true)
-			{
-				if (CurrentState != null)
-				{
-					foreach (object o in CurrentState.Update())
-						yield return o;
-				}
-				yield return null;
-			}
 		}
 	}
 }

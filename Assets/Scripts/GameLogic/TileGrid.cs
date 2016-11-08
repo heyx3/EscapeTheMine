@@ -37,10 +37,10 @@ namespace GameLogic
 		/// </summary>
 		public event Action<TileGrid, Vector2i, TileTypes, TileTypes> OnTileChanged;
 		/// <summary>
-		/// Raised when an instance gets its grid resized.
-		/// The parameters are the grid, old size, and new size, respectively.
+		/// Raised when an instance gets its grid reset to a completely new set of values.
+		/// The parameters are the grid, size of the old grid, and size of the new grid, respectively.
 		/// </summary>
-		public event Action<TileGrid, Vector2i, Vector2i> OnTileGridResized;
+		public event Action<TileGrid, Vector2i, Vector2i> OnTileGridReset;
 
 
 		private TileTypes[,] grid;
@@ -90,27 +90,22 @@ namespace GameLogic
 		/// <summary>
 		/// Resizes the grid, inserting the given value if any new spaces are created.
 		/// </summary>
-		public void Resize(Vector2i newSize, TileTypes defaultVal)
+		public void Reset(TileTypes[,] newGrid)
 		{
-			//Create the new grid.
-			TileTypes[,] oldGrid = grid;
-			grid = new TileTypes[newSize.x, newSize.y];
+			//Resize the array to match.
+			Vector2i oldSize = new Vector2i(grid.GetLength(0), grid.GetLength(1)),
+					 newSize = new Vector2i(newGrid.GetLength(0), newGrid.GetLength(1));
+			if (oldSize != newSize)
+				grid = new TileTypes[newSize.x, newSize.y];
 
-			//Copy the data over into the new grid.
-			for (int y = 0; y < Height; ++y)
-				for (int x = 0; x < Width; ++x)
-					if (x < oldGrid.GetLength(0) && y < oldGrid.GetLength(1))
-						grid[x, y] = oldGrid[x, y];
-					else
-						grid[x, y] = defaultVal;
+			//Copy the data over.
+			for (int y = 0; y < newSize.y; ++y)
+				for (int x = 0; x < newSize.x; ++x)
+					grid[x, y] = newGrid[x, y];
 
-			//Raise the corresponding event.
-			if (OnTileGridResized != null)
-			{
-				OnTileGridResized(this,
-								  new Vector2i(oldGrid.GetLength(0), oldGrid.GetLength(1)),
-								  new Vector2i(Width, Height));
-			}
+			//Raise the event.
+			if (OnTileGridReset != null)
+				OnTileGridReset(this, oldSize, newSize);
 		}
 
 		public bool IsValid(Vector2i tilePos)

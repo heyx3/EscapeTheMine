@@ -8,54 +8,58 @@ namespace GameLogic
 {
 	public class Map : MyData.IReadWritable
 	{
-		public event Action<Map> OnMapCleared;
+		public event Action<Map, Unit> OnUnitAdded;
+		public event Action<Map, Unit> OnUnitRemoved;
 
-		public Group.GroupSet Groups;
-		public TileGrid Tiles;
 
-        public Stat<bool, Map> IsPaused;
+		public Group.GroupSet Groups { get; private set; }
+		public TileGrid Tiles { get; private set; }
+
+		/// <summary>
+		/// Indicates that units should not take their turns.
+		/// </summary>
+        public Stat<bool, Map> IsPaused { get; private set; }
+
+		/// <summary>
+		/// Indicates that this map should stop running the update logic coroutine
+		///     as soon as possible.
+		/// </summary>
+		public Stat<bool, Map> ShouldQuit { get; private set; }
+
 
 		private ulong nextID = 0;
+		private HashSet<Unit> units = new HashSet<Unit>();
+
+
+		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
+		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
 
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
-
-		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
-
-		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
 		private static List<Unit> emptyUnitList = new List<Unit>();
 
 
 		public Map(int mapSizeX, int mapSizeY)
 		{
-            Groups = new Group.GroupSet(this);
 			Tiles = new TileGrid(mapSizeX, mapSizeY);
-
-            IsPaused = new Stat<bool, Map>(this, false);
-
-			pathingGraph = new Graph(this);
-			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
-
-			RegisterCallbacks();
+			CommonInit();
 		}
 		public Map(TileTypes[,] tileGrid)
         {
-            Groups = new Group.GroupSet(this);
             Tiles = new TileGrid(tileGrid);
-
-            IsPaused = new Stat<bool, Map>(this, false);
-
-            pathingGraph = new Graph(this);
-			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
-
-			RegisterCallbacks();
+			CommonInit();
 		}
 		public Map() : this(1, 1) { }
 
-		private void RegisterCallbacks()
+		private void CommonInit()
 		{
-            Groups.OnElementAdded += OnGroupAdded;
-            Groups.OnElementRemoved += OnGroupRemoved;
+            Groups = new Group.GroupSet(this);
+
+            IsPaused = new Stat<bool, Map>(this, false);
+			ShouldQuit = new Stat<bool, Map>(this, false);
+
+			pathingGraph = new Graph(this);
+			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
 		}
 
 
@@ -68,10 +72,54 @@ namespace GameLogic
 						posToUnits[tilePos] :
 						emptyUnitList);
 		}
-
-		public Groups.PlayerGroup FindPlayerGroup()
+		
+		/// <summary>
+		/// Adds the given unit to this map.
+		/// Returns its new ID.
+		/// </summary>
+		public ulong AddUnit(Unit u)
 		{
-			return (Groups.PlayerGroup)Groups.FirstOrDefault(g => (g is Groups.PlayerGroup));
+			u.Pos.OnChanged += Callback_UnitMoved;
+
+			u.RegisterID(nextID);
+			nextID += 1;
+
+			idToUnit.Add(u.ID, u);
+			units.Add(u);
+
+			if (OnUnitAdded != null)
+				OnUnitAdded(this, u);
+
+			return u.ID;
+		}
+		/// <summary>
+		/// Kills the given unit.
+		/// </summary>
+		public void RemoveUnit(Unit u)
+		{
+			u.MyGroup.UnitsByID.Remove(u.ID);
+
+			idToUnit.Remove(u.ID);
+			units.Remove(u);
+
+			if (OnUnitRemoved != null)
+				OnUnitRemoved(this, u);
+
+			u.Pos.OnChanged -= Callback_UnitMoved;
+		}
+
+		public Unit GetUnit(ulong id) { return idToUnit[id]; }
+		public bool DoesUnitExist(ulong id) { return idToUnit.ContainsKey(id); }
+
+		public GroupType FindGroup<GroupType>()
+			where GroupType : Group
+		{
+			return (GroupType)Groups.FirstOrDefault(g => (g is GroupType));
+		}
+		public IEnumerable<GroupType> FindGroups<GroupType>()
+			where GroupType : Group
+		{
+			return Groups.Where(g => (g is GroupType)).Select(g => (GroupType)g);
 		}
 
 
@@ -80,11 +128,14 @@ namespace GameLogic
 		/// </summary>
 		public void Clear()
 		{
-			Groups.Clear();
-            IsPaused.Value = true;
+			foreach (Unit u in units)
+				RemoveUnit(u);
+			units.Clear();
 
-			if (OnMapCleared != null)
-				OnMapCleared(this);
+			Groups.Clear();
+
+            IsPaused.Value = true;
+			ShouldQuit.Value = true;
 		}
 
 		/// <summary>
@@ -128,12 +179,31 @@ namespace GameLogic
 		}
 		private List<Vector2i> tempPath = new List<Vector2i>();
 
-        #region Serialization
+		/// <summary>
+		/// Keeps running this map until the "ShouldQuit" field is set to true.
+		/// </summary>
+		public System.Collections.IEnumerable RunGameCoroutine()
+		{
+			while (!ShouldQuit.Value)
+			{
+				yield break;//TODO: Implement.
+			}
+		}
+
 
         public void WriteData(MyData.Writer writer)
 		{
 			writer.Structure(Groups, "groups");
 			writer.Structure(Tiles, "tiles");
+
+			writer.UInt64(nextID, "nextID");
+
+			writer.Collection<Unit, HashSet<Unit>>(units, "units",
+												   (wr, unit, name) =>
+													   Unit.Write(wr, name, unit));
+
+			foreach (Unit u in units)
+				AddUnit(u);
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -141,77 +211,25 @@ namespace GameLogic
 
 			reader.Structure(Groups, "groups");
 			reader.Structure(Tiles, "tiles");
+
+			nextID = reader.UInt64("nextID");
+
+			reader.Collection<Unit, HashSet<Unit>>("units",
+												   (MyData.Reader rd, ref Unit outUnit, string name) =>
+												       outUnit = Unit.Read(rd, this, name),
+												   (size) => units);
 		}
-        
-        #endregion
-
-        #region Callbacks
-
-        private void OnGroupAdded(LockedSet<Group> groups, Group group)
-        {
-            group.Units.OnElementAdded += OnUnitAdded;
-            group.Units.OnElementRemoved += OnUnitRemoved;
-
-			foreach (Unit u in group.Units)
-				OnUnitAdded(group.Units, u);
-        }
-        private void OnGroupRemoved(LockedSet<Group> groups, Group group)
-        {
-			foreach (Unit u in group.Units)
-				OnUnitRemoved(group.Units, u);
-
-            group.Units.OnElementAdded -= OnUnitAdded;
-            group.Units.OnElementRemoved -= OnUnitRemoved;
-        }
-
-		private void OnUnitAdded(LockedSet<Unit> units, Unit unit)
+		
+		private void Callback_UnitMoved(Unit u, Vector2i oldP, Vector2i newP)
 		{
-			//Give the unit an ID.
-			ulong newID = nextID;
-			nextID += 1;
-			unit.RegisterID(newID);
-			idToUnit.Add(newID, unit);
+			//Remove the unit's current entry in "posToUnits".
+			if (posToUnits.ContainsKey(oldP))
+				posToUnits[oldP].Remove(u);
 
-			//Add the unit to the "posToUnits" lookup.
-			if (!posToUnits.ContainsKey(unit.Pos))
-				posToUnits.Add(unit.Pos, new List<Unit>());
-			posToUnits[unit.Pos].Add(unit);
-
-			//Register callbacks for the unit.
-			unit.Pos.OnChanged += OnUnitMoved;
-		}
-		private void OnUnitRemoved(LockedSet<Unit> units, Unit unit)
-		{
-			//Remove its id from the registry.
-			idToUnit.Remove(unit.ID);
-
-			//Remove the unit from the "posToUnits" lookup.
-			//If there's no units left at that position, remove that entry entirely.
-			if (posToUnits[unit.Pos].Count == 1)
-			{
-				UnityEngine.Assertions.Assert.IsTrue(posToUnits[unit.Pos][0] == unit);
-				posToUnits.Remove(unit.Pos);
-			}
-			else
-			{
-				posToUnits[unit.Pos].Remove(unit);
-			}
-
-			//Unregister callbacks for the unit.
-			unit.Pos.OnChanged -= OnUnitMoved;
-		}
-
-		private void OnUnitMoved(Unit u, Vector2i oldP, Vector2i newP)
-		{
-			//Move the unit from its current entry in the "posToUnits" lookup to a new entry.
-
-			posToUnits[oldP].Remove(u);
-
+			//Add its new entry in "posToUnits".
 			if (!posToUnits.ContainsKey(newP))
 				posToUnits.Add(newP, new List<Unit>());
 			posToUnits[newP].Add(u);
 		}
-
-		#endregion
 	}
 } 

@@ -51,6 +51,9 @@ namespace GameLogic.Units.Player_Char
 				}
 			}
 
+			//Set pre-computed fields.
+			One_Over_MaxEnemyDistSqr = 1.0f / MaxEnemyDistSqr;
+
             instance = this;
 		}
 
@@ -75,6 +78,11 @@ namespace GameLogic.Units.Player_Char
 		public static float StarvationDamagePerTurn { get { return instance.starvationDamagePerTurn; } }
 
 		public static int MovesPerTurn { get { return instance.movesPerTurn; } }
+
+		public static float MaxEnemyDistSqr { get { return instance.maxEnemyDistSqr; } }
+		public static float One_Over_MaxEnemyDistSqr { get; private set; }
+
+		public static float EnemyDistHeuristicMax { get { return instance.enemyDistHeuristicMax; } }
 
 
 		#region Private fields
@@ -101,6 +109,9 @@ namespace GameLogic.Units.Player_Char
 
 		private int movesPerTurn = 5;
 
+		private int maxEnemyDistSqr = 11 * 11;
+		private float enemyDistHeuristicMax = 1.0f;
+
 		#endregion
 
 
@@ -125,6 +136,9 @@ namespace GameLogic.Units.Player_Char
 			writer.Structure(maxEnergy, "maxEnergy");
 
 			writer.Int(movesPerTurn, "movesPerTurn");
+
+			writer.Int(maxEnemyDistSqr, "maxEnemyDistSqr");
+			writer.Float(enemyDistHeuristicMax, "enemyDistHeuristicMax");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -147,6 +161,9 @@ namespace GameLogic.Units.Player_Char
 			reader.Structure(maxEnergy, "maxEnergy");
 
 			movesPerTurn = reader.Int("movesPerTurn");
+
+			maxEnemyDistSqr = reader.Int("maxEnemyDistSqr");
+			enemyDistHeuristicMax = reader.Float("enemyDistHeuristicMax");
 		}
 	}
 }

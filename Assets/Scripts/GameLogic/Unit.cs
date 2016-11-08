@@ -14,26 +14,39 @@ namespace GameLogic
 	{
 		public Stat<Vector2i, Unit> Pos { get; private set; }
 
-		public Group MyGroup { get; private set; }
+		public Map TheMap { get; private set; }
+		public ulong MyGroupID { get; private set; }
 		public ulong ID { get; private set; }
 
-		public Map TheMap { get { return MyGroup.TheMap; } }
+		/// <summary>
+		/// Whether this unit's ID has been assigned by the map yet.
+		/// </summary>
+		public bool IsIDRegistered { get; private set; }
+
+		public Group MyGroup { get { return TheMap.Groups.Get(MyGroupID); } }
 
 
-		public Unit(Group g) : this(g, new Vector2i(-1, -1)) { }
-		public Unit(Group g, Vector2i pos)
+		public Unit(Map theMap, Group g) : this(theMap, g, new Vector2i(-1, -1)) { }
+		public Unit(Map theMap, Group g, Vector2i pos)
 		{
-			MyGroup = g;
+			TheMap = theMap;
+			MyGroupID = g.ID;
 			Pos = new Stat<Vector2i, Unit>(this, pos);
 
 			ID = ulong.MaxValue;
+
+			IsIDRegistered = false;
 		}
 
-		private bool registeredYet = false;
+		public Unit(Map theMap, ulong groupID) : this(theMap, theMap.Groups.Get(groupID)) { }
+		public Unit(Map theMap, ulong groupID, Vector2i pos)
+			: this(theMap, theMap.Groups.Get(groupID), pos) { }
+
+
 		public void RegisterID(ulong myID)
 		{
-			UnityEngine.Assertions.Assert.IsFalse(registeredYet);
-			registeredYet = true;
+			UnityEngine.Assertions.Assert.IsFalse(IsIDRegistered);
+			IsIDRegistered = true;
 			ID = myID;
 		}
 
@@ -51,13 +64,13 @@ namespace GameLogic
 			writer.UInt((uint)u.MyType, name + "_Type");
 			writer.Structure(u, name + "_Value");
 		}
-		public static Unit Read(MyData.Reader reader, Group group, string name)
+		public static Unit Read(MyData.Reader reader, Map theMap, string name)
 		{
 			Unit u = null;
 			Types type = (Types)reader.UInt(name + "_Type");
 			switch (type)
 			{
-				case Types.PlayerChar: u = new Units.PlayerChar(group); break;
+				case Types.PlayerChar: u = new Units.PlayerChar(theMap, ulong.MaxValue); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -68,8 +81,6 @@ namespace GameLogic
 
 		public enum Types
 		{
-			TestChar = 0,
-			TestStructure,
 			PlayerChar,
 		}
 		public abstract Types MyType { get; }
@@ -77,10 +88,20 @@ namespace GameLogic
 		public virtual void WriteData(MyData.Writer writer)
 		{
 			writer.Vec2i(Pos, "pos");
+
+			writer.UInt64(ID, "id");
+			writer.UInt64(MyGroupID, "myGroup");
+
+			writer.Bool(IsIDRegistered, "isIDRegistered");
 		}
 		public virtual void ReadData(MyData.Reader reader)
 		{
 			Pos.Value = reader.Vec2i("pos");
+
+			ID = reader.UInt64("id");
+			MyGroupID = reader.UInt64("myGroup");
+
+			IsIDRegistered = reader.Bool("isIDRegistered");
 		}
 
 		#endregion
@@ -90,10 +111,10 @@ namespace GameLogic
 
 		public class UnitSet : IDCollection<Unit>
 		{
-			public Group Owner { get; private set; }
+			public Map Owner { get; private set; }
 			public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
 
-			public UnitSet(Group owner)
+			public UnitSet(Map owner)
 			{
 				Owner = owner;
 

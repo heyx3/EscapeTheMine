@@ -22,7 +22,7 @@ namespace GameLogic
         public ulong ID { get; private set; }
         public Map TheMap { get; private set; }
 
-        public Unit.UnitSet Units { get; private set; }
+        public UlongSet UnitsByID { get; private set; }
         public UlongSet AlliesByID { get; private set; }
         public UlongSet EnemiesByID { get; private set; }
 
@@ -31,7 +31,7 @@ namespace GameLogic
         {
             TheMap = theMap;
             TurnPriority = new Stat<int, Group>(this, turnPriority);
-            Units = new Unit.UnitSet(this);
+            UnitsByID = new UlongSet();
             AlliesByID = new UlongSet();
             EnemiesByID = new UlongSet();
 
@@ -56,35 +56,31 @@ namespace GameLogic
         public virtual IEnumerable TakeTurn()
         {
             //Keep careful track of the units we're going to update.
-            List<Unit> unitsToUpdate = new List<Unit>(Units);
-            int currentUnit = 0;
-            Action<LockedSet<Unit>, Unit> onUnitAdded = (units, unit) =>
-                unitsToUpdate.Add(unit);
-            Action<LockedSet<Unit>, Unit> onUnitRemoved = (units, unit) =>
+            HashSet<Unit> unitsToUpdate = new HashSet<Unit>(UnitsByID.Select(id => TheMap.GetUnit(id)));
+            Action<LockedSet<ulong>, ulong> onUnitAdded = (units, unitID) =>
+                unitsToUpdate.Add(TheMap.GetUnit(unitID));
+            Action<LockedSet<ulong>, ulong> onUnitRemoved = (units, unitID) =>
             {
-                int indexOf = unitsToUpdate.IndexOf(unit);
-
-                if (indexOf <= currentUnit)
-                    currentUnit -= 1;
-
-                unitsToUpdate.RemoveAt(indexOf);
+				unitsToUpdate.Remove(TheMap.GetUnit(unitID));
             };
-            Units.OnElementAdded += onUnitAdded;
-            Units.OnElementRemoved += onUnitRemoved;
+            UnitsByID.OnElementAdded += onUnitAdded;
+            UnitsByID.OnElementRemoved += onUnitRemoved;
 
-            while (currentUnit < unitsToUpdate.Count)
+            while (unitsToUpdate.Count > 0)
             {
+				Unit unit = unitsToUpdate.First();
+				unitsToUpdate.Remove(unit);
+
                 //Take the unit's turn.
-                foreach (object o in unitsToUpdate[currentUnit].TakeTurn())
+                foreach (object o in unit.TakeTurn())
                     yield return o;
-                currentUnit += 1;
 
                 //Wait for the next turn.
                 yield return UnityLogic.Options.UnitTurnIntervalFlag;
             }
 
-            Units.OnElementRemoved -= onUnitAdded;
-            Units.OnElementRemoved -= onUnitRemoved;
+            UnitsByID.OnElementRemoved -= onUnitAdded;
+            UnitsByID.OnElementRemoved -= onUnitRemoved;
         }
 
         public bool IsAllyTo(Group g)
@@ -110,9 +106,9 @@ namespace GameLogic
 
             writer.Int(TurnPriority, "turnPriority");
 
-            writer.Collection(Units, "units",
-                              (MyData.Writer w, Unit outVal, string name) =>
-                                  Unit.Write(w, name, outVal));
+            writer.Collection(UnitsByID, "units",
+                              (MyData.Writer w, ulong outVal, string name) =>
+                                  w.UInt64(outVal, name));
 
             writer.Collection(AlliesByID, "allies",
                               (MyData.Writer w, ulong outVal, string name) =>
@@ -127,11 +123,11 @@ namespace GameLogic
 
             TurnPriority.Value = reader.Int("turnPriority");
 
-            Units.Clear();
+            UnitsByID.Clear();
             reader.Collection("units",
-                              (MyData.Reader r, ref Unit outUnit, string name) =>
-                                  { outUnit = Unit.Read(r, this, name); },
-                              (size) => Units);
+                              (MyData.Reader r, ref ulong outID, string name) =>
+                                  { outID = r.UInt64(name); },
+                              (size) => UnitsByID);
 
             AlliesByID.Clear();
             reader.Collection("allies",

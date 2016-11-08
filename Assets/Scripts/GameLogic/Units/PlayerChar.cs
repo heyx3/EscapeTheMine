@@ -18,17 +18,26 @@ namespace GameLogic.Units
 		/// <summary>
 		/// Calculates edge length/heuristics for PlayerChar's A* pathfinding.
 		/// </summary>
-		public void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
-								  Pathfinding.Edge<Vector2i> edge,
-								  out float edgeLength, out float heuristic)
+		private void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
+								   Pathfinding.Edge<Vector2i> edge,
+								   out float edgeLength, out float heuristic)
 		{
 			Graph.AStarEdgeCalc(goal, edge, out edgeLength, out heuristic);
 
-            //Subtract enemy distances squared from the heuristic.
-            foreach (ulong enemyGroupID in MyGroup.EnemiesByID)
-                foreach (Unit enemyUnit in TheMap.Groups.Get(enemyGroupID).Units)
-                    heuristic -= enemyUnit.Pos.Value.DistanceSqr(Pos);
+			//Subtract enemy distances squared from the heuristic.
+			foreach (Unit enemy in _temp_enemies)
+			{
+				float distSqr = enemy.Pos.Value.DistanceSqr(Pos);
+				float distT = distSqr * Player_Char.Consts.One_Over_MaxEnemyDistSqr;
+				distT = Math.Max(0.0f, Mathf.Min(1.0f, distT));
+
+				heuristic += (Player_Char.Consts.EnemyDistHeuristicMax * distT);
+			}
 		}
+		/// <summary>
+		/// Re-use a collection of a PlayerChar's enemies to reduce garbage.
+		/// </summary>
+		private static HashSet<Unit> _temp_enemies = new HashSet<Unit>();
 
 
 		/// <summary>
@@ -62,8 +71,8 @@ namespace GameLogic.Units
 		private Player_Char.Job currentlyDoing = null;
 
 
-		public PlayerChar(Group group, float food, float energy, float strength)
-			: base(group)
+		public PlayerChar(Map theMap, ulong groupID, float food, float energy, float strength)
+			: base(theMap, groupID)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
 			Energy = new Stat<float, PlayerChar>(this, energy);
@@ -76,7 +85,11 @@ namespace GameLogic.Units
 
 			Career = new Player_Char.JobQualifications(this);
 		}
-		public PlayerChar(Group group) : this(group, 0.0f, 0.0f, 0.0f) { }
+		public PlayerChar(Map theMap, ulong groupID) : this(theMap, groupID, 0.0f, 0.0f, 0.0f) { }
+
+		public PlayerChar(Map theMap, Group group, float food, float energy, float strength)
+			: this(theMap, group.ID, food, energy, strength) { }
+		public PlayerChar(Map theMap, Group group) : this(theMap, group.ID) { }
 
 
 		public override System.Collections.IEnumerable TakeTurn()
@@ -94,7 +107,7 @@ namespace GameLogic.Units
 				if (newHealth <= 0.0f)
 				{
 					Health.Value = 0.0f;
-					MyGroup.Units.Remove(this);
+					MyGroupID.Units.Remove(this);
 					yield break;
 				}
 				else
@@ -122,7 +135,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				else
 				{
-					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, false);
+					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroupID).TakeJob(this, false);
 					if (nextJob != null)
 						StartDoingJob(nextJob, null);
 				}
@@ -134,7 +147,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
 				if (emergencyJob == null)
-					emergencyJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
+					emergencyJob = ((Groups.PlayerGroup)MyGroupID).TakeJob(this, true);
 
 				if (emergencyJob != null)
 				{
@@ -147,6 +160,17 @@ namespace GameLogic.Units
 			if (currentlyDoing != null)
 				foreach (object o in currentlyDoing.TakeTurn())
 					yield return o;
+		}
+
+		public void FindPath(Pathfinding.Goal<Vector2i> goal, List<Vector2i> outPath)
+		{
+			//Collect all of this PlayerChar's current enemies for the A* heuristic.
+			_temp_enemies.Clear();
+			foreach (ulong enemyGroupID in TheMap.Groups.Get(MyGroupID).EnemiesByID)
+				foreach (ulong enemyUnitID in TheMap.Groups.Get(enemyGroupID).UnitsByID)
+					_temp_enemies.Add(TheMap.GetUnit(enemyUnitID));
+
+			TheMap.FindPath(Pos, goal, outPath, AStarEdgeCalc);
 		}
 
 		/// <summary>
