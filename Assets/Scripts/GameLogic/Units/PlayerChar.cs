@@ -107,7 +107,7 @@ namespace GameLogic.Units
 				if (newHealth <= 0.0f)
 				{
 					Health.Value = 0.0f;
-					MyGroupID.Units.Remove(this);
+					TheMap.RemoveUnit(this);
 					yield break;
 				}
 				else
@@ -135,7 +135,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				else
 				{
-					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroupID).TakeJob(this, false);
+					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, false);
 					if (nextJob != null)
 						StartDoingJob(nextJob, null);
 				}
@@ -147,7 +147,7 @@ namespace GameLogic.Units
 				//Otherwise, grab from the global job collection.
 				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
 				if (emergencyJob == null)
-					emergencyJob = ((Groups.PlayerGroup)MyGroupID).TakeJob(this, true);
+					emergencyJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
 
 				if (emergencyJob != null)
 				{
@@ -299,6 +299,8 @@ namespace GameLogic.Units
 			writer.Float(Health, "health");
 			writer.Float(Strength, "strength");
 
+			writer.Float(LowFoodThreshold, "lowFoodThreshold");
+
 			writer.Structure(Career, "career");
 
 			writer.Collection<Player_Char.Job, List<Player_Char.Job>>(
@@ -322,6 +324,8 @@ namespace GameLogic.Units
 			Energy.Value = reader.Float("energy");
 			Health.Value = reader.Float("health");
 			Strength.Value = reader.Float("strength");
+
+			LowFoodThreshold.Value = reader.Float("lowFoodThreshold");
 
 			reader.Structure(Career, "career");
 
