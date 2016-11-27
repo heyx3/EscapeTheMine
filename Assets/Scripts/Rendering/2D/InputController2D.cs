@@ -27,7 +27,7 @@ namespace Rendering.TwoD
 		public void Click(Vector2 mPos)
 		{
 			Vector2 worldMPos = Content2D.Instance.Cam.ScreenToWorldPoint(mPos);
-			GameLogic.Map map = UnityLogic.GameFSM.Instance.Map;
+			GameLogic.Map map = UnityLogic.EtMGame.Instance.Map;
 
 			//Exit if we clicked outside the map.
 			Vector2i tilePos = new Vector2i(worldMPos);

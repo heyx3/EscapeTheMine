@@ -67,7 +67,7 @@ namespace Rendering.TwoD
         private void Callback_FoodChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {
             lowFoodWarning.gameObject.SetActive(
-				newFood <= PlayerConsts.Instance.InitialLowFoodThreshold);
+				newFood <= PlayerConsts.InitialLowFoodThreshold);
         }
         private void Callback_HealthChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {

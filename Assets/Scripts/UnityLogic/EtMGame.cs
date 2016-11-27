@@ -10,7 +10,7 @@ namespace UnityLogic
 	/// <summary>
 	/// Runs the Finite State Machine controlling the flow of the game.
 	/// </summary>
-	public class GameFSM : MonoBehaviour
+	public class EtMGame : MonoBehaviour
 	{
 		public class WorldProgress : MyData.IReadWritable
 		{
@@ -88,25 +88,25 @@ namespace UnityLogic
 		}
 
 
-		public static GameFSM Instance
+		public static EtMGame Instance
 		{
 			get
 			{
 				if (_instance == null)
 				{
-					_instance = FindObjectOfType<GameFSM>();
+					_instance = FindObjectOfType<EtMGame>();
 					if (_instance == null)
 					{
-						GameObject go = new GameObject("Game FSM");
+						GameObject go = new GameObject("EtM Game");
 						DontDestroyOnLoad(go);
-						_instance = go.AddComponent<GameFSM>();
+						_instance = go.AddComponent<EtMGame>();
 					}
 				}
 
 				return _instance;
 			}
 		}
-		private static GameFSM _instance = null;
+		private static EtMGame _instance = null;
 
 		public static bool InstanceExists { get { return _instance != null; } }
 
@@ -178,10 +178,18 @@ namespace UnityLogic
 			if (OnEnd != null)
 				OnEnd();
 
-			Map.Clear();
-			Progress.Level += 1;
+			//Remove all units except for the ones that are continuing on to the next map.
+			HashSet<ulong> toRemove = new HashSet<ulong>();
+			foreach (GameLogic.Group g in Map.Groups)
+				foreach (ulong id in g.UnitsByID)
+					if (!Progress.ExitedUnitIDs.Contains(id))
+						toRemove.Add(id);
+			foreach (ulong id in toRemove)
+				Map.RemoveUnit(Map.GetUnit(id));
 
+			Progress.Level += 1;
 			GenerateMap(false);
+			Progress.ExitedUnitIDs.Clear();
 
 			if (OnStart != null)
 				OnStart();
@@ -251,48 +259,15 @@ namespace UnityLogic
 						tiles[x, y] = GameLogic.TileTypes.Empty;
 				}
 			}
-
-			//Choose a room and place the level's "entrance" into the middle of it.
-			List<Vector2i> entranceSpaces = new List<Vector2i>();
-			{
-				PRNG roomPlacer = new PRNG(unchecked(seed * 8957));
-				Vector2i entrance = rooms[roomPlacer.NextInt() % rooms.Count].OriginalBounds.Center;
-				entrance = new Vector2i(Mathf.Clamp(entrance.x, 1, Settings.Size - 2),
-										Mathf.Clamp(entrance.y, 1, Settings.Size - 2));
-
-				//Carve a small circle out of the map for the entrance.
-				const float entranceRadius = 1.75f,
-							entranceRadiusSqr = entranceRadius * entranceRadius;
-				int entranceRadiusCeil = Mathf.CeilToInt(entranceRadius);
-				Vector2i entranceRegionMin = entrance - new Vector2i(entranceRadiusCeil,
-																	 entranceRadiusCeil),
-						 entranceRegionMax = entrance + new Vector2i(entranceRadiusCeil,
-																	 entranceRadiusCeil);
-				entranceRegionMin = new Vector2i(Mathf.Clamp(entranceRegionMin.x, 0, Settings.Size - 1),
-												 Mathf.Clamp(entranceRegionMin.y, 0, Settings.Size - 1));
-				entranceRegionMax = new Vector2i(Mathf.Clamp(entranceRegionMax.x, 0, Settings.Size - 1),
-												 Mathf.Clamp(entranceRegionMax.y, 0, Settings.Size - 1));
-
-				for (int y = entranceRegionMin.y; y <= entranceRegionMax.y; ++y)
-					for (int x = entranceRegionMin.x; x <= entranceRegionMax.x; ++x)
-						if (entrance.DistanceSqr(new Vector2i(x, y)) < entranceRadiusSqr)
-						{
-							entranceSpaces.Add(new Vector2i(x, y));
-							Map.Tiles[x, y] = GameLogic.TileTypes.Empty;
-						}
-			}
-
 			Map.Tiles.Reset(tiles);
 
 			//Generate units.
-			//TODO: Fix.
 			var newUnits = Settings.PlayerChars.Generate(
-							   entranceSpaces,
-							   (fromScratch ? null : Progress.ExitedUnitIDs),
-							   Map, NThreads, unchecked(seed * 135789));
+							   Map, Settings, rooms, NThreads, unchecked(seed * 135789),
+							   (fromScratch ? null : Progress.ExitedUnitIDs));
 			Progress.ExitedUnitIDs.Clear();
 
-			//TODO: Run the Map's coroutine.
+			StartCoroutine(Map.RunGameCoroutine());
 
 			//TODO: Make the camera focus in on the units. Provide some kind of "ZoomToUnits()" method on the Content2D/3D classes.
 			SaveWorld();

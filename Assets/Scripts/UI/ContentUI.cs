@@ -80,12 +80,6 @@ namespace MyUI
 		{
 			switch (unit.MyType)
 			{
-				case GameLogic.Unit.Types.TestChar:
-					return CreateWindow(Window_TestChar,
-										(GameLogic.Units.TestChar)unit).gameObject;
-				case GameLogic.Unit.Types.TestStructure:
-					return CreateWindow(Window_TestStructure,
-										(GameLogic.Units.TestStructure)unit).gameObject;
 				case GameLogic.Unit.Types.PlayerChar:
 					return CreateWindow(Window_PlayerChar,
 										(GameLogic.Units.PlayerChar)unit).gameObject;

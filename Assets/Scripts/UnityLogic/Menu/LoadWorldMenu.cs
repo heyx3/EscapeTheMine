@@ -27,7 +27,7 @@ namespace UnityLogic
 		public void Callback_StartLoadedGame()
         {
             MenuController.Instance.Activate(null);
-            GameFSM.Instance.LoadWorld(SelectedWorld);
+            EtMGame.Instance.LoadWorld(SelectedWorld);
 		}
 		public void Callback_Delete()
 		{

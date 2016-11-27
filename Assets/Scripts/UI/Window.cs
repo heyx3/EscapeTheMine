@@ -24,7 +24,7 @@ namespace MyUI
 		/// </summary>
 		public static IEnumerable<Window<T>> AllWindows { get { return allWindows; } }
 
-		protected static UnityLogic.GameFSM FSM { get { return UnityLogic.GameFSM.Instance; } }
+		protected static UnityLogic.EtMGame Game { get { return UnityLogic.EtMGame.Instance; } }
 
 
 		/// <summary>
@@ -56,12 +56,16 @@ namespace MyUI
 		{
 			MyTr = transform;
 			allWindows.Add(this);
-			FSM.Map.OnMapCleared += Callback_MapCleared;
+
+			Game.OnStart += Callback_MapChanging;
+			Game.OnEnd += Callback_MapChanging;
 		}
 		protected virtual void OnDestroy()
 		{
-			FSM.Map.OnMapCleared -= Callback_MapCleared;
 			allWindows.Remove(this);
+
+			Game.OnStart -= Callback_MapChanging;
+			Game.OnEnd -= Callback_MapChanging;
 		}
 
 
@@ -93,9 +97,9 @@ namespace MyUI
 		/// <summary>
 		/// Default behavior: closes this window.
 		/// </summary>
-		protected virtual void Callback_MapCleared(GameLogic.Map theMap)
+		protected virtual void Callback_MapChanging()
 		{
-			Destroy(gameObject);
+			Callback_Button_Close();
 		}
 
 		#endregion

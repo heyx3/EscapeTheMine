@@ -12,7 +12,8 @@ using PlayerConsts = GameLogic.Units.Player_Char.Consts;
 namespace UnityLogic.MapGen
 {
 	/// <summary>
-	/// Generates new PlayerChar units for a new level.
+	/// Generates an entrance for PlayerChars to enter through, then places them there.
+	/// Can optionally generate some PlayerChar units to place in the entrance.
 	/// </summary>
 	[Serializable]
 	public class PlayerCharGenSettings : MyData.IReadWritable
@@ -26,27 +27,71 @@ namespace UnityLogic.MapGen
 
 
 		/// <summary>
-		/// Runs the generator and returns the new units.
+		/// Runs the generator and returns the spaces in the generated entrance.
 		/// </summary>
-		/// <param name="entranceSpaces">
-		/// The empty spaces in the map to place units into.
+		/// <param name="rooms">
+		/// The rooms that were generated. Used to choose a place to place an entrance.
 		/// </param>
-		/// <param name="toPlace">
-		/// The units to clone into this new map.
+		/// <param name="theMap">
+		/// The map that new units are being generated into.
+		/// </param>
+		/// <param name="unitsToKeep">
+		/// The units to keep alive in the map, indexed by their ID's.
 		/// Pass "null" if new units should be generated from scratch.
 		/// </param>
-		public HashSet<Unit> Generate(List<Vector2i> entranceSpaces, ICollection<Unit> toClone,
-									  Map newMap, int nThreads, int seed)
+		public List<Vector2i> Generate(Map theMap, EtMGame.WorldSettings genSettings,
+									   List<Room> rooms, int nThreads, int seed,
+									   UlongSet unitsToKeep = null)
 		{
-			HashSet<Unit> chars = new HashSet<Unit>();
-
-			//Either generate new units or clone the old ones.
-			GameLogic.Groups.PlayerGroup playerGroup = null;
-			if (toClone == null)
+			//Choose a room and place the level's "entrance" into the middle of it.
+			List<Vector2i> entranceSpaces = new List<Vector2i>();
 			{
-				playerGroup = new GameLogic.Groups.PlayerGroup(newMap);
-				HashSet<Unit> units = new HashSet<Unit>();
+				PRNG roomPlacer = new PRNG(unchecked(seed * 8957));
+				Vector2i entrance = rooms[roomPlacer.NextInt() % rooms.Count].OriginalBounds.Center;
+				entrance = new Vector2i(Mathf.Clamp(entrance.x, 1, genSettings.Size - 2),
+										Mathf.Clamp(entrance.y, 1, genSettings.Size - 2));
 
+				//Carve a small circle out of the map for the entrance.
+				const float entranceRadius = 1.75f,
+							entranceRadiusSqr = entranceRadius * entranceRadius;
+				int entranceRadiusCeil = Mathf.CeilToInt(entranceRadius);
+				Vector2i entranceRegionMin = entrance - new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil),
+						 entranceRegionMax = entrance + new Vector2i(entranceRadiusCeil,
+																	 entranceRadiusCeil);
+				entranceRegionMin = new Vector2i(Mathf.Clamp(entranceRegionMin.x,
+															 0, genSettings.Size - 1),
+												 Mathf.Clamp(entranceRegionMin.y,
+															 0, genSettings.Size - 1));
+				entranceRegionMax = new Vector2i(Mathf.Clamp(entranceRegionMax.x,
+															 0, genSettings.Size - 1),
+												 Mathf.Clamp(entranceRegionMax.y,
+															 0, genSettings.Size - 1));
+
+				for (int y = entranceRegionMin.y; y <= entranceRegionMax.y; ++y)
+					for (int x = entranceRegionMin.x; x <= entranceRegionMax.x; ++x)
+						if (entrance.DistanceSqr(new Vector2i(x, y)) < entranceRadiusSqr)
+						{
+							entranceSpaces.Add(new Vector2i(x, y));
+							theMap.Tiles[x, y] = GameLogic.TileTypes.Empty;
+						}
+			}
+
+
+			//If we weren't given any units to place, generate some.
+			if (unitsToKeep == null)
+			{
+				unitsToKeep = new UlongSet();
+
+				//Find or create the PlayerGroup.
+				var playerGroup = theMap.FindGroup<GameLogic.Groups.PlayerGroup>();
+				if (playerGroup == null)
+				{
+					playerGroup = new GameLogic.Groups.PlayerGroup(theMap);
+					theMap.Groups.Add(playerGroup);
+				}
+
+				//Generate a certain number of player units.
 				PRNG prng = new PRNG(seed);
 				for (int i = 0; i < NStartingChars; ++i)
 				{
@@ -56,17 +101,13 @@ namespace UnityLogic.MapGen
 
 					float totalPoints = StartingStatAbilities;
 
-					float f = float.PositiveInfinity;
-					while (f > totalPoints)
-						f = prng.NextFloat();
-					float energy = f;
-					totalPoints -= f;
-
-					f = float.PositiveInfinity;
-					while (f > totalPoints)
-						f = prng.NextFloat();
-					float food = f;
-					totalPoints -= f;
+					float p = prng.NextFloat() * Math.Min(1.0f, totalPoints);
+					float energy = p;
+					totalPoints -= p;
+					
+					p = prng.NextFloat() * Math.Min(1.0f, totalPoints);
+					float food = p;
+					totalPoints -= p;
 
 					float strength = totalPoints;
 
@@ -81,25 +122,18 @@ namespace UnityLogic.MapGen
 										  strength);
 
 
-					PlayerChar chr = new PlayerChar(playerGroup, food, energy, strength);
-					playerGroup.Units.Add(chr);
-					units.Add(chr);
+					PlayerChar chr = new PlayerChar(theMap, playerGroup, food, energy, strength);
+					theMap.AddUnit(chr);
+					unitsToKeep.Add(chr.ID);
 				}
-			}
-			else
-			{
-				playerGroup = newMap.FindPlayerGroup();
-				UnityEngine.Assertions.Assert.IsNotNull(playerGroup);
-
-				playerGroup.Clear();
 			}
 
 			//Position the units.
 			UnityEngine.Assertions.Assert.IsTrue(entranceSpaces.Count > 0);
-			int unitsPerSpace = playerGroup.Units.Count / entranceSpaces.Count;
+			int unitsPerSpace = unitsToKeep.Count / entranceSpaces.Count;
 			int unitI = 0,
 				posI = 0;
-			foreach (Unit unit in playerGroup.Units)
+			foreach (Unit unit in unitsToKeep.Select(id => theMap.GetUnit(id)))
 			{
 				unit.Pos.Value = entranceSpaces[posI];
 
@@ -111,7 +145,7 @@ namespace UnityLogic.MapGen
 				}
 			}
 
-			return chars;
+			return entranceSpaces;
 		}
 
 		public void WriteData(MyData.Writer writer)

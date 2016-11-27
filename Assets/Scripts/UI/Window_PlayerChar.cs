@@ -17,7 +17,7 @@ namespace MyUI
 		}
 		private static string FormatHealth(float f)
 		{
-			float maxHealth = Consts.Instance.Max_Health;
+			float maxHealth = Consts.Max_Health;
 			int healthPercent = Mathf.RoundToInt(100.0f * f / maxHealth);
 			return healthPercent.ToString() + "%";
 		}
@@ -155,11 +155,10 @@ namespace MyUI
 				(tilePos) =>
 				{
 					if (tilePos.HasValue)
-						Target.AddJob(new Job_MoveToPos(tilePos.Value, false, FSM.Map)); //TODO: Optionally make it an emergency.
+						Target.AddJob(new Job_MoveToPos(tilePos.Value, false, Game.Map)); //TODO: Optionally make it an emergency.
 				},
-				(tilePos) => { return !FSM.Map.Tiles[tilePos].BlocksMovement(); },
+				(tilePos) => { return !Game.Map.Tiles[tilePos].BlocksMovement(); },
 				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
-
 			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
 	}

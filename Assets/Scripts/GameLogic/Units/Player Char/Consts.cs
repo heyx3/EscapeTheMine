@@ -14,6 +14,8 @@ namespace GameLogic.Units.Player_Char
 		private static Consts instance = new Consts();
 		private Consts()
 		{
+            instance = this;
+
 			//Try to read the constants from a file.
 			const string fileName = "PlayerConsts.consts";
 			string filePath = Path.Combine(Application.dataPath, fileName);
@@ -53,8 +55,6 @@ namespace GameLogic.Units.Player_Char
 
 			//Set pre-computed fields.
 			One_Over_MaxEnemyDistSqr = 1.0f / MaxEnemyDistSqr;
-
-            instance = this;
 		}
 
 

@@ -10,6 +10,7 @@ namespace GameLogic
 	{
 		public event Action<Map, Unit> OnUnitAdded;
 		public event Action<Map, Unit> OnUnitRemoved;
+		public event Action<Map, Unit, Vector2i, Vector2i> OnUnitMoved;
 
 
 		public Group.GroupSet Groups { get; private set; }
@@ -81,11 +82,15 @@ namespace GameLogic
 		{
 			u.Pos.OnChanged += Callback_UnitMoved;
 
-			u.RegisterID(nextID);
-			nextID += 1;
+			if (!u.IsIDRegistered)
+			{
+				u.RegisterID(nextID);
+				nextID += 1;
+			}
 
 			idToUnit.Add(u.ID, u);
 			units.Add(u);
+			u.MyGroup.UnitsByID.Add(u.ID);
 
 			if (OnUnitAdded != null)
 				OnUnitAdded(this, u);
@@ -122,7 +127,7 @@ namespace GameLogic
 			return Groups.Where(g => (g is GroupType)).Select(g => (GroupType)g);
 		}
 
-
+		
 		/// <summary>
 		/// Wipes out all units and jobs.
 		/// </summary>
@@ -182,11 +187,23 @@ namespace GameLogic
 		/// <summary>
 		/// Keeps running this map until the "ShouldQuit" field is set to true.
 		/// </summary>
-		public System.Collections.IEnumerable RunGameCoroutine()
+		public System.Collections.IEnumerator RunGameCoroutine()
 		{
-			while (!ShouldQuit.Value)
+			while (true)
 			{
-				yield break;//TODO: Implement.
+				foreach (Group g in Groups.OrderByDescending(g => g.TurnPriority.Value))
+				{
+					foreach (object o in g.TakeTurn())
+					{
+						yield return o;
+
+						while (IsPaused)
+							yield return null;
+
+						if (ShouldQuit.Value)
+							yield break;
+					}
+				}
 			}
 		}
 
@@ -201,9 +218,6 @@ namespace GameLogic
 			writer.Collection<Unit, HashSet<Unit>>(units, "units",
 												   (wr, unit, name) =>
 													   Unit.Write(wr, name, unit));
-
-			foreach (Unit u in units)
-				AddUnit(u);
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -214,10 +228,12 @@ namespace GameLogic
 
 			nextID = reader.UInt64("nextID");
 
-			reader.Collection<Unit, HashSet<Unit>>("units",
-												   (MyData.Reader rd, ref Unit outUnit, string name) =>
-												       outUnit = Unit.Read(rd, this, name),
-												   (size) => units);
+			reader.Collection("units",
+							  (MyData.Reader rd, ref Unit outUnit, string name) =>
+							      outUnit = Unit.Read(rd, this, name),
+							  (size) => units);
+			foreach (Unit u in units)
+				AddUnit(u);
 		}
 		
 		private void Callback_UnitMoved(Unit u, Vector2i oldP, Vector2i newP)
@@ -230,6 +246,9 @@ namespace GameLogic
 			if (!posToUnits.ContainsKey(newP))
 				posToUnits.Add(newP, new List<Unit>());
 			posToUnits[newP].Add(u);
+
+			if (OnUnitMoved != null)
+				OnUnitMoved(this, u, oldP, newP);
 		}
 	}
 } 

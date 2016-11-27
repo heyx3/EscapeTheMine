@@ -23,19 +23,19 @@ namespace Rendering.TwoD
 		}
 		protected virtual void Start()
 		{
-			UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved += Callback_OnElementRemoved;
+			UnityLogic.EtMGame.Instance.Map.OnUnitRemoved += Callback_OnUnitRemoved;
 		}
 		protected virtual void OnDestroy()
 		{
-			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
-			if (UnityLogic.GameFSM.InstanceExists)
-				UnityLogic.GameFSM.Instance.Map.Units.OnElementRemoved -= Callback_OnElementRemoved;
+			//Make sure we don't accidentally spawn the EtMGame object while shutting down.
+			if (UnityLogic.EtMGame.InstanceExists)
+				UnityLogic.EtMGame.Instance.Map.OnUnitRemoved -= Callback_OnUnitRemoved;
 		}
 
-		private void Callback_OnElementRemoved(LockedSet<GameLogic.Unit> worldUnits,
-											   GameLogic.Unit unit)
+		private void Callback_OnUnitRemoved(GameLogic.Map map, GameLogic.Unit unit)
 		{
-			Destroy(gameObject);
+			if (unit == Target)
+				Destroy(gameObject);
 		}
 	}
 }

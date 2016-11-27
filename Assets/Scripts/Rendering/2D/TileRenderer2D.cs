@@ -96,12 +96,12 @@ namespace Rendering.TwoD
 											new Color(texR.xMin, texR.yMin,
 													  texR.xMax, texR.yMax));
 			}
-			 
+
 			//Set up callbacks.
-			GameFSM.OnNewMap += Callback_StartMap;
-			GameFSM.Map.OnMapCleared += Callback_EndMap;
-			GameFSM.Map.Tiles.OnTileChanged += Callback_TileChanged;
-			GameFSM.Map.Tiles.OnTileGridResized += Callback_TileGridResized;
+			Game.OnStart += Callback_StartMap;
+			Game.OnEnd += Callback_EndMap;
+			Game.Map.Tiles.OnTileChanged += Callback_TileChanged;
+			Game.Map.Tiles.OnTileGridReset += Callback_TileGridReset;
 		}
 		private void OnDisable()
 		{
@@ -109,31 +109,31 @@ namespace Rendering.TwoD
 			tileGridTex.Apply();
 			tileGridTex = null;
 
-			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
+			//Make sure we don't accidentally spawn the EtMGame object while shutting down.
 			//Clean up callbacks.
-			if (UnityLogic.GameFSM.InstanceExists)
+			if (UnityLogic.EtMGame.InstanceExists)
 			{
-				GameFSM.OnNewMap -= Callback_StartMap;
-				GameFSM.Map.OnMapCleared -= Callback_EndMap;
-				GameFSM.Map.Tiles.OnTileChanged -= Callback_TileChanged;
-				GameFSM.Map.Tiles.OnTileGridResized -= Callback_TileGridResized;
+				Game.OnStart -= Callback_StartMap;
+				Game.OnEnd -= Callback_EndMap;
+				Game.Map.Tiles.OnTileChanged -= Callback_TileChanged;
+				Game.Map.Tiles.OnTileGridReset -= Callback_TileGridReset;
 			}
 		}
 
 
-		private void Callback_StartMap(Map map)
+		private void Callback_StartMap()
 		{
 			tileQuad.SetActive(true);
-			Callback_TileGridResized(map.Tiles, Vector2i.Zero,
-									 new Vector2i(map.Tiles.Width, map.Tiles.Height));
+			Callback_TileGridReset(Map.Tiles, Vector2i.Zero,
+								   new Vector2i(Map.Tiles.Width, Map.Tiles.Height));
 		}
-		private void Callback_EndMap(Map map)
+		private void Callback_EndMap()
 		{
 			tileQuad.SetActive(false);
 		}
 
-		private void Callback_TileGridResized(GameLogic.TileGrid tiles,
-				 							  Vector2i oldSize, Vector2i newSize)
+		private void Callback_TileGridReset(GameLogic.TileGrid tiles,
+				 							Vector2i oldSize, Vector2i newSize)
 		{
 			//Reposition the quad so it perfectly covers the map in world space.
 			Transform quadTr = tileQuad.transform;
@@ -154,7 +154,7 @@ namespace Rendering.TwoD
 			tileGridTex.SetPixels(cols);
 			tileGridTex.Apply();
 			
-			GetComponentInChildren<SpriteRenderer>().material.SetTexture(paramName_TileGridTex, tileGridTex);
+			tileQuad.GetComponentInChildren<SpriteRenderer>().material.SetTexture(paramName_TileGridTex, tileGridTex);
 		}
 		private void Callback_TileChanged(GameLogic.TileGrid tiles, Vector2i pos,
 										  GameLogic.TileTypes oldVal, GameLogic.TileTypes newVal)

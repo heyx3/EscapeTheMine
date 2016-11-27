@@ -10,7 +10,7 @@ namespace UnityLogic
 {
 	public class NewWorldMenu : Singleton<NewWorldMenu>
 	{
-		public GameFSM.WorldSettings Settings { get { return GameFSM.Instance.Settings; } }
+		public EtMGame.WorldSettings Settings { get { return EtMGame.Instance.Settings; } }
 
 		[SerializeField]
 		private UnityEngine.UI.Text ui_Message,
@@ -68,7 +68,7 @@ namespace UnityLogic
 		public void Callback_StartNewGame()
 		{
             MenuController.Instance.Activate(null);
-			GameFSM.Instance.GenerateWorld();
+			EtMGame.Instance.GenerateWorld();
 		}
 		public void Callback_WorldGenSettings()
 		{

@@ -25,10 +25,7 @@ namespace GameLogic.Units.Player_Char
 		{
 			//Find the best path to the destination from here.
 			//Start the search from scratch in case anything changed since the last turn.
-			List<Vector2i> path =
-				TheMap.Value.FindPath(Owner.Value.Pos,
-									  new Pathfinding.Goal<Vector2i>(TargetPos),
-									  Owner.Value.AStarEdgeCalc);
+			List<Vector2i> path = Owner.Value.FindPath(new Pathfinding.Goal<Vector2i>(TargetPos));
 			
 			//If there is no valid path, give up.
 			if (path == null)
@@ -53,7 +50,7 @@ namespace GameLogic.Units.Player_Char
 		}
 
 		//Serialization:
-		public override Types ThisType {  get { return Types.MoveToPos; } }
+		public override Types ThisType { get { return Types.MoveToPos; } }
 		public override void WriteData(Writer writer)
 		{
 			base.WriteData(writer);

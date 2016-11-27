@@ -11,11 +11,11 @@ namespace UnityLogic
 
 	public class WorldGenSettingsMenu : Singleton<WorldGenSettingsMenu>
 	{
-		public MapGen.BiomeGenSettings Biome { get { return GameFSM.Instance.Settings.Biome; } }
-		public MapGen.RoomGenSettings Rooms { get { return GameFSM.Instance.Settings.Rooms; } }
-		public MapGen.CAGenSettings CA { get { return GameFSM.Instance.Settings.CA; } }
-		public MapGen.DepositGenSettings Deposit { get { return GameFSM.Instance.Settings.Deposits; } }
-		public MapGen.PlayerCharGenSettings PlayerChars {  get { return GameFSM.Instance.Settings.PlayerChars; } }
+		public MapGen.BiomeGenSettings Biome { get { return EtMGame.Instance.Settings.Biome; } }
+		public MapGen.RoomGenSettings Rooms { get { return EtMGame.Instance.Settings.Rooms; } }
+		public MapGen.CAGenSettings CA { get { return EtMGame.Instance.Settings.CA; } }
+		public MapGen.DepositGenSettings Deposit { get { return EtMGame.Instance.Settings.Deposits; } }
+		public MapGen.PlayerCharGenSettings PlayerChars {  get { return EtMGame.Instance.Settings.PlayerChars; } }
 
 
 		[SerializeField]

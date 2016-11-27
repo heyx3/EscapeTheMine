@@ -20,37 +20,37 @@ namespace MyUI
 
 			UnityEngine.Assertions.Assert.IsTrue(Target.Count > 0, "No items to select from");
 			TilePos = Target.First().Pos;
-			
-			FSM.Map.Units.OnElementAdded += Callback_NewUnit;
-			FSM.Map.Units.OnElementRemoved += Callback_UnitDies;
-			FSM.Map.Units.OnUnitMoved += Callback_UnitMoves;
+
+			Game.Map.OnUnitAdded += Callback_NewUnit;
+			Game.Map.OnUnitRemoved += Callback_UnitDies;
+			Game.Map.OnUnitMoved += Callback_UnitMoves;
 		}
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
-			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
-			if (UnityLogic.GameFSM.InstanceExists)
+			//Make sure we don't accidentally spawn the EtMGame object while shutting down.
+			if (UnityLogic.EtMGame.InstanceExists)
 			{
-				FSM.Map.Units.OnElementAdded -= Callback_NewUnit;
-				FSM.Map.Units.OnElementRemoved -= Callback_UnitDies;
-				FSM.Map.Units.OnUnitMoved -= Callback_UnitMoves;
+				Game.Map.OnUnitAdded -= Callback_NewUnit;
+				Game.Map.OnUnitRemoved -= Callback_UnitDies;
+				Game.Map.OnUnitMoved -= Callback_UnitMoves;
 			}
 		}
 
-		public void Callback_NewUnit(LockedSet<GameLogic.Unit> units, GameLogic.Unit unit)
+		public void Callback_NewUnit(GameLogic.Map theMap, GameLogic.Unit unit)
 		{
 			UnityEngine.Assertions.Assert.IsFalse(Target.Contains(unit));
 
 			if (unit.Pos == TilePos)
 				AddUnit(unit);
 		}
-		public void Callback_UnitDies(LockedSet<GameLogic.Unit> units, GameLogic.Unit unit)
+		public void Callback_UnitDies(GameLogic.Map theMap, GameLogic.Unit unit)
 		{
 			if (Target.Contains(unit))
 				RemoveUnit(unit);
 		}
-		public void Callback_UnitMoves(GameLogic.UnitSet units, GameLogic.Unit unit, Vector2i oldPos, Vector2i newPos)
+		public void Callback_UnitMoves(GameLogic.Map theMap, GameLogic.Unit unit, Vector2i oldPos, Vector2i newPos)
 		{
 			if (oldPos == TilePos && newPos != TilePos)
 			{
@@ -64,9 +64,9 @@ namespace MyUI
 			}
 		}
 
-		protected override void Callback_MapCleared(GameLogic.Map map)
+		protected override void Callback_MapChanging()
 		{
-			base.Callback_MapCleared(map);
+			base.Callback_MapChanging();
 			Callback_Button_Close();
 		}
 
@@ -81,12 +81,11 @@ namespace MyUI
 			Target.Add(u);
 
 			//Get a display name for the given type.
+			//TODO: Localize.
 			string typeName;
 			switch (u.MyType)
 			{
-				case GameLogic.Unit.Types.TestChar: typeName = "Test Char"; break;
-				case GameLogic.Unit.Types.TestStructure: typeName = "Test Structure"; break;
-				case GameLogic.Unit.Types.PlayerChar: typeName = "Player Char"; break;
+				case GameLogic.Unit.Types.PlayerChar: typeName = "Player Char"; break; //TODO: Give each character a name.
 				default: throw new NotImplementedException(u.MyType.ToString());
 			}
 

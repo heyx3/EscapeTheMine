@@ -41,8 +41,7 @@ namespace MyUI
 		/// </summary>
 		private static Window_SelectTile instance = null;
 
-
-		public Transform TileHighlight;
+		//TODO: Make a TileHighlight behavior(s) (based on view mode: 2d or 3d) that this window captures and uses for its lifetime.
 		public Localizer Label_Title, Label_Message;
 
 		private Vector2i? currentChoice = null;
@@ -56,13 +55,6 @@ namespace MyUI
 			if (instance != null)
 				instance.Callback_FinishedChoosingTile(true);
 			instance = this;
-
-			TileHighlight.gameObject.SetActive(true);
-
-			//Every time the view mode changes,
-			//    we need to change what kind of input callback we respond to.
-			UnityLogic.Options.OnChanged_ViewMode += Callback_NewViewMode;
-			Callback_NewViewMode(UnityLogic.ViewModes.ThreeD, UnityLogic.Options.ViewMode);
 		}
 		private void Start()
 		{
@@ -71,6 +63,11 @@ namespace MyUI
 
 			Label_Message.Key = Target.MessageKey;
 			Label_Message.Args = Target.MessageArgs;
+
+			//Every time the view mode changes,
+			//    we need to change what kind of input callback we respond to.
+			UnityLogic.Options.OnChanged_ViewMode += Callback_NewViewMode;
+			Callback_NewViewMode(UnityLogic.ViewModes.TwoD, UnityLogic.Options.ViewMode);
 		}
 		protected override void OnDestroy()
 		{

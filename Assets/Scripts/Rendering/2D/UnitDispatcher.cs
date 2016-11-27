@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GameLogic;
 using UnityEngine;
+using GameLogic;
 
 
 namespace Rendering.TwoD
@@ -15,41 +15,29 @@ namespace Rendering.TwoD
 		public GameObject UnitPrefab_TestChar, UnitPrefab_TestStructure,
 						  UnitPrefab_PlayerChar;
 
-		private Dictionary<GameLogic.Unit, GameObject> unitToObj = new Dictionary<Unit, GameObject>();
+		private Dictionary<Unit, GameObject> unitToObj = new Dictionary<Unit, GameObject>();
 
 		
 		private void OnEnable()
 		{
-			GameFSM.Map.Units.OnElementAdded += UnitAddedToMap;
-			GameFSM.Map.Units.OnElementRemoved += UnitRemovedFromMap;
+			Game.Map.OnUnitAdded += UnitAddedToMap;
+			Game.Map.OnUnitRemoved += UnitRemovedFromMap;
 		}
 		private void OnDisable()
 		{
-			//Make sure we don't accidentally spawn the GameFSM object while shutting down.
-			if (UnityLogic.GameFSM.InstanceExists)
+			//Make sure we don't accidentally spawn the EtmGame object while shutting down.
+			if (UnityLogic.EtMGame.InstanceExists)
 			{
-				GameFSM.Map.Units.OnElementAdded -= UnitAddedToMap;
-				GameFSM.Map.Units.OnElementRemoved -= UnitRemovedFromMap;
+				Game.Map.OnUnitAdded -= UnitAddedToMap;
+				Game.Map.OnUnitRemoved -= UnitRemovedFromMap;
 			}
 		}
 
-		protected void UnitAddedToMap(LockedSet<Unit> collection, Unit unit)
+		protected void UnitAddedToMap(Map map, Unit unit)
 		{
 			GameObject obj;
 			switch (unit.MyType)
 			{
-				case Unit.Types.TestChar:
-					{
-						obj = Instantiate(UnitPrefab_TestChar);
-						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestChar>>().Target =
-							(GameLogic.Units.TestChar)unit;
-					} break;
-				case Unit.Types.TestStructure:
-					{
-						obj = Instantiate(UnitPrefab_TestStructure);
-						obj.GetComponentInChildren<UnitRenderer<GameLogic.Units.TestStructure>>().Target =
-							(GameLogic.Units.TestStructure)unit;
-					} break;
 				case Unit.Types.PlayerChar:
 					{
 						obj = Instantiate(UnitPrefab_PlayerChar);
@@ -61,7 +49,7 @@ namespace Rendering.TwoD
 			}
 			unitToObj.Add(unit, obj);
 		}
-		protected void UnitRemovedFromMap(LockedSet<Unit> collection, Unit unit)
+		protected void UnitRemovedFromMap(Map map, Unit unit)
 		{
 			Destroy(unitToObj[unit]);
 			unitToObj.Remove(unit);

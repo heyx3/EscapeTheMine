@@ -27,7 +27,7 @@ namespace GameLogic
         public UlongSet EnemiesByID { get; private set; }
 
 
-        public Group(Map theMap, int turnPriority)
+        public Group(Map theMap, int turnPriority, bool destroySelfWhenEmpty)
         {
             TheMap = theMap;
             TurnPriority = new Stat<int, Group>(this, turnPriority);
@@ -45,6 +45,16 @@ namespace GameLogic
             {
                 AlliesByID.Remove(element);
             };
+
+			if (destroySelfWhenEmpty)
+			{
+				//When the last unit in this group is removed, destroy the group.
+				UnitsByID.OnElementRemoved += (units, element) =>
+				{
+					if (units.Count == 0)
+						TheMap.Groups.Remove(this);
+				};
+			}
         }
 
 

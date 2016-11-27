@@ -36,7 +36,7 @@ namespace GameLogic.Groups
 		private HashSet<Job> emergencyJobs = new HashSet<Job>();
 
 
-        public PlayerGroup(Map theMap) : base(theMap, Consts.TurnPriority_Player) { }
+        public PlayerGroup(Map theMap) : base(theMap, Consts.TurnPriority_Player, false) { }
 
 
         public override IEnumerable TakeTurn()

@@ -10,12 +10,12 @@ namespace MyUI
 	{
 		public void Callback_Button_Save()
 		{
-			FSM.SaveWorld();
+			Game.SaveWorld();
 		}
 		public void Callback_Button_Quit()
 		{
 			//Ask the player for confirmation, and then quit the world.
-			var wnd = ContentUI.Instance.CreateDialog(() => FSM.QuitWorld());
+			var wnd = ContentUI.Instance.CreateDialog(() => Game.QuitWorld());
 			wnd.Label_Title.Key = "WINDOW_CONFIRMQUIT_TITLE";
 			wnd.Label_Message.Key = "WINDOW_CONFIRMQUIT_MESSAGE";
 		}

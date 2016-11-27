@@ -162,7 +162,13 @@ namespace GameLogic.Units
 					yield return o;
 		}
 
-		public void FindPath(Pathfinding.Goal<Vector2i> goal, List<Vector2i> outPath)
+		/// <summary>
+		/// Outputs the shortest path from this PlayerChar to the given goal
+		///     into the "outPath" list.
+		/// Does not include this PlayerChar's own position in the list.
+		/// Returns whether a path was actually found.
+		/// </summary>
+		public bool FindPath(Pathfinding.Goal<Vector2i> goal, List<Vector2i> outPath)
 		{
 			//Collect all of this PlayerChar's current enemies for the A* heuristic.
 			_temp_enemies.Clear();
@@ -170,7 +176,24 @@ namespace GameLogic.Units
 				foreach (ulong enemyUnitID in TheMap.Groups.Get(enemyGroupID).UnitsByID)
 					_temp_enemies.Add(TheMap.GetUnit(enemyUnitID));
 
-			TheMap.FindPath(Pos, goal, outPath, AStarEdgeCalc);
+			return TheMap.FindPath(Pos, goal, outPath, AStarEdgeCalc);
+		}
+		/// <summary>
+		/// Finds the shortest path from this PlayerChar to the given goal.
+		/// Does not include this PlayerChar's own position in the list.
+		/// Returns "null" if a path wasn't found.
+		/// IMPORTANT: The returned list is reused for other calls to this method,
+		///     so treat it as a temp variable!
+		/// </summary>
+		public List<Vector2i> FindPath(Pathfinding.Goal<Vector2i> goal)
+		{
+			//Collect all of this PlayerChar's current enemies for the A* heuristic.
+			_temp_enemies.Clear();
+			foreach (ulong enemyGroupID in TheMap.Groups.Get(MyGroupID).EnemiesByID)
+				foreach (ulong enemyUnitID in TheMap.Groups.Get(enemyGroupID).UnitsByID)
+					_temp_enemies.Add(TheMap.GetUnit(enemyUnitID));
+
+			return TheMap.FindPath(Pos, goal, AStarEdgeCalc);
 		}
 
 		/// <summary>
