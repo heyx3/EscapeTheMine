@@ -21,12 +21,6 @@ namespace GameLogic
 		/// </summary>
         public Stat<bool, Map> IsPaused { get; private set; }
 
-		/// <summary>
-		/// Indicates that this map should stop running the update logic coroutine
-		///     as soon as possible.
-		/// </summary>
-		public Stat<bool, Map> ShouldQuit { get; private set; }
-
 
 		private ulong nextID = 0;
 		private HashSet<Unit> units = new HashSet<Unit>();
@@ -57,7 +51,6 @@ namespace GameLogic
             Groups = new Group.GroupSet(this);
 
             IsPaused = new Stat<bool, Map>(this, false);
-			ShouldQuit = new Stat<bool, Map>(this, false);
 
 			pathingGraph = new Graph(this);
 			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
@@ -130,17 +123,17 @@ namespace GameLogic
 		
 		/// <summary>
 		/// Wipes out all units and jobs.
+		/// NOTE: the map may take a few frames to actually end.
 		/// </summary>
 		public void Clear()
 		{
-			foreach (Unit u in units)
+			foreach (Unit u in units.ToList())
 				RemoveUnit(u);
 			units.Clear();
 
 			Groups.Clear();
 
             IsPaused.Value = true;
-			ShouldQuit.Value = true;
 		}
 
 		/// <summary>
@@ -199,9 +192,6 @@ namespace GameLogic
 
 						while (IsPaused)
 							yield return null;
-
-						if (ShouldQuit.Value)
-							yield break;
 					}
 				}
 			}

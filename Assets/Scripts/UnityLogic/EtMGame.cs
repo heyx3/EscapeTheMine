@@ -133,7 +133,9 @@ namespace UnityLogic
 		/// </summary>
 		public WorldProgress Progress { get; private set; }
 
-		public bool IsInGame { get; private set; }
+		public bool IsInGame { get { return mapGameCoroutine != null; } }
+
+		private Coroutine mapGameCoroutine = null;
 		
 
 		/// <summary>
@@ -141,12 +143,18 @@ namespace UnityLogic
 		/// </summary>
 		public void QuitWorld()
 		{
-			IsInGame = false;
+			if (IsInGame)
+			{
+				StopCoroutine(mapGameCoroutine);
+				mapGameCoroutine = null;
+			}
 
 			if (OnEnd != null)
 				OnEnd();
 
+
 			Map.Clear();
+
 			Progress.Clear();
 			Settings = new WorldSettings();
 
@@ -159,7 +167,9 @@ namespace UnityLogic
 		/// </summary>
 		public void GenerateWorld()
 		{
-			IsInGame = true;
+			if (IsInGame)
+				StopCoroutine(mapGameCoroutine);
+			mapGameCoroutine = null;
 
 			Map.Clear();
 			Progress.Clear();
@@ -175,6 +185,10 @@ namespace UnityLogic
 		/// </summary>
 		public void GenerateNextMap()
 		{
+			if (IsInGame)
+				StopCoroutine(mapGameCoroutine);
+			mapGameCoroutine = null;
+
 			if (OnEnd != null)
 				OnEnd();
 
@@ -197,6 +211,10 @@ namespace UnityLogic
 		
 		public void LoadWorld(string name)
 		{
+			if (mapGameCoroutine != null)
+				StopCoroutine(mapGameCoroutine);
+			mapGameCoroutine = null;
+
 			string filePath = MenuConsts.Instance.GetSaveFilePath(name);
 			try
 			{
@@ -211,7 +229,7 @@ namespace UnityLogic
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
             }
 
-			IsInGame = true;
+			mapGameCoroutine = StartCoroutine(Map.RunGameCoroutine());
 
 			if (OnStart != null)
 				OnStart();
@@ -267,7 +285,7 @@ namespace UnityLogic
 							   (fromScratch ? null : Progress.ExitedUnitIDs));
 			Progress.ExitedUnitIDs.Clear();
 
-			StartCoroutine(Map.RunGameCoroutine());
+			mapGameCoroutine = StartCoroutine(Map.RunGameCoroutine());
 
 			//TODO: Make the camera focus in on the units. Provide some kind of "ZoomToUnits()" method on the Content2D/3D classes.
 			SaveWorld();
@@ -277,19 +295,17 @@ namespace UnityLogic
 		{
 			Map = new GameLogic.Map();
 			Progress = new WorldProgress();
-
-			IsInGame = false;
 		}
 		private void Update()
 		{
-			if (Input.GetKeyDown(KeyCode.Escape))
+			if (IsInGame)
 			{
-				MyUI.ContentUI.Instance.CreateGlobalWindow(MyUI.ContentUI.Instance.Window_Options);
-			}
-		}
-		private void Start()
-		{
+				if (Input.GetKeyDown(KeyCode.Escape))
+					MyUI.ContentUI.Instance.CreateGlobalWindow(MyUI.ContentUI.Instance.Window_Options);
 
+				if (Input.GetKeyDown(KeyCode.Space))
+					Map.IsPaused.Value = !Map.IsPaused;
+			}
 		}
 	}
 }

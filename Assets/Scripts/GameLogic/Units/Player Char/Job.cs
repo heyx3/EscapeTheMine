@@ -48,7 +48,7 @@ namespace GameLogic.Units.Player_Char
 		public Job(bool isEmergency, Map theMap, string successMessage = null)
 		{
 			Owner = new Stat<PlayerChar, Job>(this, null);
-			IsEmergency = new Stat<bool, Job>(this, IsEmergency);
+			IsEmergency = new Stat<bool, Job>(this, isEmergency);
 			SuccessMessage = new Stat<string, Job>(this, successMessage);
 			TheMap = new Stat<Map, Job>(this, theMap);
 		}

@@ -78,6 +78,7 @@ namespace GameLogic.Units.Player_Char
 		public static float StarvationDamagePerTurn { get { return instance.starvationDamagePerTurn; } }
 
 		public static int MovesPerTurn { get { return instance.movesPerTurn; } }
+		public static int FramesPerMove {  get { return instance.framesPerMove; } }
 
 		public static float MaxEnemyDistSqr { get { return instance.maxEnemyDistSqr; } }
 		public static float One_Over_MaxEnemyDistSqr { get; private set; }
@@ -107,7 +108,8 @@ namespace GameLogic.Units.Player_Char
 		private ScaledValue maxFood = new ScaledValue(0.5f, 25.0f, 300.0f),
 							maxEnergy = new ScaledValue(0.5f, 50.0f, 200.0f);
 
-		private int movesPerTurn = 5;
+		private int movesPerTurn = 5,
+					framesPerMove = 2;
 
 		private int maxEnemyDistSqr = 11 * 11;
 		private float enemyDistHeuristicMax = 1.0f;
@@ -134,8 +136,9 @@ namespace GameLogic.Units.Player_Char
 
 			writer.Structure(maxFood, "maxFood");
 			writer.Structure(maxEnergy, "maxEnergy");
-
+			
 			writer.Int(movesPerTurn, "movesPerTurn");
+			writer.Int(framesPerMove, "framesPerMove");
 
 			writer.Int(maxEnemyDistSqr, "maxEnemyDistSqr");
 			writer.Float(enemyDistHeuristicMax, "enemyDistHeuristicMax");
@@ -161,6 +164,7 @@ namespace GameLogic.Units.Player_Char
 			reader.Structure(maxEnergy, "maxEnergy");
 
 			movesPerTurn = reader.Int("movesPerTurn");
+			framesPerMove = reader.Int("framesPerMove");
 
 			maxEnemyDistSqr = reader.Int("maxEnemyDistSqr");
 			enemyDistHeuristicMax = reader.Float("enemyDistHeuristicMax");
