@@ -89,6 +89,7 @@ namespace GameLogic.Units.Player_Char
 		public enum Types
 		{
 			MoveToPos = 0,
+			Mine,
 		}
 		public abstract Types ThisType { get; }
 
@@ -105,6 +106,7 @@ namespace GameLogic.Units.Player_Char
 			switch (jType)
 			{
 				case Types.MoveToPos: j = new Job_MoveToPos(Vector2i.Zero, false, theMap); break;
+				case Types.Mine: j = new Job_Mine(new HashSet<Vector2i>(), false, theMap); break;
 				default: throw new NotImplementedException(jType.ToString());
 			}
 

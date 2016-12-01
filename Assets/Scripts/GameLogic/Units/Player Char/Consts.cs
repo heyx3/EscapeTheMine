@@ -85,6 +85,15 @@ namespace GameLogic.Units.Player_Char
 
 		public static float EnemyDistHeuristicMax { get { return instance.enemyDistHeuristicMax; } }
 
+		public static int TurnsToMine(float strengthStat, int nTilesToMine)
+		{
+			float baseTurns = instance.baseTurnsToMine.Evaluate(strengthStat),
+				  turnsF = instance.turnsToMine.EvaluateFull(nTilesToMine,
+															 null, null, baseTurns,
+															 1);
+			return Mathf.RoundToInt(turnsF * nTilesToMine);
+		}
+
 
 		#region Private fields
 
@@ -111,8 +120,17 @@ namespace GameLogic.Units.Player_Char
 		private int movesPerTurn = 5,
 					framesPerMove = 2;
 
+		//The square of the maximum distance an enemy can be while still affecting the A* heuristic.
 		private int maxEnemyDistSqr = 11 * 11;
+		//A scale for the effect of an enemy on the A* heuristic.
 		private float enemyDistHeuristicMax = 1.0f;
+
+		//The number of turns to mine one tile, based on the total number of tiles being mined.
+		//The base value depends on the PlayerChar's strength.
+		private ScaledValue turnsToMine = new ScaledValue(0.5f, -1.0f, float.NaN);
+		//The number of turns to mine one tile based on the player's strength.
+		private AsymptoteValue baseTurnsToMine = new AsymptoteValue(10.0f, 1.0f, 1.0f);
+
 
 		#endregion
 
@@ -142,6 +160,9 @@ namespace GameLogic.Units.Player_Char
 
 			writer.Int(maxEnemyDistSqr, "maxEnemyDistSqr");
 			writer.Float(enemyDistHeuristicMax, "enemyDistHeuristicMax");
+
+			writer.Structure(turnsToMine, "turnsToMine");
+			writer.Structure(baseTurnsToMine, "baseTurnsToMine");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -168,6 +189,9 @@ namespace GameLogic.Units.Player_Char
 
 			maxEnemyDistSqr = reader.Int("maxEnemyDistSqr");
 			enemyDistHeuristicMax = reader.Float("enemyDistHeuristicMax");
+			
+			reader.Structure(turnsToMine, "turnsToMine");
+			reader.Structure(baseTurnsToMine, "baseTurnsToMine");
 		}
 	}
 }

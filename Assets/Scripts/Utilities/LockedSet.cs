@@ -167,3 +167,15 @@ public class StringSet : LockedSet<string>
 		return reader.String(name);
 	}
 }
+public class Vector2iSet : LockedSet<Vector2i>
+{
+	protected override void Write(Writer writer, Vector2i value, string name)
+	{
+		writer.Int(value.x, name + "_x");
+		writer.Int(value.y, name + "_y");
+	}
+	protected override Vector2i Read(Reader reader, string name)
+	{
+		return new Vector2i(reader.Int(name + "_x"), reader.Int(name + "_y"));
+	}
+}

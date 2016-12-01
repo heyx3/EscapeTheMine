@@ -152,7 +152,6 @@ namespace UnityLogic
 			if (OnEnd != null)
 				OnEnd();
 
-
 			Map.Clear();
 
 			Progress.Clear();
