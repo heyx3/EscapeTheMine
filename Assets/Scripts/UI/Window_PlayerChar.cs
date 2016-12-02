@@ -147,19 +147,31 @@ namespace MyUI
 
 			throw new ArgumentException(tab.name);
 		}
-
-		public void Callback_NewJob_MoveToPos()
+        
+        public void Callback_NewJob_MoveToPos(bool makeEmergency)
 		{
 			//Ask the player to select a tile to move to.
 			var data = new Window_SelectTile.TileSelectionData(
 				(tilePos) =>
 				{
 					if (tilePos.HasValue)
-						Target.AddJob(new Job_MoveToPos(tilePos.Value, false, Game.Map)); //TODO: Optionally make it an emergency.
+						Target.AddJob(new Job_MoveToPos(tilePos.Value, makeEmergency, Game.Map));
 				},
 				(tilePos) => { return !Game.Map.Tiles[tilePos].BlocksMovement(); },
 				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
 			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
+        public void Callback_NewJob_Mine(bool makeEmergency)
+        {
+            var data = new Window_SelectTiles.TilesSelectionData(
+                (tilePoses) =>
+                {
+                    if (tilePoses != null)
+                        Target.AddJob(new Job_Mine(tilePoses, makeEmergency, Game.Map));
+                },
+                (tilePos) => Game.Map.Tiles[tilePos].IsMinable(),
+                true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
+            var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
+        }
 	}
 }

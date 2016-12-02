@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MyUI
 {
-	public class Window_SelectUnit : Window<IList<GameLogic.Unit>>
+	public class Window_SelectUnit : Window<List<GameLogic.Unit>>
 	{
 		public Transform ContentParent;
 		public GameObject OptionButtonPrefab;
@@ -18,13 +18,21 @@ namespace MyUI
 		{
 			base.Awake();
 
-			UnityEngine.Assertions.Assert.IsTrue(Target.Count > 0, "No items to select from");
-			TilePos = Target.First().Pos;
-
 			Game.Map.OnUnitAdded += Callback_NewUnit;
 			Game.Map.OnUnitRemoved += Callback_UnitDies;
 			Game.Map.OnUnitMoved += Callback_UnitMoves;
 		}
+        private void Start()
+        {
+            UnityEngine.Assertions.Assert.IsTrue(Target.Count > 0, "No items to select from");
+            TilePos = Target.First().Pos;
+
+            //Do the necessary things to initialize each targeted unit.
+            List<GameLogic.Unit> units = new List<GameLogic.Unit>(Target);
+            Target.Clear();
+            foreach (GameLogic.Unit u in units)
+                AddUnit(u);
+        }
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
@@ -94,7 +102,7 @@ namespace MyUI
 			button.SetParent(ContentParent, false);
 			button.GetComponentInChildren<UnityEngine.UI.Text>().text = typeName;
 			button.GetComponentInChildren<UnityEngine.UI.Button>().onClick.AddListener(
-				() => RemoveUnit(u));
+				() => Callback_UnitSelected(u));
 		}
 		private void RemoveUnit(GameLogic.Unit u)
 		{

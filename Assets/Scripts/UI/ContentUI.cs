@@ -14,6 +14,7 @@ namespace MyUI
 		public GameObject Window_Options,
 						  Window_SelectUnit,
 						  Window_SelectTile,
+                          Window_SelectTiles,
 
 						  Window_ConfirmDialog,
 

@@ -94,10 +94,15 @@ namespace GameLogic.Units.Player_Char
 			return Mathf.RoundToInt(turnsF * nTilesToMine);
 		}
 
+        public static float StrengthIncreaseFromMining(int nTilesToMine)
+        {
+            return instance.strengthIncreaseFromMining.Evaluate(nTilesToMine);
+        }
 
-		#region Private fields
 
-		private float minStart_Food = 200.0f,
+        #region Private fields
+
+        private float minStart_Food = 200.0f,
 					  maxStart_Food = 300.0f,
 					  minStart_Energy = 100.0f,
 					  maxStart_Energy = 200.0f,
@@ -130,6 +135,10 @@ namespace GameLogic.Units.Player_Char
 		private ScaledValue turnsToMine = new ScaledValue(0.5f, -1.0f, float.NaN);
 		//The number of turns to mine one tile based on the player's strength.
 		private AsymptoteValue baseTurnsToMine = new AsymptoteValue(10.0f, 1.0f, 1.0f);
+
+        //The improvement in the PlayerChar's strength from mining
+        //    is proportional to the number of tiles mined.
+        private ScaledValue strengthIncreaseFromMining = new ScaledValue(1.0f, 0.01f, 0.0f);
 
 
 		#endregion

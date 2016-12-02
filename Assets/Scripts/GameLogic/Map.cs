@@ -184,6 +184,7 @@ namespace GameLogic
 		{
 			while (true)
 			{
+                //TODO: Deal with groups created during update.
 				foreach (Group g in Groups.OrderByDescending(g => g.TurnPriority.Value))
 				{
 					foreach (object o in g.TakeTurn())

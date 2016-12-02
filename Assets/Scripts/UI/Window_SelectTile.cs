@@ -41,8 +41,8 @@ namespace MyUI
 		/// </summary>
 		private static Window_SelectTile instance = null;
 
-		//TODO: Make a TileHighlight behavior(s) (based on view mode: 2d or 3d) that this window captures and uses for its lifetime.
-		public Localizer Label_Title, Label_Message;
+        //TODO: Make a TileHighlight behavior (based on view mode: 2d or 3d) that allocates/distributes "highlights" this window captures and uses.
+        public Localizer Label_Title, Label_Message;
 
 		private Vector2i? currentChoice = null;
 

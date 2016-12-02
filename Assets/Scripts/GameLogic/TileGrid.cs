@@ -15,6 +15,7 @@ namespace GameLogic
 	public static class TileTypesExtensions
 	{
 		public static bool BlocksMovement(this TileTypes t) { return blocksMovement[t]; }
+        public static bool IsMinable(this TileTypes t) { return isMinable[t]; }
 
 		#region Lookup dictionaries
 		private static readonly Dictionary<TileTypes, bool> blocksMovement = new Dictionary<TileTypes, bool>()
@@ -24,6 +25,13 @@ namespace GameLogic
 			{ TileTypes.Deposit, true },
 			{ TileTypes.Bedrock, true },
 		};
+        private static readonly Dictionary<TileTypes, bool> isMinable = new Dictionary<TileTypes, bool>()
+        {
+            { TileTypes.Empty, false },
+            { TileTypes.Wall, true },
+            { TileTypes.Deposit, true },
+            { TileTypes.Bedrock, false },
+        };
 		#endregion
 	}
 

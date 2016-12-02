@@ -86,7 +86,8 @@ namespace GameLogic.Units.Player_Char
 			//Clear out the tiles.
 			foreach (Vector2i pos in tilesToMine)
 				TheMap.Value.Tiles[pos] = TileTypes.Empty;
-			//TODO: Improve the PlayerChar's strength stat.
+            Owner.Value.Strength.Value += Consts.StrengthIncreaseFromMining(tilesToMine.Count);
+
 			//TODO: Possibly spawn monsters.
 
 			EndJob(true);

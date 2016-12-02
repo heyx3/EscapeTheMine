@@ -22,7 +22,9 @@ namespace GameLogic.Units.Player_Char
 		/// </summary>
 		public Stat<int, JobQualifications> MoveToPos_MaxDist;
 
-		//TODO: Stat<bool> for whether to avoid enemies when pathing normally. Also move enemy avoidance into Unit base class heuristic, and provide an abstract "ShouldAvoidEnemies" property.
+        //TODO: Stat<bool> for whether to avoid enemies when pathing normally. Also move enemy avoidance into Unit base class heuristic, and provide an abstract "ShouldAvoidEnemies" property.
+
+        public Stat<bool, JobQualifications> AcceptJob_Mining;
 
 
 		public JobQualifications(PlayerChar owner)
@@ -31,11 +33,13 @@ namespace GameLogic.Units.Player_Char
 			Owner = owner;
 			
 			MoveToPos_MaxDist = new Stat<int, JobQualifications>(this, int.MaxValue);
+            AcceptJob_Mining = new Stat<bool, JobQualifications>(this, true);
 		}
 		public JobQualifications(PlayerChar owner, JobQualifications copyFrom)
 			: this(owner)
 		{
 			MoveToPos_MaxDist.Value = copyFrom.MoveToPos_MaxDist;
+            AcceptJob_Mining.Value = copyFrom.AcceptJob_Mining;
 		}
 
 		
@@ -66,6 +70,11 @@ namespace GameLogic.Units.Player_Char
 							return j;
 					}
 				}
+                else if (j is Job_Mine)
+                {
+                    if (AcceptJob_Mining)
+                        return j;
+                }
 				else
 				{
 					throw new NotImplementedException(j.GetType().ToString());
@@ -78,10 +87,12 @@ namespace GameLogic.Units.Player_Char
 		public void WriteData(MyData.Writer writer)
 		{
 			writer.Int(MoveToPos_MaxDist, "moveToPos_MaxDist");
+            writer.Bool(AcceptJob_Mining, "acceptJob_Mining");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
 			MoveToPos_MaxDist.Value = reader.Int("moveToPos_MaxDist");
+            AcceptJob_Mining.Value = reader.Bool("acceptJob_Mining");
 		}
 	}
 }
