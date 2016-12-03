@@ -71,7 +71,7 @@ namespace MyUI
 
 		#region Callbacks
 
-		public void Callback_Button_Close()
+		public virtual void Callback_Button_Close()
 		{
 			if (OnWindowClosed != null)
 				OnWindowClosed(this);

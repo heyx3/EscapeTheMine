@@ -22,6 +22,8 @@ namespace Rendering.TwoD
 		public float ScrollSpeed = 5.0f;
 		public float MinDragDist = 10.0f;
 		public float ScrollZoomScale = 1.1f;
+
+        public Vector2i MouseTilePos { get; private set; }
 		
 
 		public void Click(Vector2 mPos)
@@ -75,5 +77,12 @@ namespace Rendering.TwoD
 			UnityEngine.Assertions.Assert.IsTrue(Content2D.Instance.Cam.orthographic);
 			Content2D.Instance.Cam.orthographicSize /= scale;
 		}
+
+
+        private void Update()
+        {
+            Vector2 worldMPos = Content2D.Instance.Cam.ScreenToWorldPoint(Input.mousePosition);
+            MouseTilePos = new Vector2i(worldMPos);
+        }
 	}
 }

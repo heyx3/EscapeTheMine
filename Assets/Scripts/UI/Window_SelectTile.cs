@@ -41,19 +41,38 @@ namespace MyUI
 		/// </summary>
 		private static Window_SelectTile instance = null;
 
-        //TODO: Make a TileHighlight behavior (based on view mode: 2d or 3d) that allocates/distributes "highlights" this window captures and uses.
-        public Localizer Label_Title, Label_Message;
 
-		private Vector2i? currentChoice = null;
+        public Localizer Label_Title, Label_Message;
+        public Color TileGoodHighlightColor = Color.yellow,
+                     TileBadHighlightColor = Color.red;
+
+        private ulong tileHighlight;
+
+        private Vector2i mousedOverTile
+        {
+            get
+            {
+                switch (UnityLogic.Options.ViewMode)
+                {
+                    case UnityLogic.ViewModes.TwoD:
+                        return Rendering.TwoD.InputController2D.Instance.MouseTilePos;
+                    case UnityLogic.ViewModes.ThreeD:
+                        throw new NotImplementedException();
+
+                    default:
+                        throw new NotImplementedException(UnityLogic.Options.ViewMode.ToString());
+                }
+            }
+        }
 
 
 		protected override void Awake()
 		{
 			base.Awake();
 
-			//If another instance was already open, close it.
-			if (instance != null)
-				instance.Callback_FinishedChoosingTile(true);
+            //If another instance was already open, close it.
+            if (instance != null)
+                Destroy(instance.gameObject);
 			instance = this;
 		}
 		private void Start()
@@ -68,6 +87,9 @@ namespace MyUI
 			//    we need to change what kind of input callback we respond to.
 			UnityLogic.Options.OnChanged_ViewMode += Callback_NewViewMode;
 			Callback_NewViewMode(UnityLogic.ViewModes.TwoD, UnityLogic.Options.ViewMode);
+
+            tileHighlight = TileHighlighter.Instance.CreateHighlight(mousedOverTile,
+                                                                     TileGoodHighlightColor);
 		}
 		protected override void OnDestroy()
 		{
@@ -76,34 +98,38 @@ namespace MyUI
 			CleanUpCallbacks(UnityLogic.Options.ViewMode);
 			UnityLogic.Options.OnChanged_ViewMode -= Callback_NewViewMode;
 
+            TileHighlighter.Instance.DestroyHighlight(tileHighlight);
+
 			if (instance == this)
 				instance = null;
-		}
-		private void Update()
-		{
-			//Double-check that the chosen tile didn't become invalid after the user chose it.
-			if (currentChoice.HasValue && !Target.IsTileValid(currentChoice.Value))
-				currentChoice = null;
-		}
+        }
+        private void Update()
+        {
+            Vector2i mTilePos = mousedOverTile;
 
-		public void Callback_FinishedChoosingTile(bool didCancel)
-		{
-			//Double-check that the chosen tile didn't become invalid after the user chose it.
-			if (currentChoice.HasValue && !Target.IsTileValid(currentChoice.Value))
-				currentChoice = null;
+            TileHighlighter.Instance.SetPos(tileHighlight, mTilePos);
+            TileHighlighter.Instance.SetColor(tileHighlight,
+                                              Target.IsTileValid(mTilePos) ?
+                                                  TileGoodHighlightColor :
+                                                  TileBadHighlightColor);
+        }
 
-			Target.OnFinished(currentChoice);
+        public override void Callback_Button_Close()
+        {
+            Target.OnFinished(null);
 
-			Destroy(gameObject);
-		}
-		/// <summary>
-		/// Returns "true" if the given tile is a valid selection.
-		/// </summary>
-		public bool Callback_WorldTileClicked(Vector2i tilePos)
+            base.Callback_Button_Close();
+        }
+
+        /// <summary>
+        /// Returns "true" if the given tile is a valid selection.
+        /// </summary>
+        public bool Callback_WorldTileClicked(Vector2i tilePos)
 		{
 			if (Target.IsTileValid(tilePos))
 			{
-				currentChoice = tilePos;
+                Target.OnFinished(tilePos);
+                Destroy(gameObject);
 				return true;
 			}
 			return false;
@@ -133,9 +159,12 @@ namespace MyUI
 			switch (viewMode)
 			{
 				case UnityLogic.ViewModes.TwoD:
-					Rendering.TwoD.InputController2D.Instance.OnWorldTileClicked.Remove(
-						Callback_WorldTileClicked);
-					break;
+                    if (Rendering.TwoD.InputController2D.Instance != null)
+                    {
+                        Rendering.TwoD.InputController2D.Instance.OnWorldTileClicked.Remove(
+                            Callback_WorldTileClicked);
+                    }
+                    break;
 
 				case UnityLogic.ViewModes.ThreeD:
 					throw new NotImplementedException();
