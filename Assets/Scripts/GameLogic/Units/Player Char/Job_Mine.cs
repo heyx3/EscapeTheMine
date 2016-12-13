@@ -9,8 +9,6 @@ using System.Collections;
 
 namespace GameLogic.Units.Player_Char
 {
-	//TODO: Finish the "To Make a new Job.txt" checklist. We'll need a "Window_SelectTiles" class. Maybe left-click for individual tiles, and right-click for rectangles?
-
 	public class Job_Mine : Job
 	{
 		private HashSet<Vector2i> tilesToMine;

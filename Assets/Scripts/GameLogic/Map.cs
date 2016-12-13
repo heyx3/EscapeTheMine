@@ -182,10 +182,18 @@ namespace GameLogic
 		/// </summary>
 		public System.Collections.IEnumerator RunGameCoroutine()
 		{
+			List<Group> groupsToUpdate = new List<Group>(Groups.Count);
+
 			while (true)
 			{
-                //TODO: Deal with groups created during update.
-				foreach (Group g in Groups.OrderByDescending(g => g.TurnPriority.Value))
+				//Order groups based on their turn priority and have them take their turns.
+
+				//Use a list so that new groups don't break the enumerator.
+				groupsToUpdate.AddRange(Groups);
+				groupsToUpdate.Sort((g1, g2) => g1.TurnPriority.Value - g2.TurnPriority.Value);
+
+				//Run update logic for each Group.
+				foreach (Group g in groupsToUpdate)
 				{
 					foreach (object o in g.TakeTurn())
 					{
@@ -195,6 +203,7 @@ namespace GameLogic
 							yield return null;
 					}
 				}
+				groupsToUpdate.Clear();
 			}
 		}
 

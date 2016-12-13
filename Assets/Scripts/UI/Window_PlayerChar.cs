@@ -62,7 +62,7 @@ namespace MyUI
 
 		private Dictionary<TabTypes, UITab> tabTypeToObj;
 
-		
+
 		public void SwitchToTab(TabTypes type)
 		{
 			foreach (var kvp in tabTypeToObj)
@@ -147,6 +147,19 @@ namespace MyUI
 
 			throw new ArgumentException(tab.name);
 		}
+		public void Callback_ZoomToPlayer()
+		{
+			switch (UnityLogic.Options.ViewMode)
+			{
+				case UnityLogic.ViewModes.TwoD:
+					Rendering.TwoD.Content2D.Instance.ZoomToSee(Enumerable.Repeat(Target.Pos.Value, 1));
+					break;
+
+				case UnityLogic.ViewModes.ThreeD: throw new NotImplementedException();
+
+				default: throw new NotImplementedException(UnityLogic.Options.ViewMode.ToString());
+			}
+	}
         
         public void Callback_NewJob_MoveToPos(bool makeEmergency)
 		{

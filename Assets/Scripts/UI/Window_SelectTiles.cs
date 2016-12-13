@@ -205,6 +205,7 @@ namespace MyUI
                 TileHighlighter.Instance.DestroyHighlight(tileHighlights[tilePos]);
                 tileHighlights.Remove(tilePos);
                 currentChoice.Remove(tilePos);
+                canConfirm = !Target.MustBeConnected || IsFullyConnected();
                 return true;
             }
             //Otherwise, add it to the selection.
@@ -216,6 +217,7 @@ namespace MyUI
                                        TileHighlighter.Instance.CreateHighlight(tilePos,
                                                                                 SelectedTileHighlightColor));
                     currentChoice.Add(tilePos);
+					canConfirm = !Target.MustBeConnected || IsFullyConnected();
                     return true;
                 }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -11,7 +12,7 @@ namespace MyUI
     /// </summary>
     public class TileHighlighter : Singleton<TileHighlighter>
     {
-        private struct Tile
+        private class Tile
         {
             public Vector2i Pos
             {
@@ -49,12 +50,16 @@ namespace MyUI
             private SpriteRenderer spr;
 
 
-            public Tile(Transform _tr, SpriteRenderer _spr)
+            public Tile(GameObject go)
             {
-                tr = _tr;
-                spr = _spr;
+				tr = Obj.transform;
+				UpdateGameObject();
             }
 
+			public void UpdateGameObject()
+			{
+				spr = Obj.GetComponent<SpriteRenderer>();
+			}
             public override int GetHashCode()
             {
                 return tr.GetInstanceID();
@@ -138,28 +143,45 @@ namespace MyUI
         }
         private void Callback_ViewModeChanged(UnityLogic.ViewModes oldMode, UnityLogic.ViewModes newMode)
         {
+			var tiles = unusedHighlights.Concat(highlightsByID.Values).ToList();
+
+			//Remove old resources.
             switch (oldMode)
             {
                 case UnityLogic.ViewModes.TwoD:
-                    //TODO: Remove all SpriteRenderers.
+					foreach (Tile t in tiles)
+						Destroy(t.Obj.GetComponent<SpriteRenderer>());
                     break;
+
                 case UnityLogic.ViewModes.ThreeD:
                     throw new NotImplementedException();
                     break;
 
                 default: throw new NotImplementedException(oldMode.ToString());
             }
+
+			//Set up new resources.
             switch (newMode)
             {
                 case UnityLogic.ViewModes.TwoD:
-                    //TODO: Add SpriteRenderers.
+					foreach (Tile t in tiles)
+					{
+						var spr = t.Obj.AddComponent<SpriteRenderer>();
+						spr.sortingOrder = SpriteLayer;
+						spr.sprite = HighlightSprite;
+					}
                     break;
+
                 case UnityLogic.ViewModes.ThreeD:
                     throw new NotImplementedException();
                     break;
 
                 default: throw new NotImplementedException(newMode.ToString());
             }
+			
+			//Update Tile data structures.
+			foreach (Tile t in tiles)
+				t.UpdateGameObject();
         }
 
         private Tile MakeTile()
@@ -182,7 +204,7 @@ namespace MyUI
                     throw new NotImplementedException(UnityLogic.Options.ViewMode.ToString());
             }
 
-            return new Tile(tr, spr);
+            return new Tile(go);
         }
     }
 }

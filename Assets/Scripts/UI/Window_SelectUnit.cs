@@ -89,7 +89,6 @@ namespace MyUI
 			Target.Add(u);
 
 			//Get a display name for the given type.
-			//TODO: Localize.
 			string typeName;
 			switch (u.MyType)
 			{

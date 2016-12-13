@@ -286,7 +286,17 @@ namespace UnityLogic
 
 			mapGameCoroutine = StartCoroutine(Map.RunGameCoroutine());
 
-			//TODO: Make the camera focus in on the units. Provide some kind of "ZoomToUnits()" method on the Content2D/3D classes.
+			//Make the camera focus in on the units.
+			switch (Options.ViewMode)
+			{
+				case ViewModes.TwoD:
+					Rendering.TwoD.Content2D.Instance.ZoomToSee(newUnits);
+					break;
+				case ViewModes.ThreeD: throw new NotImplementedException();
+
+				default: throw new NotImplementedException(Options.ViewMode.ToString());
+			}
+			
 			SaveWorld();
 		}
 

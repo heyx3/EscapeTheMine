@@ -6,9 +6,6 @@ using UnityEngine;
 
 namespace MyUI
 {
-	//TODO: For Unit windows, provide a button to zoom to that unit.
-
-
 	/// <summary>
 	/// A draggable, closeable set of controls surrounded by a box.
 	/// </summary>

@@ -30,5 +30,39 @@ namespace Rendering.TwoD
 			if (Cam != null)
 				Cam.gameObject.SetActive(false);
 		}
+
+		
+		public void ZoomToSee(IEnumerable<Vector2i> poses)
+		{
+			//Get the range in world space spanned by the positions.
+			Vector2i max = new Vector2i(int.MinValue, int.MinValue),
+					 min = new Vector2i(int.MaxValue, int.MaxValue);
+			foreach (var pos in poses)
+			{
+				max.x = Math.Max(max.x, pos.x);
+				max.y = Math.Max(max.y, pos.y);
+				min.x = Math.Min(min.x, pos.x);
+				min.y = Math.Min(min.y, pos.y);
+			}
+
+			//If there weren't any elements in the collection, exit.
+			if (max.x < min.x || max.y < min.y)
+				return;
+
+			//If there is only one tile being highlighted, don't mess with the zoom level.
+			if (max.x == min.x || max.y == min.y)
+			{
+				CamTr.position = new Vector3(min.x + 0.5f, min.y + 0.5f, CamTr.position.z);
+				return;
+			}
+
+			//Move the camera to see it.
+			Vector2 size = new Vector2(max.x - min.x + 1,
+									   max.y - min.y + 1);
+			Cam.orthographicSize = size.y * 0.5f;
+			CamTr.position = new Vector3(min.x + (size.x * 0.5f),
+										 min.y + (size.y * 0.5f),
+										 CamTr.position.z);
+		}
 	}
 }
