@@ -11,7 +11,7 @@ namespace GameLogic
 	public class Stat<StatType, OwnerType>
 	{
 		/// <summary>
-		/// Raised when this state changes.
+		/// Raised when this stat changes.
 		/// The first argument is the owner of this stat.
 		/// The second and third arguments are the old and new value, respectively.
 		/// </summary>

@@ -52,7 +52,7 @@ namespace MyUI
 
             public Tile(GameObject go)
             {
-				tr = Obj.transform;
+				tr = go.transform;
 				UpdateGameObject();
             }
 

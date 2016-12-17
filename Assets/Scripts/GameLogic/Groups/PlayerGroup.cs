@@ -31,6 +31,9 @@ namespace GameLogic.Groups
 		/// </summary>
 		public event Action<PlayerGroup, Job> OnJobCanceled;
 
+		public IEnumerable<Job> NormalJobs {  get { return normalJobs; } }
+		public IEnumerable<Job> EmergencyJobs { get { return emergencyJobs; } }
+
 
 		private HashSet<Job> normalJobs = new HashSet<Job>();
 		private HashSet<Job> emergencyJobs = new HashSet<Job>();

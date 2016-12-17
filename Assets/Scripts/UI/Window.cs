@@ -61,8 +61,11 @@ namespace MyUI
 		{
 			allWindows.Remove(this);
 
-			Game.OnStart -= Callback_MapChanging;
-			Game.OnEnd -= Callback_MapChanging;
+			if (UnityLogic.EtMGame.InstanceExists)
+			{
+				Game.OnStart -= Callback_MapChanging;
+				Game.OnEnd -= Callback_MapChanging;
+			}
 		}
 
 
@@ -76,11 +79,11 @@ namespace MyUI
 			Destroy(gameObject);
 		}
 
-		public void Callback_StartDragButton_Titlebar()
+		public virtual void Callback_StartDragButton_Titlebar()
 		{
 			dragOffset = (Vector2)MyTr.position - (Vector2)Input.mousePosition;
 		}
-		public void Callback_DragButton_Titlebar()
+		public virtual void Callback_DragButton_Titlebar()
 		{
 			Vector2 oldPos = MyTr.position;
 			Vector2 newPos = (Vector2)Input.mousePosition + dragOffset;

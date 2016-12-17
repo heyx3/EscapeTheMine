@@ -21,6 +21,7 @@ WINDOW_MOVETOPOS_MESSAGE:Click on the destination to move to.
 WINDOW_MINEPOSES_TITLE:Choose Tiles to Mine
 WINDOW_MINEPOSES_MESSAGE:Click on the tiles you want to mine.\nClick a selected tile to un-select it.\nThe tiles must all be connected!
 WINDOW_UNITSELECTOR_TITLE:Select Unit
+WINDOW_ANNOUNCEMENTS_TITLE:Announcements
 
 ## PlayerChar window
 WINDOW_PLAYERCHAR_ZOOMTO:Zoom to

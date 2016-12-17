@@ -57,8 +57,15 @@ namespace GameLogic.Units
 
 		public Stat<float, PlayerChar> LowFoodThreshold { get; private set; }
 
-
 		public Player_Char.JobQualifications Career { get; private set; }
+
+		/// <summary>
+		/// All the jobs specifically given to this PlayerChar.
+		/// Does NOT include the job he's currently doing.
+		/// </summary>
+		public IEnumerable<Player_Char.Job> CustomJobs { get { return customJobs; } }
+
+		public Player_Char.Job CurrentJob { get { return currentlyDoing; } }
 
 
 		/// <summary>
