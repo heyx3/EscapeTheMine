@@ -121,8 +121,15 @@ namespace UnityLogic.MapGen
 										  PlayerConsts.MaxStart_Strength,
 										  strength);
 
+					var gender = (i % 2 == 0) ?
+								      GameLogic.Units.Player_Char.Personality.Genders.Male :
+								      GameLogic.Units.Player_Char.Personality.Genders.Female;
+					int appearanceIndex = 0;
 
-					PlayerChar chr = new PlayerChar(theMap, playerGroup, food, energy, strength);
+					PlayerChar chr = new PlayerChar(
+						theMap, playerGroup.ID, food, energy, strength,
+						GameLogic.Units.Player_Char.Personality.GenerateName(gender, seed),
+						gender, appearanceIndex);
 					theMap.AddUnit(chr);
 					unitsToKeep.Add(chr.ID);
 				}

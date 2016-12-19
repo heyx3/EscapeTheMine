@@ -17,10 +17,9 @@ namespace MyUI
                           Window_SelectTiles,
 
 						  Window_ConfirmDialog,
-
-						  Window_TestChar,
-						  Window_TestStructure,
-						  Window_PlayerChar;
+			
+						  Window_PlayerChar,
+						  Window_Bed;
 
 
 		public Transform TheCanvas
@@ -84,6 +83,9 @@ namespace MyUI
 				case GameLogic.Unit.Types.PlayerChar:
 					return CreateWindow(Window_PlayerChar,
 										(GameLogic.Units.PlayerChar)unit).gameObject;
+				case GameLogic.Unit.Types.Bed:
+					return CreateWindow(Window_Bed,
+										(GameLogic.Units.Bed)unit).gameObject;
 				default:
 					throw new NotImplementedException(unit.MyType.ToString());
 			}

@@ -25,6 +25,8 @@ namespace GameLogic
 
 		public Group MyGroup { get { return TheMap.Groups.Get(MyGroupID); } }
 
+		public abstract string DisplayName { get; }
+
 
 		public Unit(Map theMap, Group g) : this(theMap, g, new Vector2i(-1, -1)) { }
 		public Unit(Map theMap, Group g, Vector2i pos)
@@ -70,7 +72,8 @@ namespace GameLogic
 			Types type = (Types)reader.UInt(name + "_Type");
 			switch (type)
 			{
-				case Types.PlayerChar: u = new Units.PlayerChar(theMap, ulong.MaxValue); break;
+				case Types.PlayerChar: u = new Units.PlayerChar(theMap); break;
+				case Types.Bed: u = new Units.Bed(theMap); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -82,6 +85,7 @@ namespace GameLogic
 		public enum Types
 		{
 			PlayerChar,
+			Bed,
 		}
 		public abstract Types MyType { get; }
 

@@ -88,18 +88,10 @@ namespace MyUI
 		{
 			Target.Add(u);
 
-			//Get a display name for the given type.
-			string typeName;
-			switch (u.MyType)
-			{
-				case GameLogic.Unit.Types.PlayerChar: typeName = "Player Char"; break; //TODO: Give each character a name.
-				default: throw new NotImplementedException(u.MyType.ToString());
-			}
-
 			//Set up the button for selecting this option.
 			Transform button = Instantiate(OptionButtonPrefab).transform;
 			button.SetParent(ContentParent, false);
-			button.GetComponentInChildren<UnityEngine.UI.Text>().text = typeName;
+			button.GetComponentInChildren<UnityEngine.UI.Text>().text = u.DisplayName;
 			button.GetComponentInChildren<UnityEngine.UI.Button>().onClick.AddListener(
 				() => Callback_UnitSelected(u));
 		}

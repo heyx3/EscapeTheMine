@@ -11,6 +11,7 @@ INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
 DIALOG_DEFAULT_OK:OK
 DIALOG_DEFAULT_CANCEL:Cancel
 DIALOG_SELECTTILE_SELECT:Finish
+WINDOW_UNIT_ZOOMTO:Zoom to
 WINDOW_CONFIRMQUIT_TITLE:Quit?
 WINDOW_CONFIRMQUIT_MESSAGE:Are you sure you want to quit?\nMake sure to save first!
 WINDOW_OPTIONS_TITLE:Options
@@ -22,9 +23,13 @@ WINDOW_MINEPOSES_TITLE:Choose Tiles to Mine
 WINDOW_MINEPOSES_MESSAGE:Click on the tiles you want to mine.\nClick a selected tile to un-select it.\nThe tiles must all be connected!
 WINDOW_UNITSELECTOR_TITLE:Select Unit
 WINDOW_ANNOUNCEMENTS_TITLE:Announcements
+WINDOW_BED_TITLE:Bed
+WINDOW_BED_BUTTON_WAKEUP:Wake Up
+
+## SelectUnit window
+WINDOW_SELECTUNIT_BED:Bed
 
 ## PlayerChar window
-WINDOW_PLAYERCHAR_ZOOMTO:Zoom to
 WINDOW_PLAYERCHAR_FOODAMNT:Food: {0}
 WINDOW_PLAYERCHAR_STRENGTHAMNT:Strength: {0}
 WINDOW_PLAYERCHAR_ENERGYAMNT:Energy: {0}

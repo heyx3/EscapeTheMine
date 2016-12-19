@@ -99,6 +99,15 @@ namespace GameLogic.Units.Player_Char
             return instance.strengthIncreaseFromMining.Evaluate(nTilesToMine);
         }
 
+		public static float EnergyIncreaseFromBedPerTurn(int nPeopleInBed)
+		{
+			return instance.energyIncreaseFromBedPerTurn.Evaluate(nPeopleInBed);
+		}
+		public static float HealthIncreaseFromBedPerTurn(int nPeopleInBed)
+		{
+			return instance.healthIncreaseFromBedPerTurn.Evaluate(nPeopleInBed);
+		}
+
 
         #region Private fields
 
@@ -139,6 +148,10 @@ namespace GameLogic.Units.Player_Char
         //The improvement in the PlayerChar's strength from mining
         //    is proportional to the number of tiles mined.
         private ScaledValue strengthIncreaseFromMining = new ScaledValue(1.0f, 0.01f, 0.0f);
+
+		//Beds increase less energy and health as more people enter the bed.
+		private AsymptoteValue energyIncreaseFromBedPerTurn = new AsymptoteValue(5.0f, 0.0f, 1.0f),
+							   healthIncreaseFromBedPerTurn = new AsymptoteValue(0.02f, 0.0f, 1.0f);
 
 
 		#endregion
