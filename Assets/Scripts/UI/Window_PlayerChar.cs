@@ -170,9 +170,9 @@ namespace MyUI
 					if (tilePos.HasValue)
 						Target.AddJob(new Job_MoveToPos(tilePos.Value, makeEmergency, Game.Map));
 				},
-				(tilePos) => { return !Game.Map.Tiles[tilePos].BlocksMovement(); },
+				(tilePos) => !Game.Map.Tiles[tilePos].BlocksMovement(),
 				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
-			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
         public void Callback_NewJob_Mine(bool makeEmergency)
         {
@@ -186,5 +186,42 @@ namespace MyUI
                 true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
             var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
         }
+
+		public enum BedSleepTypes
+		{
+			General = 0,
+			GeneralEmergency,
+			Specific,
+			SpecificEmergency,
+		}
+		public void Callback_NewJob_SleepBed(int sleepTypeInt)
+		{
+			bool chooseBed = (sleepTypeInt == (int)BedSleepTypes.Specific ||
+							  sleepTypeInt == (int)BedSleepTypes.SpecificEmergency),
+				 isEmergency = (sleepTypeInt == (int)BedSleepTypes.GeneralEmergency ||
+								sleepTypeInt == (int)BedSleepTypes.SpecificEmergency);
+
+			//If the player wants to choose a specific bed, let him.
+			if (chooseBed)
+			{
+				var data = new Window_SelectTile.TileSelectionData(
+					(tilePos) =>
+					{
+						if (tilePos.HasValue)
+						{
+							var bed = Job_Sleep.FirstFriendlyBedAtPos(tilePos.Value, Target);
+							Target.AddJob(new Job_Sleep(isEmergency, Game.Map, bed));
+						}
+					},
+					(tilePos) => (Job_Sleep.FirstFriendlyBedAtPos(tilePos, Target) != null),
+					"WINDOW_SLEEPAT_TITLE", "WINDOW_SLEEPAT_MESSAGE");
+				ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+			}
+			//Otherwise, just sleep at the closest bed.
+			else
+			{
+				Target.AddJob(new Job_Sleep(isEmergency, Game.Map));
+			}
+		}
 	}
 }

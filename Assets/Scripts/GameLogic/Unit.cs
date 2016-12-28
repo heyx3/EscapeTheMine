@@ -12,6 +12,20 @@ namespace GameLogic
 	/// </summary>
 	public abstract class Unit : MyData.IReadWritable
 	{
+		/// <summary>
+		/// Raised when this unit is removed from the map.
+		/// </summary>
+		public event Action<Unit, Map> OnKilled;
+		/// <summary>
+		/// Raises the "OnKilled()" event.
+		/// </summary>
+		public void WasKilled()
+		{
+			if (OnKilled != null)
+				OnKilled(this, TheMap);
+		}
+
+
 		public Stat<Vector2i, Unit> Pos { get; private set; }
 
 		public Map TheMap { get; private set; }

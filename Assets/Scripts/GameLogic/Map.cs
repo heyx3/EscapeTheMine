@@ -25,13 +25,15 @@ namespace GameLogic
 		private ulong nextID = 0;
 		private HashSet<Unit> units = new HashSet<Unit>();
 
+		private static List<Unit> emptyUnitList = new List<Unit>();
+		private static HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
 
 		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
 		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
+		private Dictionary<Unit.Types, HashSet<Unit>> unitsByType = new Dictionary<Unit.Types, HashSet<Unit>>();
 
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
-		private static List<Unit> emptyUnitList = new List<Unit>();
 
 
 		public Map(int mapSizeX, int mapSizeY)
@@ -56,15 +58,19 @@ namespace GameLogic
 			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
 		}
 
-
-		/// <summary>
-		/// Returns null if there's no unit at the given position.
-		/// </summary>
-		public IEnumerable<Unit> GetUnitsAt(Vector2i tilePos)
+		
+		public IEnumerable<Unit> GetUnits(Vector2i tilePos)
 		{
 			return (posToUnits.ContainsKey(tilePos) ?
 						posToUnits[tilePos] :
 						emptyUnitList);
+		}
+		public IEnumerable<Unit> GetUnits(Unit.Types type)
+		{
+			if (unitsByType.ContainsKey(type))
+				return unitsByType[type];
+			else
+				return emptyUnitSet;
 		}
 		
 		/// <summary>
@@ -80,6 +86,10 @@ namespace GameLogic
 				u.RegisterID(nextID);
 				nextID += 1;
 			}
+
+			if (!unitsByType.ContainsKey(u.MyType))
+				unitsByType.Add(u.MyType, new HashSet<Unit>());
+			unitsByType[u.MyType].Add(u);
 
 			idToUnit.Add(u.ID, u);
 			units.Add(u);
@@ -100,10 +110,14 @@ namespace GameLogic
 			idToUnit.Remove(u.ID);
 			units.Remove(u);
 
+			unitsByType[u.MyType].Remove(u);
+
+			u.Pos.OnChanged -= Callback_UnitMoved;
+
+			u.WasKilled();
 			if (OnUnitRemoved != null)
 				OnUnitRemoved(this, u);
 
-			u.Pos.OnChanged -= Callback_UnitMoved;
 		}
 
 		public Unit GetUnit(ulong id) { return idToUnit[id]; }

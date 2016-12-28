@@ -23,30 +23,28 @@ namespace GameLogic.Units.Player_Char
 
 		public override IEnumerable TakeTurn()
 		{
-			//Find the best path to the destination from here.
-			//Start the search from scratch in case anything changed since the last turn.
-			List<Vector2i> path = Owner.Value.FindPath(new Pathfinding.Goal<Vector2i>(TargetPos));
-			
-			//If there is no valid path, give up.
-			if (path == null)
+			TryMoveToPos_Status moveStatus = new TryMoveToPos_Status();
+			foreach (object o in TryMoveToPos(new Pathfinding.Goal<Vector2i>(TargetPos), moveStatus))
+				yield return o;
+
+			switch (moveStatus.CurrentState)
 			{
-				EndJob(false, Localization.Get("NO_PATH_JOB"));
-				yield break;
+				case TryMoveToPos_States.EnRoute:
+					//Nothing to do; still moving.
+					break;
+
+				case TryMoveToPos_States.NoPath:
+					//Cancel the job.
+					EndJob(false, Localization.Get("NO_PATH_JOB"));
+					yield break;
+
+				case TryMoveToPos_States.Finished:
+					//End the job successfully.
+					EndJob(true);
+					yield break;
+
+				default: throw new NotImplementedException(moveStatus.CurrentState.ToString());
 			}
-
-			//Move some number of spaces along the path.
-			int nMoves = Math.Min(Consts.MovesPerTurn, path.Count);
-			for (int i = 0; i < nMoves; ++i)
-			{
-				Owner.Value.Pos.Value = path[i];
-				yield return null;
-			}
-
-			//If we made it to the destination, quit.
-			if (Owner.Value.Pos == TargetPos.Value)
-				EndJob(true);
-
-			yield break;
 		}
 
 		//Serialization:

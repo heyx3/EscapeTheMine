@@ -46,26 +46,34 @@ namespace GameLogic.Units.Player_Char
 			//If we're not currently mining a tile, look around for a nearby one.
 			if (!isMiningYet)
 			{
-				//Get the closest minable spot and move towards it.
-				var path = Owner.Value.FindPath(new Pathfinding.Goal<Vector2i>(miningCenter,
-																			   IsAMiningSpot));
-				int currentSpotI = 0;
-				int nMoves = Consts.MovesPerTurn;
-				while (currentSpotI < path.Count)
+				//Move towards a spot to mine from.
+				TryMoveToPos_Status moveStatus = new TryMoveToPos_Status();
+				foreach (object o in TryMoveToPos(new Pathfinding.Goal<Vector2i>(miningCenter,
+																				 IsAMiningSpot),
+												  moveStatus))
 				{
-					nMoves -= 1;
-
-					//If we ran out of moves, finish the turn.
-					if (nMoves < 0)
-						yield break;
-
-					Owner.Value.Pos.Value = path[currentSpotI];
-					currentSpotI += 1;
+					yield return o;
 				}
 
-				//Start mining.
-				isMiningYet = true;
-				turnsLeft = Consts.TurnsToMine(Owner.Value.Strength, tilesToMine.Count);
+				switch (moveStatus.CurrentState)
+				{
+					case TryMoveToPos_States.Finished:
+						//Start mining.
+						isMiningYet = true;
+						turnsLeft = Consts.TurnsToMine(Owner.Value.Strength, tilesToMine.Count);
+						break;
+
+					case TryMoveToPos_States.EnRoute:
+						//End the turn.
+						yield break;
+
+					case TryMoveToPos_States.NoPath:
+						//Cancel the job.
+						EndJob(false, Localization.Get("NO_PATH_JOB"));
+						yield break;
+
+					default: throw new NotImplementedException(moveStatus.CurrentState.ToString());
+				}
 			}
 			else
 			{

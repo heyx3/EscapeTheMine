@@ -41,7 +41,7 @@ namespace Rendering.TwoD
             if (!OnWorldTileClicked.Raise(tilePos))
             {
                 //Get the units in the part of the map we clicked on and show the window for them.
-                List<GameLogic.Unit> clickedUnits = map.GetUnitsAt(tilePos).ToList();
+                List<GameLogic.Unit> clickedUnits = map.GetUnits(tilePos).ToList();
                 if (clickedUnits.Count == 1)
                 {
                     MyUI.ContentUI.Instance.CreateUnitWindow(clickedUnits[0]);

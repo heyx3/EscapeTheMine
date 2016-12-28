@@ -108,6 +108,11 @@ namespace GameLogic.Units.Player_Char
 			return instance.healthIncreaseFromBedPerTurn.Evaluate(nPeopleInBed);
 		}
 
+		public static float ReproductionChance { get { return instance.reproductionChance; } }
+		
+		public static float DefaultSeekBedEnergy { get { return instance.defaultSeekBedEnergy; } }
+		public static float DefaultSeekBedHealth { get { return instance.defaultSeekBedHealth; } }
+
 
         #region Private fields
 
@@ -153,6 +158,12 @@ namespace GameLogic.Units.Player_Char
 		private AsymptoteValue energyIncreaseFromBedPerTurn = new AsymptoteValue(5.0f, 0.0f, 1.0f),
 							   healthIncreaseFromBedPerTurn = new AsymptoteValue(0.02f, 0.0f, 1.0f);
 
+		//The chance of a male/female pair in the same bed producing a child this turn.
+		private float reproductionChance = 0.001f;
+
+		private float defaultSeekBedEnergy = 25.0f,
+					  defaultSeekBedHealth = 0.15f;
+
 
 		#endregion
 
@@ -185,6 +196,8 @@ namespace GameLogic.Units.Player_Char
 
 			writer.Structure(turnsToMine, "turnsToMine");
 			writer.Structure(baseTurnsToMine, "baseTurnsToMine");
+
+			writer.Float(reproductionChance, "reproductionChance");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -214,6 +227,8 @@ namespace GameLogic.Units.Player_Char
 			
 			reader.Structure(turnsToMine, "turnsToMine");
 			reader.Structure(baseTurnsToMine, "baseTurnsToMine");
+			
+			reproductionChance = reader.Float("reproductionChance");
 		}
 	}
 }

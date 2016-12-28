@@ -41,6 +41,10 @@ namespace GameLogic
 		}
 
 
+		public override string ToString()
+		{
+			return "Stat:" + Value.ToString();
+		}
 		/// <summary>
 		/// You can implicitly cast this class to the value it contains.
 		/// </summary>

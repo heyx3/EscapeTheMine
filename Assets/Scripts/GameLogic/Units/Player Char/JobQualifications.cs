@@ -26,6 +26,8 @@ namespace GameLogic.Units.Player_Char
 
         public Stat<bool, JobQualifications> AcceptJob_Mining;
 
+		public Stat<float, JobQualifications> SleepWhen_EnergyBelow, SleepWhen_HealthBelow;
+
 
 		public JobQualifications(PlayerChar owner)
 		{
@@ -34,12 +36,20 @@ namespace GameLogic.Units.Player_Char
 			
 			MoveToPos_MaxDist = new Stat<int, JobQualifications>(this, int.MaxValue);
             AcceptJob_Mining = new Stat<bool, JobQualifications>(this, true);
+
+			SleepWhen_EnergyBelow =
+				new Stat<float, JobQualifications>(this, Consts.DefaultSeekBedEnergy);
+			SleepWhen_HealthBelow =
+				new Stat<float, JobQualifications>(this, Consts.DefaultSeekBedHealth);
 		}
 		public JobQualifications(PlayerChar owner, JobQualifications copyFrom)
 			: this(owner)
 		{
 			MoveToPos_MaxDist.Value = copyFrom.MoveToPos_MaxDist;
             AcceptJob_Mining.Value = copyFrom.AcceptJob_Mining;
+
+			SleepWhen_EnergyBelow.Value = copyFrom.SleepWhen_EnergyBelow;
+			SleepWhen_HealthBelow.Value = copyFrom.SleepWhen_HealthBelow;
 		}
 
 		
@@ -88,11 +98,15 @@ namespace GameLogic.Units.Player_Char
 		{
 			writer.Int(MoveToPos_MaxDist, "moveToPos_MaxDist");
             writer.Bool(AcceptJob_Mining, "acceptJob_Mining");
+			writer.Float(SleepWhen_EnergyBelow, "sleepWhen_EnergyBelow");
+			writer.Float(SleepWhen_HealthBelow, "sleepWhen_HealthBelow");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
 			MoveToPos_MaxDist.Value = reader.Int("moveToPos_MaxDist");
             AcceptJob_Mining.Value = reader.Bool("acceptJob_Mining");
+			SleepWhen_EnergyBelow.Value = reader.Float("sleepWhen_EnergyBelow");
+			SleepWhen_HealthBelow.Value = reader.Float("sleepWhen_HealthBelow");
 		}
 	}
 }

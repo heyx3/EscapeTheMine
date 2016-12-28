@@ -59,6 +59,70 @@ namespace GameLogic.Units.Player_Char
 		/// Acts as a coroutine.
 		/// </summary>
 		public abstract System.Collections.IEnumerable TakeTurn();
+		
+		protected enum TryMoveToPos_States
+		{
+			EnRoute,
+			Finished,
+			NoPath,
+		}
+		protected class TryMoveToPos_Status
+		{
+			public int NActualMoves;
+			public TryMoveToPos_States CurrentState;
+		}
+		/// <summary>
+		/// A coroutine that attempts to make the owning PlayerChar move to the given position.
+		/// </summary>
+		/// <param name="nMoves">
+		/// The maximum number of moves to take,
+		/// or -1 to take as many as he is allowed in one turn.
+		/// </param>
+		/// <param name="nActualMoves">
+		/// The number of actual moves the PlayerChar took by the end of this.
+		/// He will stop early if he reaches the goal.
+		/// </param>
+		/// <param name="endState">
+		/// Whether the PlayerChar made it to the goal, is still en route,
+		///     or couldn't even find a path.
+		/// </param>
+		protected System.Collections.IEnumerable TryMoveToPos(Pathfinding.Goal<Vector2i> goal,
+															  TryMoveToPos_Status outStatus,
+															  int nMoves = -1)
+		{
+			outStatus.NActualMoves = 0;
+			outStatus.CurrentState = TryMoveToPos_States.EnRoute;
+
+			//Try to find the best path.
+			List<Vector2i> path = Owner.Value.FindPath(goal);
+			if (path == null)
+			{
+				outStatus.CurrentState = TryMoveToPos_States.NoPath;
+				yield break;
+			}
+
+			//Move along the path.
+			if (nMoves == -1)
+				nMoves = PlayerConsts.MovesPerTurn;
+			nMoves = Math.Min(nMoves, path.Count);
+			for (int i = 0; i < nMoves; ++i)
+			{
+				Owner.Value.Pos.Value = path[i];
+				outStatus.NActualMoves += 1;
+
+				//If we're at the end of the path, exit.
+				if (goal.IsValidEnd(Owner.Value.Pos))
+				{
+					outStatus.CurrentState = TryMoveToPos_States.Finished;
+					yield break;
+				}
+
+				yield return null;
+			}
+
+			//We didn't make it to the end of the path.
+			outStatus.CurrentState = TryMoveToPos_States.EnRoute;
+		}
 
 		/// <summary>
 		/// Raises the "OnJobFinished" event.
@@ -90,6 +154,7 @@ namespace GameLogic.Units.Player_Char
 		{
 			MoveToPos = 0,
 			Mine,
+			Sleep,
 		}
 		public abstract Types ThisType { get; }
 
@@ -107,6 +172,7 @@ namespace GameLogic.Units.Player_Char
 			{
 				case Types.MoveToPos: j = new Job_MoveToPos(Vector2i.Zero, false, theMap); break;
 				case Types.Mine: j = new Job_Mine(new HashSet<Vector2i>(), false, theMap); break;
+				case Types.Sleep: new Job_Sleep(false, theMap); break;
 				default: throw new NotImplementedException(jType.ToString());
 			}
 

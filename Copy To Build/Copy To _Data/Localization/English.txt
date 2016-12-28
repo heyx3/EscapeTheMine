@@ -4,6 +4,7 @@
 
 ## Job messages
 NO_PATH_JOB:Couldn't find a path
+NO_BED:Couldn't find a friendly bed
 INTERRUPT_JOB_EMERGENCY:Job interrupted by emergency: %s
 INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
 
@@ -19,6 +20,8 @@ WINDOW_OPTIONS_BUTTON_SAVE:Save
 WINDOW_OPTIONS_BUTTON_QUIT:Quit
 WINDOW_MOVETOPOS_TITLE:Choose Destination
 WINDOW_MOVETOPOS_MESSAGE:Click on the destination to move to.
+WINDOW_SLEEPAT_TITLE:Choose Bed
+WINDOW_SLEEPAT_MESSAGE:Click on the bed to sleep on.
 WINDOW_MINEPOSES_TITLE:Choose Tiles to Mine
 WINDOW_MINEPOSES_MESSAGE:Click on the tiles you want to mine.\nClick a selected tile to un-select it.\nThe tiles must all be connected!
 WINDOW_UNITSELECTOR_TITLE:Select Unit
@@ -40,6 +43,10 @@ WINDOW_PLAYERCHAR_BUTTON_JOB_MOVE:Move to Pos
 WINDOW_PLAYERCHAR_BUTTON_EMERGENCYJOB_MOVE:Move to Pos\n(Emergency)
 WINDOW_PLAYERCHAR_BUTTON_JOB_MINE:Mine
 WINDOW_PLAYERCHAR_BUTTON_EMERGENCYJOB_MINE:Mine\n(Emergency)
+WINDOW_PLAYERCHAR_BUTTON_JOB_SLEEPBED:Sleep Bed
+WINDOW_PLAYERCHAR_BUTTON_EMERGENCYJOB_SLEEPBED:Sleep Bed\n(Emergency)
+WINDOW_PLAYERCHAR_BUTTON_JOB_SLEEPANYBED:Sleep Bed\n(Any)
+WINDOW_PLAYERCHAR_BUTTON_EMERGENCYJOB_SLEEPANYBED:Sleep Bed\n(Any) (Emergency)
 
 ## Main Menu
 MAINMENU_TITLE:Escape The Mine
