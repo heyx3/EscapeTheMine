@@ -7,8 +7,7 @@ using System.Collections;
 
 namespace GameLogic.Units.Player_Char
 {
-	//TODO: Rename to "Job_SleepBed".
-	public class Job_Sleep : Job
+	public class Job_SleepBed : Job
 	{
 		public static Bed FirstFriendlyBedAtPos(Vector2i tilePos, PlayerChar pChar)
 		{
@@ -35,15 +34,15 @@ namespace GameLogic.Units.Player_Char
 		/// If it exists, this is the specific bed the PlayerChar must sleep in.
 		/// Otherwise, he will just find the closest bed.
 		/// </summary>
-		public Stat<ulong?, Job_Sleep> TargetBedID { get; private set; }
+		public Stat<ulong?, Job_SleepBed> TargetBedID { get; private set; }
 		
 
-		public Job_Sleep(bool isEmergency, Map theMap, Bed targetBed = null)
+		public Job_SleepBed(bool isEmergency, Map theMap, Bed targetBed = null)
 			: base(isEmergency, theMap)
 		{
 			BedID = null;
 
-			TargetBedID = new Stat<ulong?, Job_Sleep>(this, null);
+			TargetBedID = new Stat<ulong?, Job_SleepBed>(this, null);
 			if (targetBed != null)
 				TargetBedID.Value = targetBed.ID;
 
@@ -135,7 +134,7 @@ namespace GameLogic.Units.Player_Char
 		}
 
 		//Serialization:
-		public override Types ThisType { get { return Types.Sleep; } }
+		public override Types ThisType { get { return Types.SleepBed; } }
 		public override void WriteData(Writer writer)
 		{
 			base.WriteData(writer);

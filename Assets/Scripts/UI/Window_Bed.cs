@@ -57,7 +57,9 @@ namespace MyUI
 				.onClick.AddListener(
 					() =>
 					{
-						//TODO: Tell the "Sleep" job to end.
+						//End the sleeper's "Sleep" job.
+						var sleepingUnit = UnityLogic.EtMGame.Instance.Map.GetUnit(unitID);
+						((GameLogic.Units.PlayerChar)sleepingUnit).CurrentJob.EndJob(true);
 					});
 
 			elementButton.transform.SetParent(ContentParent, false);

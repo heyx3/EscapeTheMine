@@ -85,9 +85,9 @@ namespace GameLogic.Units.Player_Char
 
 		public static float EnemyDistHeuristicMax { get { return instance.enemyDistHeuristicMax; } }
 
-		public static int TurnsToMine(float strengthStat, int nTilesToMine)
+		public static int TurnsToMine(float strengthStat, float adultMultiplier, int nTilesToMine)
 		{
-			float baseTurns = instance.baseTurnsToMine.Evaluate(strengthStat),
+			float baseTurns = instance.baseTurnsToMine.Evaluate(strengthStat * adultMultiplier),
 				  turnsF = instance.turnsToMine.EvaluateFull(nTilesToMine,
 															 null, null, baseTurns,
 															 1);
@@ -99,13 +99,13 @@ namespace GameLogic.Units.Player_Char
             return instance.strengthIncreaseFromMining.Evaluate(nTilesToMine);
         }
 
-		public static float EnergyIncreaseFromBedPerTurn(int nPeopleInBed)
+		public static float EnergyIncreaseFromBedPerTurn(int nPeopleInBed, float adultMultiplier)
 		{
-			return instance.energyIncreaseFromBedPerTurn.Evaluate(nPeopleInBed);
+			return instance.energyIncreaseFromBedPerTurn.Evaluate(nPeopleInBed) * adultMultiplier;
 		}
-		public static float HealthIncreaseFromBedPerTurn(int nPeopleInBed)
+		public static float HealthIncreaseFromBedPerTurn(int nPeopleInBed, float adultMultiplier)
 		{
-			return instance.healthIncreaseFromBedPerTurn.Evaluate(nPeopleInBed);
+			return instance.healthIncreaseFromBedPerTurn.Evaluate(nPeopleInBed) * adultMultiplier;
 		}
 
 		public static float ReproductionChance { get { return instance.reproductionChance; } }

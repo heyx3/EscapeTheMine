@@ -6,6 +6,7 @@ using UnityEngine;
 using GameLogic;
 using GameLogic.Units.Player_Char;
 
+//TODO: Add Adultness counter to prefab.
 
 namespace MyUI
 {
@@ -29,10 +30,16 @@ namespace MyUI
 		{
 			return string.Format("{0:0.00}", f);
 		}
+		private static string FormatAdultness(float f)
+		{
+			int percent = Mathf.RoundToInt(100.0f * f);
+			return percent.ToString() + "%";
+		}
 
 
 		public Localizer Label_FoodValue, Label_HealthValue,
-						 Label_EnergyValue, Label_StrengthValue;
+						 Label_EnergyValue, Label_StrengthValue,
+						 Label_AdultMultiplier;
 
 
 		#region Helper types/field for Editor serialization of tabTypeToObj
@@ -87,20 +94,24 @@ namespace MyUI
 		private void Start()
 		{
 			Target.Food.OnChanged += OnFoodChanged;
-			Label_FoodValue.Args = new object[] { FormatFood(Target.Food.Value) };
+			Label_FoodValue.Args = new object[] { FormatFood(Target.Food) };
 			OnFoodChanged(Target, Target.Food, Target.Food);
 
 			Target.Health.OnChanged += OnHealthChanged;
-			Label_HealthValue.Args = new object[] { FormatHealth(Target.Health.Value) };
+			Label_HealthValue.Args = new object[] { FormatHealth(Target.Health) };
 			OnHealthChanged(Target, Target.Health, Target.Health);
 
 			Target.Energy.OnChanged += OnEnergyChanged;
-			Label_EnergyValue.Args = new object[] { FormatEnergy(Target.Energy.Value) };
+			Label_EnergyValue.Args = new object[] { FormatEnergy(Target.Energy) };
 			OnEnergyChanged(Target, Target.Energy, Target.Energy);
 
 			Target.Strength.OnChanged += OnStrengthChanged;
-			Label_StrengthValue.Args = new object[] { FormatStrength(Target.Strength.Value) };
+			Label_StrengthValue.Args = new object[] { FormatStrength(Target.Strength) };
 			OnStrengthChanged(Target, Target.Strength, Target.Strength);
+
+			Target.AdultMultiplier.OnChanged += OnAdultnessChanged;
+			Label_AdultMultiplier.Args = new object[] { FormatAdultness(Target.AdultMultiplier) };
+			OnAdultnessChanged(Target, Target.AdultMultiplier, Target.AdultMultiplier);
 
 			SwitchToTab(firstTab);
 		}
@@ -133,6 +144,11 @@ namespace MyUI
 		{
 			Label_StrengthValue.Args[0] = FormatStrength(newVal);
 			Label_StrengthValue.OnValidate();
+		}
+		private void OnAdultnessChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		{
+			Label_AdultMultiplier.Args[0] = FormatAdultness(newVal);
+			Label_AdultMultiplier.OnValidate();
 		}
 
 		public void Callback_TabClicked(UITab tab)
@@ -209,18 +225,18 @@ namespace MyUI
 					{
 						if (tilePos.HasValue)
 						{
-							var bed = Job_Sleep.FirstFriendlyBedAtPos(tilePos.Value, Target);
-							Target.AddJob(new Job_Sleep(isEmergency, Game.Map, bed));
+							var bed = Job_SleepBed.FirstFriendlyBedAtPos(tilePos.Value, Target);
+							Target.AddJob(new Job_SleepBed(isEmergency, Game.Map, bed));
 						}
 					},
-					(tilePos) => (Job_Sleep.FirstFriendlyBedAtPos(tilePos, Target) != null),
+					(tilePos) => (Job_SleepBed.FirstFriendlyBedAtPos(tilePos, Target) != null),
 					"WINDOW_SLEEPAT_TITLE", "WINDOW_SLEEPAT_MESSAGE");
 				ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 			}
 			//Otherwise, just sleep at the closest bed.
 			else
 			{
-				Target.AddJob(new Job_Sleep(isEmergency, Game.Map));
+				Target.AddJob(new Job_SleepBed(isEmergency, Game.Map));
 			}
 		}
 	}

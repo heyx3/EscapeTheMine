@@ -55,6 +55,10 @@ namespace GameLogic.Units
 		public Stat<float, PlayerChar> Health { get; private set; }
 		public Stat<float, PlayerChar> Strength { get; private set; }
 
+		public Stat<float, PlayerChar> AdultMultiplier { get; private set; }
+		public bool IsAdult { get { return AdultMultiplier.Value >= 1.0f; } }
+		//TODO: "Grow Up" job.
+
 		public Stat<float, PlayerChar> LowFoodThreshold { get; private set; }
 
 		public Player_Char.JobQualifications Career { get; private set; }
@@ -82,12 +86,15 @@ namespace GameLogic.Units
 
 
 		public PlayerChar(Map theMap, ulong groupID, float food, float energy, float strength,
+						  float adultMultiplier,
 						  string name, Player_Char.Personality.Genders gender, int appearanceIndex)
 			: base(theMap, groupID)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
 			Energy = new Stat<float, PlayerChar>(this, energy);
 			Strength = new Stat<float, PlayerChar>(this, strength);
+
+			AdultMultiplier = new Stat<float, PlayerChar>(this, adultMultiplier);
 
 			Health = new Stat<float, PlayerChar>(this, Player_Char.Consts.Max_Health);
 
@@ -98,7 +105,7 @@ namespace GameLogic.Units
 			Personality = new Player_Char.Personality(this, name, gender, appearanceIndex);
 		}
 		public PlayerChar(Map theMap)
-			: this(theMap, ulong.MaxValue, 0.0f, 0.0f, 0.0f,
+			: this(theMap, ulong.MaxValue, 0.0f, 0.0f, 0.0f, 1.0f,
 				   "", Player_Char.Personality.Genders.Male, 0) { }
 
 
@@ -332,6 +339,8 @@ namespace GameLogic.Units
 			writer.Float(Health, "health");
 			writer.Float(Strength, "strength");
 
+			writer.Float(AdultMultiplier, "adultMultiplier");
+
 			writer.Float(LowFoodThreshold, "lowFoodThreshold");
 
 			writer.Structure(Career, "career");
@@ -358,6 +367,8 @@ namespace GameLogic.Units
 			Energy.Value = reader.Float("energy");
 			Health.Value = reader.Float("health");
 			Strength.Value = reader.Float("strength");
+
+			AdultMultiplier.Value = reader.Float("adultMultiplier");
 
 			LowFoodThreshold.Value = reader.Float("lowFoodThreshold");
 

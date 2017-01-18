@@ -46,15 +46,15 @@ namespace GameLogic.Units
 		public override IEnumerable TakeTurn()
 		{
 			//Gain stats for everybody in bed.
-			float energyImprovement =
-					  Player_Char.Consts.EnergyIncreaseFromBedPerTurn(SleepingUnitsByID.Count),
-				  healthImprovement =
-					  Player_Char.Consts.HealthIncreaseFromBedPerTurn(SleepingUnitsByID.Count);
 			foreach (ulong unitID in SleepingUnitsByID)
 			{
 				var pChar = (PlayerChar)TheMap.GetUnit(unitID);
-				pChar.Energy.Value += energyImprovement;
-				pChar.Health.Value += healthImprovement;
+				pChar.Energy.Value +=
+					Player_Char.Consts.EnergyIncreaseFromBedPerTurn(SleepingUnitsByID.Count,
+																	pChar.AdultMultiplier);
+				pChar.Health.Value +=
+					Player_Char.Consts.HealthIncreaseFromBedPerTurn(SleepingUnitsByID.Count,
+																	pChar.AdultMultiplier);
 			}
 
 			//Count the number of male/female pairs.
@@ -62,16 +62,20 @@ namespace GameLogic.Units
 				nFemales = 0;
 			foreach (Unit unit in SleepingUnitsByID.Select(id => TheMap.GetUnit(id)))
 			{
-				switch (((PlayerChar)unit).Personality.Gender.Value)
+				PlayerChar pChar = (PlayerChar)unit;
+				if (pChar.IsAdult)
 				{
-					case Player_Char.Personality.Genders.Male:
-						nMales += 1;
-						break;
-					case Player_Char.Personality.Genders.Female:
-						nFemales += 1;
-						break;
-					default:
-						throw new NotImplementedException(((PlayerChar)unit).Personality.Gender.ToString());
+					switch (pChar.Personality.Gender.Value)
+					{
+						case Player_Char.Personality.Genders.Male:
+							nMales += 1;
+							break;
+						case Player_Char.Personality.Genders.Female:
+							nFemales += 1;
+							break;
+						default:
+							throw new NotImplementedException(((PlayerChar)unit).Personality.Gender.ToString());
+					}
 				}
 			}
 			int nPairs = Math.Min(nMales, nFemales);
@@ -103,9 +107,19 @@ namespace GameLogic.Units
 					string name =
 						Player_Char.Personality.GenerateName(gender,
 															 UnityEngine.Random.Range(0, int.MaxValue));
-					PlayerChar baby = new PlayerChar(TheMap, father.MyGroupID,
-													 0.0f, 0.0f, 0.0f, //TODO: Choose stats.
-													 name, gender, 0); //TODO: How about UnitRenderer_PlayerChar chooses an appearance index once it's hooked up to the unit?
+					//TODO: How about UnitRenderer_PlayerChar chooses an appearance index once it's hooked up to the unit?
+					PlayerChar baby =
+						new PlayerChar(TheMap, father.MyGroupID,
+									   UnityEngine.Mathf.Lerp(Player_Char.Consts.MinStart_Food,
+															  Player_Char.Consts.MaxStart_Food,
+															  UnityEngine.Random.value),
+									   UnityEngine.Mathf.Lerp(Player_Char.Consts.MinStart_Energy,
+															  Player_Char.Consts.MaxStart_Energy,
+															  UnityEngine.Random.value),
+									   UnityEngine.Mathf.Lerp(Player_Char.Consts.MinStart_Strength,
+															  Player_Char.Consts.MaxStart_Strength,
+															  UnityEngine.Random.value),
+									   0.0f, name, gender, 0);
 					TheMap.AddUnit(baby);
 
 					if (OnMakeBaby != null)
