@@ -104,9 +104,8 @@ namespace GameLogic.Units
 					var gender = (UnityEngine.Random.value > 0.5f ?
 									  Player_Char.Personality.Genders.Male :
 									  Player_Char.Personality.Genders.Female);
-					string name =
-						Player_Char.Personality.GenerateName(gender,
-															 UnityEngine.Random.Range(0, int.MaxValue));
+                    int seed = UnityEngine.Random.Range(0, int.MaxValue);
+                    string name = Player_Char.Personality.GenerateName(gender, seed);
 					//TODO: How about UnitRenderer_PlayerChar chooses an appearance index once it's hooked up to the unit?
 					PlayerChar baby =
 						new PlayerChar(TheMap, father.MyGroupID,

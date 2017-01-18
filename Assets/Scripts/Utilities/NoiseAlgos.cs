@@ -33,7 +33,16 @@ public struct PRNG
 		Seed *= 0x27d4eb2d;
 		Seed ^= (Seed >> 15);
 		return Seed;
-	}
+    }
+    /// <summary>
+    /// Returns a random integer value between the given range.
+    /// </summary>
+    public int NextInt(int minInclusive, int maxExclusive)
+    {
+        int t = NextInt() % (maxExclusive - minInclusive);
+        return minInclusive + t;
+    }
+
 	/// <summary>
 	/// Returns a random value between 0 and 1.
 	/// </summary>

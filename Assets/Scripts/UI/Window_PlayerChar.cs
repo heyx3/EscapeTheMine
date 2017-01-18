@@ -34,11 +34,16 @@ namespace MyUI
 			int percent = Mathf.RoundToInt(100.0f * f);
 			return percent.ToString() + "%";
 		}
+        
 
-
-		public Localizer Label_FoodValue, Label_HealthValue,
+		public Localizer Label_Title,
+                         Label_FoodValue, Label_HealthValue,
 						 Label_EnergyValue, Label_StrengthValue,
 						 Label_AdultMultiplier;
+        public UnityEngine.UI.InputField Input_MaxMoveToPosDist,
+                                         Input_FindBedBelowEnergy,
+                                         Input_FindBedBelowHealth;
+        public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_GrowingUpIsEmergency;
 
 
 		#region Helper types/field for Editor serialization of tabTypeToObj
@@ -46,6 +51,7 @@ namespace MyUI
 		{
 			JobSelection,
 			Stats,
+            Jobs,
 		}
 		[Serializable]
 		private class TabTypeAndObj
@@ -55,11 +61,12 @@ namespace MyUI
 			public TabTypeAndObj() { }
 			public TabTypeAndObj(TabTypes t, UITab o) { Type = t; Obj = o; }
 		}
-		[SerializeField]
-		private List<TabTypeAndObj> tabs = new List<TabTypeAndObj>()
-		{
-			new TabTypeAndObj(TabTypes.JobSelection, null),
-			new TabTypeAndObj(TabTypes.Stats, null),
+        [SerializeField]
+        private List<TabTypeAndObj> tabs = new List<TabTypeAndObj>()
+        {
+            new TabTypeAndObj(TabTypes.JobSelection, null),
+            new TabTypeAndObj(TabTypes.Stats, null),
+            new TabTypeAndObj(TabTypes.Jobs, null),
 		};
 		#endregion
 
@@ -90,8 +97,12 @@ namespace MyUI
 			}
 			tabs = null;
 		}
-		private void Start()
-		{
+        private void Start()
+        {
+            Target.Personality.Name.OnChanged += OnNameChanged;
+            Label_Title.Args = new object[] { Target.Personality.Name };
+            OnNameChanged(Target.Personality, Target.Personality.Name, Target.Personality.Name);
+
 			Target.Food.OnChanged += OnFoodChanged;
 			Label_FoodValue.Args = new object[] { FormatFood(Target.Food) };
 			OnFoodChanged(Target, Target.Food, Target.Food);
@@ -111,6 +122,12 @@ namespace MyUI
 			Target.AdultMultiplier.OnChanged += OnAdultnessChanged;
 			Label_AdultMultiplier.Args = new object[] { FormatAdultness(Target.AdultMultiplier) };
 			OnAdultnessChanged(Target, Target.AdultMultiplier, Target.AdultMultiplier);
+
+            Input_MaxMoveToPosDist.text = Target.Career.MoveToPos_MaxDist.Value.ToString();
+            Toggle_TakeMiningJobs.isOn = Target.Career.AcceptJob_Mining;
+            Input_FindBedBelowEnergy.text = Target.Career.SleepWhen_EnergyBelow.Value.ToString();
+            Input_FindBedBelowHealth.text = Target.Career.SleepWhen_HealthBelow.Value.ToString();
+            Toggle_GrowingUpIsEmergency.isOn = Target.Career.GrowingUpIsEmergency;
 
 			SwitchToTab(firstTab);
 		}
@@ -148,8 +165,25 @@ namespace MyUI
 		{
 			Label_AdultMultiplier.Args[0] = FormatAdultness(newVal);
 			Label_AdultMultiplier.OnValidate();
-		}
 
+            Toggle_GrowingUpIsEmergency.gameObject.SetActive(!Target.IsAdult);
+
+            //If the PlayerChar is now an adult, we need to tell the "Jobs" tab object
+            //    to not activate the "Growing up is emergency?" option when clicked.
+            Transform tr = Toggle_GrowingUpIsEmergency.transform;
+            var childrenToIgnore = tabTypeToObj[TabTypes.Jobs].ChildrenToIgnore;
+            if (Target.IsAdult && !childrenToIgnore.Contains(tr))
+                childrenToIgnore.Add(tr);
+            else if (!Target.IsAdult && childrenToIgnore.Contains(tr))
+                childrenToIgnore.Remove(tr);
+		}
+        private void OnNameChanged(GameLogic.Units.Player_Char.Personality personality,
+                                   string oldName, string newName)
+        {
+            Label_Title.Args[0] = newName;
+            Label_Title.OnValidate();
+        }
+        
 		public void Callback_TabClicked(UITab tab)
 		{
 			//Find the type of tab that was clicked on and select it.
@@ -238,5 +272,28 @@ namespace MyUI
 				Target.AddJob(new Job_SleepBed(isEmergency, Game.Map));
 			}
 		}
-	}
+
+        public void Callback_ChangeStat_MaxMoveToPosDist(string newVal)
+        {
+            int i;
+            if (int.TryParse(newVal, out i) && i >= 0)
+                Target.Career.MoveToPos_MaxDist.Value = i;
+        }
+        public void Callback_ChangeStat_TakeMiningJobs(bool shouldTake)
+        {
+            Target.Career.AcceptJob_Mining.Value = shouldTake;
+        }
+        public void Callback_ChangeStat_SleepEnergyThreshold(string newVal)
+        {
+            float f;
+            if (float.TryParse(newVal, out f) && f >= 0.0f)
+                Target.Career.SleepWhen_EnergyBelow.Value = f;
+        }
+        public void Callback_ChangeStat_SleepHealthThreshold(string newVal)
+        {
+            float f;
+            if (float.TryParse(newVal, out f) && f >= 0.0f)
+                Target.Career.SleepWhen_HealthBelow.Value = f;
+        }
+    }
 }

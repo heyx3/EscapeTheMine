@@ -29,7 +29,8 @@ public class UITab : MonoBehaviour
 	public virtual void SelectMe()
 	{
 		for (int i = 0; i < MyTr.childCount; ++i)
-			MyTr.GetChild(i).gameObject.SetActive(true);
+            if (!ChildrenToIgnore.Contains(MyTr.GetChild(i)))
+			    MyTr.GetChild(i).gameObject.SetActive(true);
 
 		if (MyImg != null)
 			MyImg.color = SelectedColor;

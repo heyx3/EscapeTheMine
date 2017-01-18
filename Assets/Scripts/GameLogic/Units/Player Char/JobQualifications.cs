@@ -6,8 +6,6 @@ using System.Text;
 
 namespace GameLogic.Units.Player_Char
 {
-    //TODO: A tab in the UI window for this info.
-
     /// <summary>
     /// Information about which global jobs a PlayerChar is willing to take.
     /// </summary>

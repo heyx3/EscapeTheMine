@@ -22,25 +22,26 @@ namespace GameLogic.Units.Player_Char
 
 		public static string GenerateName(Genders gender, int seed)
 		{
-			//Basic idea: Take a bunch of syllables and smash 'em together.
-			//Every syllable has a beginning and ending letter.
-			//These beginnings and endings can be split into three groups:
-			//    1. Vowels -- can follow any consonant, but should usually not follow a vowel
-			//    2. Ending consonant -- shouldn't follow an ending consonant, MIGHT follow a continuing consonant, can follow any vowel
-			//    3. Continuing consonant -- can follow any continuing consonants or vowels, but not ending consonants.
-			//These syllables are hard-coded and stored in the below "syllables" collection.
+            //Basic idea: Take a bunch of syllables and smash 'em together.
+            //Every syllable has a beginning and ending letter.
+            //These beginnings and endings can be split into three groups:
+            //    1. Vowels -- can follow any consonant, but should usually not follow a vowel
+            //    2. Ending consonant -- shouldn't follow an ending consonant, MIGHT follow a continuing consonant, can follow any vowel
+            //    3. Continuing consonant -- can follow any continuing consonants or vowels, but not ending consonants.
+            //These syllables are hard-coded and stored in the below "syllables" collection.
 
-			System.Random rng = new System.Random(seed);
+            PRNG rng = new PRNG(seed);
+
 			const int minSyllables = 2,
 					  maxSyllables = 5;
 			const float chance_VowelToVowel = 0.05f,
 						chance_ContinuingConsonantToEndingConsonant = 0.5f;
 
-			int nSyllables = rng.Next(minSyllables, maxSyllables + 1);
+			int nSyllables = rng.NextInt(minSyllables, maxSyllables + 1);
 
 			//Start with a completely random syllable.
 			System.Text.StringBuilder sb = new System.Text.StringBuilder();
-			Syllable firstSyllable = syllables.ElementAt(rng.Next(syllables.Count));
+			Syllable firstSyllable = syllables.ElementAt(rng.NextInt(0, syllables.Count));
 			sb.Append(firstSyllable.Value);
 
 			//Add successive syllables making sure they don't conflict with what came before.
@@ -105,16 +106,17 @@ namespace GameLogic.Units.Player_Char
 
 					if (chanceOfAccepting <= 0.0f)
 						continue;
-					if (chanceOfAccepting >= 1.0f || rng.NextDouble() < chanceOfAccepting)
+					if (chanceOfAccepting >= 1.0f || rng.NextFloat() < chanceOfAccepting)
 						acceptableSyllables.Add(syllable);
 				}
 
 				//Pick one randomly.
-				Syllable nextSyllable = syllables.ElementAt(rng.Next(syllables.Count));
+				Syllable nextSyllable = syllables.ElementAt(rng.NextInt(0, syllables.Count));
 				lastEnding = nextSyllable.EndType;
 				sb.Append(nextSyllable.Value);
 			}
 
+            sb[0] = char.ToUpper(sb[0]);
 			return sb.ToString();
 		}
 		#region Name generation helpers

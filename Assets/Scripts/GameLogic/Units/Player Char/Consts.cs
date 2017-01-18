@@ -160,7 +160,7 @@ namespace GameLogic.Units.Player_Char
 		private AsymptoteValue energyIncreaseFromBedPerTurn = new AsymptoteValue(5.0f, 0.0f, 1.0f),
 							   healthIncreaseFromBedPerTurn = new AsymptoteValue(0.02f, 0.0f, 1.0f);
 
-		//The chance of a male/female pair in the same bed producing a child this turn.
+		//The chance of a male/female pair in the same bed producing a child each turn.
 		private float reproductionChance = 0.001f;
 
 		private float defaultSeekBedEnergy = 25.0f,
