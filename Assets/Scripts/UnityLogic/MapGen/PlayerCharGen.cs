@@ -127,7 +127,7 @@ namespace UnityLogic.MapGen
 					int appearanceIndex = 0;
 
 					PlayerChar chr = new PlayerChar(
-						theMap, playerGroup.ID, food, energy, strength,
+						theMap, playerGroup.ID, food, energy, strength, 1.0f,
 						GameLogic.Units.Player_Char.Personality.GenerateName(gender, seed),
 						gender, appearanceIndex);
 					theMap.AddUnit(chr);

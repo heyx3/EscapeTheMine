@@ -60,7 +60,8 @@ namespace GameLogic.Units.Player_Char
 					case TryMoveToPos_States.Finished:
 						//Start mining.
 						isMiningYet = true;
-						turnsLeft = Consts.TurnsToMine(Owner.Value.Strength, tilesToMine.Count);
+						turnsLeft = Consts.TurnsToMine(Owner.Value.Strength, Owner.Value.AdultMultiplier,
+                                                       tilesToMine.Count);
 						break;
 
 					case TryMoveToPos_States.EnRoute:

@@ -6,7 +6,6 @@ using UnityEngine;
 using GameLogic;
 using GameLogic.Units.Player_Char;
 
-//TODO: Add Adultness counter to prefab.
 
 namespace MyUI
 {
