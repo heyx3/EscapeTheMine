@@ -51,7 +51,7 @@ namespace MyUI
 		{
 			JobSelection,
 			Stats,
-            Jobs,
+            GlobalJobs,
 		}
 		[Serializable]
 		private class TabTypeAndObj
@@ -66,7 +66,7 @@ namespace MyUI
         {
             new TabTypeAndObj(TabTypes.JobSelection, null),
             new TabTypeAndObj(TabTypes.Stats, null),
-            new TabTypeAndObj(TabTypes.Jobs, null),
+            new TabTypeAndObj(TabTypes.GlobalJobs, null),
 		};
 		#endregion
 
@@ -171,7 +171,7 @@ namespace MyUI
             //If the PlayerChar is now an adult, we need to tell the "Jobs" tab object
             //    to not activate the "Growing up is emergency?" option when clicked.
             Transform tr = Toggle_GrowingUpIsEmergency.transform;
-            var childrenToIgnore = tabTypeToObj[TabTypes.Jobs].ChildrenToIgnore;
+            var childrenToIgnore = tabTypeToObj[TabTypes.GlobalJobs].ChildrenToIgnore;
             if (Target.IsAdult && !childrenToIgnore.Contains(tr))
                 childrenToIgnore.Add(tr);
             else if (!Target.IsAdult && childrenToIgnore.Contains(tr))
