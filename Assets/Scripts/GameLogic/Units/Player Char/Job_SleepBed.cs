@@ -161,5 +161,11 @@ namespace GameLogic.Units.Player_Char
 			else
 				TargetBedID.Value = null;
 		}
-	}
+
+        //Give each type of job a unique hash code.
+        public override int GetHashCode()
+        {
+            return 46587;
+        }
+    }
 }

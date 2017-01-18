@@ -155,6 +155,7 @@ namespace GameLogic.Units.Player_Char
 			MoveToPos = 0,
 			Mine,
 			SleepBed,
+            GrowUp,
 		}
 		public abstract Types ThisType { get; }
 
@@ -173,6 +174,7 @@ namespace GameLogic.Units.Player_Char
 				case Types.MoveToPos: j = new Job_MoveToPos(Vector2i.Zero, false, theMap); break;
 				case Types.Mine: j = new Job_Mine(new HashSet<Vector2i>(), false, theMap); break;
 				case Types.SleepBed: new Job_SleepBed(false, theMap); break;
+                case Types.GrowUp: new Job_GrowUp(false, theMap); break;
 				default: throw new NotImplementedException(jType.ToString());
 			}
 

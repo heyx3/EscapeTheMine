@@ -6,10 +6,12 @@ using System.Text;
 
 namespace GameLogic.Units.Player_Char
 {
-	/// <summary>
-	/// Information about which global jobs a PlayerChar is willing to take.
-	/// </summary>
-	public class JobQualifications : MyData.IReadWritable
+    //TODO: A tab in the UI window for this info.
+
+    /// <summary>
+    /// Information about which global jobs a PlayerChar is willing to take.
+    /// </summary>
+    public class JobQualifications : MyData.IReadWritable
 	{
 		public PlayerChar Owner { get; private set; }
 
@@ -28,6 +30,8 @@ namespace GameLogic.Units.Player_Char
 
 		public Stat<float, JobQualifications> SleepWhen_EnergyBelow, SleepWhen_HealthBelow;
 
+        public Stat<bool, JobQualifications> GrowingUpIsEmergency;
+
 
 		public JobQualifications(PlayerChar owner)
 		{
@@ -41,6 +45,9 @@ namespace GameLogic.Units.Player_Char
 				new Stat<float, JobQualifications>(this, Consts.DefaultSeekBedEnergy);
 			SleepWhen_HealthBelow =
 				new Stat<float, JobQualifications>(this, Consts.DefaultSeekBedHealth);
+
+            GrowingUpIsEmergency =
+                new Stat<bool, JobQualifications>(this, false);
 		}
 		public JobQualifications(PlayerChar owner, JobQualifications copyFrom)
 			: this(owner)
@@ -50,6 +57,8 @@ namespace GameLogic.Units.Player_Char
 
 			SleepWhen_EnergyBelow.Value = copyFrom.SleepWhen_EnergyBelow;
 			SleepWhen_HealthBelow.Value = copyFrom.SleepWhen_HealthBelow;
+
+            GrowingUpIsEmergency.Value = copyFrom.GrowingUpIsEmergency;
 		}
 
 		
@@ -100,6 +109,7 @@ namespace GameLogic.Units.Player_Char
             writer.Bool(AcceptJob_Mining, "acceptJob_Mining");
 			writer.Float(SleepWhen_EnergyBelow, "sleepWhen_EnergyBelow");
 			writer.Float(SleepWhen_HealthBelow, "sleepWhen_HealthBelow");
+            writer.Bool(GrowingUpIsEmergency, "growingUpIsEmergency");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -107,6 +117,7 @@ namespace GameLogic.Units.Player_Char
             AcceptJob_Mining.Value = reader.Bool("acceptJob_Mining");
 			SleepWhen_EnergyBelow.Value = reader.Float("sleepWhen_EnergyBelow");
 			SleepWhen_HealthBelow.Value = reader.Float("sleepWhen_HealthBelow");
+            GrowingUpIsEmergency.Value = reader.Bool("growingUpIsEmergency");
 		}
 	}
 }

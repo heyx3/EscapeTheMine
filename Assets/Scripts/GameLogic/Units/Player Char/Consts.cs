@@ -113,6 +113,8 @@ namespace GameLogic.Units.Player_Char
 		public static float DefaultSeekBedEnergy { get { return instance.defaultSeekBedEnergy; } }
 		public static float DefaultSeekBedHealth { get { return instance.defaultSeekBedHealth; } }
 
+        public static float MaturityIncreasePerTurn { get { return instance.maturityIncreasePerTurn; } }
+
 
         #region Private fields
 
@@ -164,6 +166,8 @@ namespace GameLogic.Units.Player_Char
 		private float defaultSeekBedEnergy = 25.0f,
 					  defaultSeekBedHealth = 0.15f;
 
+        //The increase in a child's "adultness" per turn.
+        private float maturityIncreasePerTurn = 0.005f;
 
 		#endregion
 
@@ -198,6 +202,8 @@ namespace GameLogic.Units.Player_Char
 			writer.Structure(baseTurnsToMine, "baseTurnsToMine");
 
 			writer.Float(reproductionChance, "reproductionChance");
+
+            writer.Float(maturityIncreasePerTurn, "maturityIncreasePerTurn");
 		}
 		public void ReadData(MyData.Reader reader)
 		{
@@ -229,6 +235,8 @@ namespace GameLogic.Units.Player_Char
 			reader.Structure(baseTurnsToMine, "baseTurnsToMine");
 			
 			reproductionChance = reader.Float("reproductionChance");
+
+            maturityIncreasePerTurn = reader.Float("maturityIncreasePerTurn");
 		}
 	}
 }

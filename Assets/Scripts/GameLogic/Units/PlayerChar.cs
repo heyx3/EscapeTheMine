@@ -57,7 +57,6 @@ namespace GameLogic.Units
 
 		public Stat<float, PlayerChar> AdultMultiplier { get; private set; }
 		public bool IsAdult { get { return AdultMultiplier.Value >= 1.0f; } }
-		//TODO: "Grow Up" job.
 
 		public Stat<float, PlayerChar> LowFoodThreshold { get; private set; }
 
@@ -139,8 +138,13 @@ namespace GameLogic.Units
 			//If no current job exists, find one.
 			if (currentlyDoing == null)
 			{
-				//Grab from jobs specific to this instance if they exist.
-				if (customJobs.Count > 0)
+                //If we need to grow up ASAP, do that.
+                if (!IsAdult && Career.GrowingUpIsEmergency.Value)
+                {
+                    StartDoingJob(new Player_Char.Job_GrowUp(true, TheMap), null);
+                }
+				//Otherwise, look at any jobs specifically given to this unit.
+				else if (customJobs.Count > 0)
 				{
 					//Prioritize "emergency" jobs.
 					Player_Char.Job nextJob = customJobs.FirstOrDefault(j => j.IsEmergency);
@@ -149,6 +153,11 @@ namespace GameLogic.Units
 
 					StartDoingJob(nextJob, null);
 				}
+                //Otherwise, see if this unit needs to grow up as a non-emergency job.
+                else if (!IsAdult)
+                {
+                    StartDoingJob(new Player_Char.Job_GrowUp(false, TheMap), null);
+                }
 				//Otherwise, grab from the global job collection.
 				else
 				{
@@ -163,7 +172,9 @@ namespace GameLogic.Units
 				//Grab from jobs specific to this instance if they exist.
 				//Otherwise, grab from the global job collection.
 				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
-				if (emergencyJob == null)
+                if (emergencyJob == null && !IsAdult && Career.GrowingUpIsEmergency.Value)
+                    emergencyJob = new Player_Char.Job_GrowUp(true, TheMap);
+                if (emergencyJob == null)
 					emergencyJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
 
 				if (emergencyJob != null)

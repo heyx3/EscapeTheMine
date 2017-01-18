@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace GameLogic.Units.Player_Char
 {
+    //TODO: A tab in the UI window for this info.
+
 	/// <summary>
 	/// A PlayerChar's personal data.
 	/// </summary>
