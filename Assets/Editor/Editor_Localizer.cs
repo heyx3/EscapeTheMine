@@ -9,18 +9,6 @@ using UnityEditor;
 [CustomEditor(typeof(Localizer))]
 public class Editor_Localizer : Editor
 {
-	[MenuItem("EtM/Generate")]
-	public static void Generate()
-	{
-		System.Random rng = new System.Random();
-		string[] names = new string[25];
-		for (int i = 0; i < names.Length; ++i)
-			names[i] = GameLogic.Units.Player_Char.Personality.GenerateName(GameLogic.Units.Player_Char.Personality.Genders.Male, rng.Next());
-
-		string msg = names.Aggregate("", (_msg, element) => _msg + "\n" + element);
-		EditorUtility.DisplayDialog("Names", msg, "OK");
-	}
-
     public override void OnInspectorGUI()
     {
         Localizer myLoc = (Localizer)target;

@@ -33,7 +33,7 @@ namespace GameLogic.Units.Player_Char
             PRNG rng = new PRNG(seed);
 
 			const int minSyllables = 2,
-					  maxSyllables = 4;
+					  maxSyllables = 5;
 			const float chance_VowelToVowel = 0.05f,
 						chance_ContinuingConsonantToEndingConsonant = 0.5f;
 
@@ -46,7 +46,7 @@ namespace GameLogic.Units.Player_Char
 
 			//Add successive syllables making sure they don't conflict with what came before.
 			HashSet<Syllable> acceptableSyllables = new HashSet<Syllable>();
-			Syllable lastSyllable = firstSyllable;
+			Syllable.Types lastEnding = firstSyllable.EndType;
 			for (int i = 1; i < nSyllables; ++i)
 			{
 				//Get all acceptable syllables.
@@ -58,7 +58,7 @@ namespace GameLogic.Units.Player_Char
 					switch (syllable.StartType)
 					{
 						case Syllable.Types.Vowel:
-							switch (lastSyllable.EndType)
+							switch (lastEnding)
 							{
 								case Syllable.Types.Vowel:
 									chanceOfAccepting = chance_VowelToVowel;
@@ -67,12 +67,12 @@ namespace GameLogic.Units.Player_Char
 								case Syllable.Types.EndingConsonant:
 									chanceOfAccepting = 1.0f;
 									break;
-								default: throw new NotImplementedException(lastSyllable.EndType.ToString());
+								default: throw new NotImplementedException(lastEnding.ToString());
 							}
 							break;
 
 						case Syllable.Types.EndingConsonant:
-							switch (lastSyllable.EndType)
+							switch (lastEnding)
 							{
 								case Syllable.Types.Vowel:
 									chanceOfAccepting = 1.0f;
@@ -83,12 +83,12 @@ namespace GameLogic.Units.Player_Char
 								case Syllable.Types.EndingConsonant:
 									chanceOfAccepting = 0.0f;
 									break;
-								default: throw new NotImplementedException(lastSyllable.EndType.ToString());
+								default: throw new NotImplementedException(lastEnding.ToString());
 							}
 							break;
 
 						case Syllable.Types.ContinuingConsonant:
-							switch (lastSyllable.EndType)
+							switch (lastEnding)
 							{
 								case Syllable.Types.Vowel:
 								case Syllable.Types.ContinuingConsonant:
@@ -97,22 +97,22 @@ namespace GameLogic.Units.Player_Char
 								case Syllable.Types.EndingConsonant:
 									chanceOfAccepting = 0.0f;
 									break;
-								default: throw new NotImplementedException(lastSyllable.EndType.ToString());
+								default: throw new NotImplementedException(lastEnding.ToString());
 							}
 							break;
 
 						default: throw new NotImplementedException(syllable.StartType.ToString());
 					}
 
-					if (chanceOfAccepting <= 0.0f || syllable == lastSyllable)
+					if (chanceOfAccepting <= 0.0f)
 						continue;
 					if (chanceOfAccepting >= 1.0f || rng.NextFloat() < chanceOfAccepting)
 						acceptableSyllables.Add(syllable);
 				}
 
 				//Pick one randomly.
-				var nextSyllable = acceptableSyllables.ElementAt(rng.NextInt(0, acceptableSyllables.Count));
-				lastSyllable = nextSyllable;
+				Syllable nextSyllable = syllables.ElementAt(rng.NextInt(0, syllables.Count));
+				lastEnding = nextSyllable.EndType;
 				sb.Append(nextSyllable.Value);
 			}
 
@@ -157,7 +157,7 @@ namespace GameLogic.Units.Player_Char
 			new Syllable("ge", Syllable.Types.EndingConsonant, Syllable.Types.Vowel),
 			new Syllable("ber", Syllable.Types.ContinuingConsonant, Syllable.Types.EndingConsonant),
 			new Syllable("du", Syllable.Types.ContinuingConsonant, Syllable.Types.Vowel),
-			new Syllable("y", Syllable.Types.Vowel, Syllable.Types.ContinuingConsonant),
+			new Syllable("yes", Syllable.Types.Vowel, Syllable.Types.ContinuingConsonant),
 			new Syllable("ar", Syllable.Types.Vowel, Syllable.Types.EndingConsonant),
 			new Syllable("in", Syllable.Types.Vowel, Syllable.Types.ContinuingConsonant),
 			new Syllable("tr", Syllable.Types.EndingConsonant, Syllable.Types.EndingConsonant),
