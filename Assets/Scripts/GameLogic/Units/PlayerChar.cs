@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MyData;
 using UnityEngine;
+using MyData;
 
 
 namespace GameLogic.Units
@@ -138,49 +138,19 @@ namespace GameLogic.Units
 			//If no current job exists, find one.
 			if (currentlyDoing == null)
 			{
-                //If we need to grow up ASAP, do that.
-                if (!IsAdult && Career.GrowingUpIsEmergency.Value)
-                {
-                    StartDoingJob(new Player_Char.Job_GrowUp(true, TheMap), null);
-                }
-				//Otherwise, look at any jobs specifically given to this unit.
-				else if (customJobs.Count > 0)
-				{
-					//Prioritize "emergency" jobs.
-					Player_Char.Job nextJob = customJobs.FirstOrDefault(j => j.IsEmergency);
-					if (nextJob == null)
-						nextJob = customJobs[0];
-
-					StartDoingJob(nextJob, null);
-				}
-                //Otherwise, see if this unit needs to grow up as a non-emergency job.
-                else if (!IsAdult)
-                {
-                    StartDoingJob(new Player_Char.Job_GrowUp(false, TheMap), null);
-                }
-				//Otherwise, grab from the global job collection.
-				else
-				{
-					Player_Char.Job nextJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, false);
-					if (nextJob != null)
-						StartDoingJob(nextJob, null);
-				}
+				var job = TakeAJob(false);
+				if (job != null)
+					StartDoingJob(job, null);
 			}
 			//If we have a job but it isn't an emergency, see if there IS an emergency.
 			else if (!currentlyDoing.IsEmergency)
 			{
-				//Grab from jobs specific to this instance if they exist.
-				//Otherwise, grab from the global job collection.
-				Player_Char.Job emergencyJob = customJobs.FirstOrDefault(j => j.IsEmergency);
-                if (emergencyJob == null && !IsAdult && Career.GrowingUpIsEmergency.Value)
-                    emergencyJob = new Player_Char.Job_GrowUp(true, TheMap);
-                if (emergencyJob == null)
-					emergencyJob = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
-
+				var emergencyJob = TakeAJob(true);
 				if (emergencyJob != null)
 				{
-                    StartDoingJob(emergencyJob,
-                                  Localization.Get("INTERRUPT_JOB_EMERGENCY", emergencyJob.ToString()));
+					var msg = Localization.Get("INTERRUPT_JOB_EMERGENCY",
+											   emergencyJob.ToString());
+					StartDoingJob(emergencyJob, msg);
 				}
 			}
 
@@ -188,6 +158,82 @@ namespace GameLogic.Units
 			if (currentlyDoing != null)
 				foreach (object o in currentlyDoing.TakeTurn())
 					yield return o;
+		}
+
+		/// <summary>
+		/// Finds the most pressing job this PlayerChar should automatically do,
+		///     such as "sleep", "heal", or "eat".
+		/// Returns "null" if nothing needs doing.
+		/// </summary>
+		private Player_Char.Job FindNeedsJob(bool emergenciesOnly)
+		{
+			if (emergenciesOnly)
+			{
+				if (!IsAdult && Career.GrowingUpIsEmergency.Value)
+					return new Player_Char.Job_GrowUp(true, TheMap);
+			}
+			else
+			{
+				//Try finding an emergency job first.
+				var emergencyJob = FindNeedsJob(true);
+				if (emergencyJob != null)
+					return emergencyJob;
+
+				//Otherwise, find a non-emergency job.
+				if (!IsAdult)
+					return new Player_Char.Job_GrowUp(false, TheMap);
+			}
+
+			return null;
+		}
+		/// <summary>
+		/// Finds a job to do. Returns "null" if nothing was found.
+		/// Note that if it was a global job, this PlayerChar is now responsible for it
+		///     until the job ends one way or another.
+		/// </summary>
+		/// <param name="emergenciesOnly">Whether to only look for emergency jobs.</param>
+		private Player_Char.Job TakeAJob(bool emergenciesOnly)
+		{
+			//There are three types of jobs:
+			//  1. "Needs"-related jobs, like getting food/sleep or running from enemies.
+			//  2. "Custom" jobs given specifically to this unit.
+			//  3. Global jobs that any unit can take on.
+
+			//Jobs are taken in this order:
+			//  1. Emergency custom jobs.
+			//  2. Emergency "needs" jobs.
+			//  3. Emergency global jobs.
+			//  4. Non-emergency "needs" jobs.
+			//  5. Non-emergency custom jobs.
+			//  6. Non-emergency global jobs.
+
+			Player_Char.Job job = null;
+
+			if (emergenciesOnly)
+			{
+				job = customJobs.FirstOrDefault(j => j.IsEmergency);
+
+				if (job == null)
+					job = FindNeedsJob(true);
+
+				if (job == null)
+					job = ((Groups.PlayerGroup)MyGroup).TakeJob(this, true);
+			}
+			else
+			{
+				job = TakeAJob(true);
+
+				if (job == null)
+					job = FindNeedsJob(false);
+
+				if (job == null && customJobs.Count > 0)
+					job = customJobs[0];
+
+				if (job == null)
+					job = ((Groups.PlayerGroup)MyGroup).TakeJob(this, false);
+			}
+
+			return job;
 		}
 
 		/// <summary>
@@ -269,6 +315,7 @@ namespace GameLogic.Units
 		/// <param name="alertOldJob">
 		/// If a job was canceled to make way for this one,
 		///     it will be ended with the given message.
+		/// Pass "null" for no message.
 		/// </param>
 		public Player_Char.Job StartDoingJob(Player_Char.Job job, string alertOldJob)
 		{

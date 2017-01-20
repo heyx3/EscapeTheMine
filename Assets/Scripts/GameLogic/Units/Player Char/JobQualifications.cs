@@ -23,6 +23,7 @@ namespace GameLogic.Units.Player_Char
 		public Stat<int, JobQualifications> MoveToPos_MaxDist;
 
         //TODO: Stat<bool> for whether to avoid enemies when pathing normally. Also move enemy avoidance into Unit base class heuristic, and provide an abstract "ShouldAvoidEnemies" property.
+		//TODO: Stat<bool> for whether running from enemies should be an automatic job (and another Stat<bool> for whether it's an emergency).
 
         public Stat<bool, JobQualifications> AcceptJob_Mining;
 
