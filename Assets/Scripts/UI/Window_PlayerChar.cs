@@ -45,58 +45,28 @@ namespace MyUI
                                          Input_FindBedBelowHealth;
         public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_GrowingUpIsEmergency;
 
-
-		#region Helper types/field for Editor serialization of tabTypeToObj
+		
 		public enum TabTypes
 		{
 			JobSelection,
 			Stats,
             GlobalJobs,
 		}
-		[Serializable]
-		private class TabTypeAndObj
-		{
-			public TabTypes Type;
-			public UITab Obj;
-			public TabTypeAndObj() { }
-			public TabTypeAndObj(TabTypes t, UITab o) { Type = t; Obj = o; }
-		}
-        [SerializeField]
-        private List<TabTypeAndObj> tabs = new List<TabTypeAndObj>()
-        {
-            new TabTypeAndObj(TabTypes.JobSelection, null),
-            new TabTypeAndObj(TabTypes.Stats, null),
-            new TabTypeAndObj(TabTypes.GlobalJobs, null),
-		};
-		#endregion
+		public Dict.UITabsByTabType TabTypeToObj = new Dict.UITabsByTabType(true);
 
 		[SerializeField]
 		private TabTypes firstTab = TabTypes.Stats;
 
-		private Dictionary<TabTypes, UITab> tabTypeToObj;
-
 
 		public void SwitchToTab(TabTypes type)
 		{
-			foreach (var kvp in tabTypeToObj)
+			foreach (var kvp in TabTypeToObj)
 				if (kvp.Key == type)
 					kvp.Value.SelectMe();
 				else
 					kvp.Value.DeselectMe();
 		}
-
-		protected override void Awake()
-		{
-			base.Awake();
-
-			tabTypeToObj = new Dictionary<TabTypes, UITab>();
-			foreach (var tabTypeAndObj in tabs)
-			{
-				tabTypeToObj.Add(tabTypeAndObj.Type, tabTypeAndObj.Obj);
-				tabTypeAndObj.Obj.OnClicked += Callback_TabClicked;
-			}
-			tabs = null;
-		}
+		
         private void Start()
         {
             Target.Personality.Name.OnChanged += OnNameChanged;
@@ -171,7 +141,7 @@ namespace MyUI
             //If the PlayerChar is now an adult, we need to tell the "Jobs" tab object
             //    to not activate the "Growing up is emergency?" option when clicked.
             Transform tr = Toggle_GrowingUpIsEmergency.transform;
-            var childrenToIgnore = tabTypeToObj[TabTypes.GlobalJobs].ChildrenToIgnore;
+            var childrenToIgnore = TabTypeToObj[TabTypes.GlobalJobs].ChildrenToIgnore;
             if (Target.IsAdult && !childrenToIgnore.Contains(tr))
                 childrenToIgnore.Add(tr);
             else if (!Target.IsAdult && childrenToIgnore.Contains(tr))
@@ -187,7 +157,7 @@ namespace MyUI
 		public void Callback_TabClicked(UITab tab)
 		{
 			//Find the type of tab that was clicked on and select it.
-			foreach (var kvp in tabTypeToObj)
+			foreach (var kvp in TabTypeToObj)
 				if (kvp.Value == tab)
 				{
 					SwitchToTab(kvp.Key);

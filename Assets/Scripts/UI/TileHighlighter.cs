@@ -155,7 +155,7 @@ namespace MyUI
 
                 case UnityLogic.ViewModes.ThreeD:
                     throw new NotImplementedException();
-                    break;
+                    //break;
 
                 default: throw new NotImplementedException(oldMode.ToString());
             }
