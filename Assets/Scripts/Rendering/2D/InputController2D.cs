@@ -51,6 +51,12 @@ namespace Rendering.TwoD
                     MyUI.ContentUI.Instance.CreateWindow(MyUI.ContentUI.Instance.Window_SelectUnit,
                                                          clickedUnits);
                 }
+				//If there were no units, show a window about that tile.
+				else
+				{
+					MyUI.ContentUI.Instance.CreateWindow(MyUI.ContentUI.Instance.Window_Tile,
+														 tilePos);
+				}
             }
 		}
 
@@ -77,7 +83,6 @@ namespace Rendering.TwoD
 			UnityEngine.Assertions.Assert.IsTrue(Content2D.Instance.Cam.orthographic);
 			Content2D.Instance.Cam.orthographicSize /= scale;
 		}
-
 
         private void Update()
         {

@@ -203,7 +203,7 @@ namespace MyUI
                 },
                 (tilePos) => Game.Map.Tiles[tilePos].IsMinable(),
                 true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
-            var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
+            ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
         }
 
 		public enum BedSleepTypes

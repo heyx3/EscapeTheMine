@@ -97,7 +97,7 @@ namespace GameLogic.Units.Player_Char
 
 			//TODO: Possibly spawn monsters.
 
-			EndJob(true);
+			EndJob(false);
 		}
 
 		private bool IsAMiningSpot(Vector2i pos)

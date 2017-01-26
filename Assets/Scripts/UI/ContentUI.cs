@@ -15,6 +15,7 @@ namespace MyUI
 						  Window_SelectUnit,
 						  Window_SelectTile,
                           Window_SelectTiles,
+						  Window_Tile,
 
 						  Window_ConfirmDialog,
 			

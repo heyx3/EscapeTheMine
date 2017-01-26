@@ -24,9 +24,6 @@ namespace Rendering
 
 		private void Callback_ChangeViewMode(UnityLogic.ViewModes oldMode, UnityLogic.ViewModes newMode)
 		{
-			List<UnityLogic.ViewModes> keys = RenderersByViewMode.Keys.ToList();
-			List<GameObject> vals = RenderersByViewMode.Values.ToList();
-
 			foreach (var kvp in RenderersByViewMode)
 				if (kvp.Value != null)
 					kvp.Value.SetActive(kvp.Key == newMode);

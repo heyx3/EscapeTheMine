@@ -37,6 +37,20 @@ namespace MyUI
 			Target.TheMap.OnUnitRemoved -= Callback_UnitRemoved;
 		}
 
+		public void Callback_ZoomToBed()
+		{
+			switch (UnityLogic.Options.ViewMode)
+			{
+				case UnityLogic.ViewModes.TwoD:
+					Rendering.TwoD.Content2D.Instance.ZoomToSee(Enumerable.Repeat(Target.Pos.Value, 1));
+					break;
+
+				case UnityLogic.ViewModes.ThreeD: throw new NotImplementedException();
+
+				default: throw new NotImplementedException(UnityLogic.Options.ViewMode.ToString());
+			}
+		}
+
 		private void Callback_AddSleeper(LockedSet<ulong> sleepers, ulong unitID)
 		{
 			GameObject elementButton = Instantiate(ElementButtonPrefab);
