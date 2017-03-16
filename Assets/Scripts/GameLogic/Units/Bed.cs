@@ -10,6 +10,10 @@ namespace GameLogic.Units
 	{
 		public override string DisplayName { get { return Localization.Get("WINDOW_SELECTUNIT_BED"); } }
 
+		public override bool BlocksMovement { get { return false; } }
+		public override bool BlocksStructures { get { return true; } }
+
+
 		/// <summary>
 		/// Raised when a male/female pair made a baby in this bed.
 		/// The PlayerChar arguments are as follows:
@@ -35,7 +39,8 @@ namespace GameLogic.Units
 				TheMap.GetUnit(id).OnKilled -= Callback_SleeperKilled;
 			};
 		}
-		public Bed(Map theMap) : this(theMap, ulong.MaxValue, new Vector2i(-1, -1)) { }
+		public Bed(Map theMap, Vector2i pos) : this(theMap, ulong.MaxValue, pos) { }
+		public Bed(Map theMap) : this(theMap, new Vector2i(-1, -1)) { }
 
 
 		private void Callback_SleeperKilled(Unit sleeper, Map theMap)

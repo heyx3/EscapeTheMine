@@ -123,21 +123,9 @@ namespace GameLogic.Groups
 				jobCollection.Remove(toTake);
 				if (OnJobTaken != null)
 					OnJobTaken(this, toTake, pChar);
-
-				toTake.OnJobFinished += Callback_TakenJobFinished;
 			}
 
 			return toTake;
-		}
-
-		private void Callback_TakenJobFinished(Job j, bool failed, string msg)
-		{
-			//If this job was a failure, add it back into this collection.
-
-			j.OnJobFinished -= Callback_TakenJobFinished;
-
-			if (failed)
-				AddJob(j);
 		}
 		
 		private void InitJob(Job j)

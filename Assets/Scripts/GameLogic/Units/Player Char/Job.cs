@@ -82,9 +82,8 @@ namespace GameLogic.Units.Player_Char
 		/// The number of actual moves the PlayerChar took by the end of this.
 		/// He will stop early if he reaches the goal.
 		/// </param>
-		/// <param name="endState">
-		/// Whether the PlayerChar made it to the goal, is still en route,
-		///     or couldn't even find a path.
+		/// <param name="outStatus">
+		/// As this method runs, it outputs information into this structure.
 		/// </param>
 		protected System.Collections.IEnumerable TryMoveToPos(Pathfinding.Goal<Vector2i> goal,
 															  TryMoveToPos_Status outStatus,
@@ -154,6 +153,7 @@ namespace GameLogic.Units.Player_Char
 		{
 			MoveToPos = 0,
 			Mine,
+			BuildBed,
 			SleepBed,
             GrowUp,
 		}
@@ -173,6 +173,7 @@ namespace GameLogic.Units.Player_Char
 			{
 				case Types.MoveToPos: j = new Job_MoveToPos(Vector2i.Zero, false, theMap); break;
 				case Types.Mine: j = new Job_Mine(new HashSet<Vector2i>(), false, theMap); break;
+				case Types.BuildBed: new Job_BuildBed(Vector2i.Zero, 0, false, theMap); break;
 				case Types.SleepBed: new Job_SleepBed(false, theMap); break;
                 case Types.GrowUp: new Job_GrowUp(false, theMap); break;
 				default: throw new NotImplementedException(jType.ToString());

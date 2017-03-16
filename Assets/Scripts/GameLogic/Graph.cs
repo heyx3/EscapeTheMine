@@ -50,14 +50,21 @@ namespace GameLogic
 					 lessY = starting.LessY,
 					 moreY = starting.MoreY;
 			
-			if (Owner.Tiles.IsValid(lessX) && !Owner.Tiles[lessX].BlocksMovement())
+			if (Owner.Tiles.IsValid(lessX) && !Owner.Tiles[lessX].BlocksMovement() && !UnitsBlock(lessX))
 				outEdgeList.Add(new Pathfinding.Edge<Vector2i>(starting, lessX));
-			if (Owner.Tiles.IsValid(lessY) && !Owner.Tiles[lessY].BlocksMovement())
+
+			if (Owner.Tiles.IsValid(lessY) && !Owner.Tiles[lessY].BlocksMovement() && !UnitsBlock(lessY))
 				outEdgeList.Add(new Pathfinding.Edge<Vector2i>(starting, lessY));
-			if (Owner.Tiles.IsValid(moreX) && !Owner.Tiles[moreX].BlocksMovement())
+
+			if (Owner.Tiles.IsValid(moreX) && !Owner.Tiles[moreX].BlocksMovement() && !UnitsBlock(moreX))
 				outEdgeList.Add(new Pathfinding.Edge<Vector2i>(starting, moreX));
-			if (Owner.Tiles.IsValid(moreY) && !Owner.Tiles[moreY].BlocksMovement())
+
+			if (Owner.Tiles.IsValid(moreY) && !Owner.Tiles[moreY].BlocksMovement() && !UnitsBlock(moreY))
 				outEdgeList.Add(new Pathfinding.Edge<Vector2i>(starting, moreY));
+		}
+		private bool UnitsBlock(Vector2i tile)
+		{
+			return Owner.GetUnits(tile).Any(u => u.BlocksMovement);
 		}
 	}
 }

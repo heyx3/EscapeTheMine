@@ -59,8 +59,8 @@ namespace GameLogic.Units.Player_Char
 		public override IEnumerable TakeTurn()
 		{
 			//If the unit's energy and health is high enough, end the job.
-			if (Owner.Value.Energy.Value > Owner.Value.Career.SleepWhen_EnergyBelow.Value &&
-				Owner.Value.Health.Value > Owner.Value.Career.SleepWhen_EnergyBelow.Value)
+			if (Owner.Value.Health.Value >= Consts.Max_Health &&
+				Owner.Value.Energy.Value >= Consts.MaxEnergy(Owner.Value.Strength))
 			{
 				EndJob(true);
 			}

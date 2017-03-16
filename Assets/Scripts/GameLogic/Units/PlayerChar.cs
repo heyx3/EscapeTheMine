@@ -72,6 +72,8 @@ namespace GameLogic.Units
 		public Player_Char.Job CurrentJob { get { return currentlyDoing; } }
 
 		public override string DisplayName { get { return Personality.Name; } }
+		public override bool BlocksStructures { get { return false; } }
+		public override bool BlocksMovement{ get { return false; } }
 
 
 		/// <summary>
@@ -90,12 +92,24 @@ namespace GameLogic.Units
 			: base(theMap, groupID)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
-			Energy = new Stat<float, PlayerChar>(this, energy);
 			Strength = new Stat<float, PlayerChar>(this, strength);
 
-			AdultMultiplier = new Stat<float, PlayerChar>(this, adultMultiplier);
+			Energy = new Stat<float, PlayerChar>(this, energy);
+			Energy.OnChanged += (thisChar, oldVal, newVal) =>
+			{
+				float max = Player_Char.Consts.MaxEnergy(Strength);
+				if (newVal > max)
+					Energy.Value = max;
+			};
 
 			Health = new Stat<float, PlayerChar>(this, Player_Char.Consts.Max_Health);
+			Health.OnChanged += (thisChar, oldVal, newVal) =>
+			{
+				if (newVal > Player_Char.Consts.Max_Health)
+					Health.Value = Player_Char.Consts.Max_Health;
+			};
+
+			AdultMultiplier = new Stat<float, PlayerChar>(this, adultMultiplier);
 
 			LowFoodThreshold =
 				new Stat<float, PlayerChar>(this, Player_Char.Consts.InitialLowFoodThreshold);
@@ -169,6 +183,11 @@ namespace GameLogic.Units
 		{
 			if (emergenciesOnly)
 			{
+				//Sleep, if health is dangerously low.
+				if (Health < Career.SleepWhen_HealthBelow)
+					return new Player_Char.Job_SleepBed(true, TheMap);
+
+				//Grow up, if growing up is considered a priority.
 				if (!IsAdult && Career.GrowingUpIsEmergency.Value)
 					return new Player_Char.Job_GrowUp(true, TheMap);
 			}
@@ -179,7 +198,14 @@ namespace GameLogic.Units
 				if (emergencyJob != null)
 					return emergencyJob;
 
+
 				//Otherwise, find a non-emergency job.
+
+				//Sleep, if energy is low.
+				if (Energy < Career.SleepWhen_EnergyBelow)
+					return new Player_Char.Job_SleepBed(true, TheMap);
+
+				//Grow up.
 				if (!IsAdult)
 					return new Player_Char.Job_GrowUp(false, TheMap);
 			}

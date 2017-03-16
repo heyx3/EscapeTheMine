@@ -5,6 +5,7 @@
 ## Job messages
 NO_PATH_JOB:Couldn't find a path
 NO_BED:Couldn't find a friendly bed
+CANT_BUILD_ON_TILE:Tile no longer supports a new structure
 INTERRUPT_JOB_EMERGENCY:Job interrupted by emergency: %s
 INTERRUPT_JOB_UNKNOWN:Job interrupted by: %s
 
@@ -22,6 +23,8 @@ WINDOW_MOVETOPOS_TITLE:Choose Destination
 WINDOW_MOVETOPOS_MESSAGE:Click on the destination to move to.
 WINDOW_SLEEPAT_TITLE:Choose Bed
 WINDOW_SLEEPAT_MESSAGE:Click on the bed to sleep on.
+WINDOW_BUILDBED_TITLE:Choose Tile for Bed
+WINDOW_BUILDBED_MESSAGE:Click on the tile to place the bed on.
 WINDOW_MINEPOSES_TITLE:Choose Tiles to Mine
 WINDOW_MINEPOSES_MESSAGE:Click on the tiles you want to mine.\nClick a selected tile to un-select it.\nThe tiles must all be connected!
 WINDOW_UNITSELECTOR_TITLE:Select Unit
@@ -37,6 +40,8 @@ WINDOW_TILE_DEPOSIT:Tile: Deposit
 WINDOW_TILE_BEDROCK:Tile: Bedrock
 WINDOW_TILE_BUTTON_MINE:Mine
 WINDOW_TILE_BUTTON_MINEEMERGENCY:Mine (Emergency)
+WINDOW_TILE_BUTTON_BUILD_BED:Build Bed
+WINDOW_TILE_BUTTON_BUILD_BEDEMERGENCY:Build Bed (Emergency)
 
 
 ## SelectUnit window
@@ -51,6 +56,7 @@ WINDOW_PLAYERCHAR_HEALTHAMNT:Health: {0}
 WINDOW_PLAYERCHAR_ADULTNESSAMNT:Maturity: {0}
 WINDOW_PLAYERCHAR_MOVETOPOSDIST:Max Distance from "Move to Position" Job:
 WINDOW_PLAYERCHAR_ACCEPTMININGJOBS:Take mining jobs?
+WINDOW_PLAYERCHAR_ACCEPTBUILDBEDJOBS:Take "Build Bed" jobs?
 WINDOW_PLAYERCHAR_FINDBEDBELOW:Find a bed when below:
 WINDOW_PLAYERCHAR_ENERGY:Energy
 WINDOW_PLAYERCHAR_HEALTH:Health

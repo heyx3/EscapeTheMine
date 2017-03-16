@@ -36,6 +36,9 @@ namespace GameLogic.Units.Player_Char
 
 		public override IEnumerable TakeTurn()
 		{
+			//Remove any tiles that are no longer minable.
+			tilesToMine.RemoveWhere(tile => !TheMap.Value.Tiles[tile].IsMinable());
+
 			//If nothing is left to mine, stop the job.
 			if (tilesToMine.Count == 0)
 			{
@@ -97,7 +100,7 @@ namespace GameLogic.Units.Player_Char
 
 			//TODO: Possibly spawn monsters.
 
-			EndJob(false);
+			EndJob(true);
 		}
 
 		private bool IsAMiningSpot(Vector2i pos)

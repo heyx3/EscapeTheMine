@@ -43,7 +43,8 @@ namespace MyUI
         public UnityEngine.UI.InputField Input_MaxMoveToPosDist,
                                          Input_FindBedBelowEnergy,
                                          Input_FindBedBelowHealth;
-        public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_GrowingUpIsEmergency;
+        public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_TakeBuildBedJobs,
+									 Toggle_GrowingUpIsEmergency;
 
 		
 		public enum TabTypes
@@ -95,6 +96,7 @@ namespace MyUI
 
             Input_MaxMoveToPosDist.text = Target.Career.MoveToPos_MaxDist.Value.ToString();
             Toggle_TakeMiningJobs.isOn = Target.Career.AcceptJob_Mining;
+			Toggle_TakeBuildBedJobs.isOn = Target.Career.AcceptJob_BuildBed;
             Input_FindBedBelowEnergy.text = Target.Career.SleepWhen_EnergyBelow.Value.ToString();
             Input_FindBedBelowHealth.text = Target.Career.SleepWhen_HealthBelow.Value.ToString();
             Toggle_GrowingUpIsEmergency.isOn = Target.Career.GrowingUpIsEmergency;
@@ -111,27 +113,27 @@ namespace MyUI
 			Target.Strength.OnChanged -= OnStrengthChanged;
 		}
 
-		private void OnFoodChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		private void OnFoodChanged(Unit theChar, float oldVal, float newVal)
 		{
 			Label_FoodValue.Args[0] = FormatFood(newVal);
 			Label_FoodValue.OnValidate();
 		}
-		private void OnHealthChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		private void OnHealthChanged(Unit theChar, float oldVal, float newVal)
 		{
 			Label_HealthValue.Args[0] = FormatHealth(newVal);
 			Label_HealthValue.OnValidate();
 		}
-		private void OnEnergyChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		private void OnEnergyChanged(Unit theChar, float oldVal, float newVal)
 		{
 			Label_EnergyValue.Args[0] = FormatEnergy(newVal);
 			Label_EnergyValue.OnValidate();
 		}
-		private void OnStrengthChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		private void OnStrengthChanged(Unit theChar, float oldVal, float newVal)
 		{
 			Label_StrengthValue.Args[0] = FormatStrength(newVal);
 			Label_StrengthValue.OnValidate();
 		}
-		private void OnAdultnessChanged(GameLogic.Unit theChar, float oldVal, float newVal)
+		private void OnAdultnessChanged(Unit theChar, float oldVal, float newVal)
 		{
 			Label_AdultMultiplier.Args[0] = FormatAdultness(newVal);
 			Label_AdultMultiplier.OnValidate();
@@ -147,8 +149,7 @@ namespace MyUI
             else if (!Target.IsAdult && childrenToIgnore.Contains(tr))
                 childrenToIgnore.Remove(tr);
 		}
-        private void OnNameChanged(GameLogic.Units.Player_Char.Personality personality,
-                                   string oldName, string newName)
+        private void OnNameChanged(Personality personality, string oldName, string newName)
         {
             Label_Title.Args[0] = newName;
             Label_Title.OnValidate();
@@ -205,6 +206,22 @@ namespace MyUI
                 true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
             ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
         }
+		public void Callback_NewJob_BuildBed(bool makeEmergency)
+		{
+			//Ask the player to select a tile to move to.
+			var data = new Window_SelectTile.TileSelectionData(
+				(tilePos) =>
+				{
+					if (tilePos.HasValue)
+					{
+						Target.AddJob(new Job_BuildBed(tilePos.Value, Target.MyGroupID,
+													   makeEmergency, Game.Map));
+					}
+				},
+				(tilePos) => Game.Map.Tiles[tilePos].IsBuildableOn(),
+				"WINDOW_BUILDBED_TITLE", "WINDOW_BUILDBED_MESSAGE");
+			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+		}
 
 		public enum BedSleepTypes
 		{
@@ -253,6 +270,10 @@ namespace MyUI
         {
             Target.Career.AcceptJob_Mining.Value = shouldTake;
         }
+		public void Callback_ChangeStat_TakeBuildBedJobs(bool shouldTake)
+		{
+			Target.Career.AcceptJob_BuildBed.Value = shouldTake;
+		}
         public void Callback_ChangeStat_SleepEnergyThreshold(string newVal)
         {
             float f;

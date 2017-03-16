@@ -8,7 +8,10 @@ using GameLogic;
 
 namespace MyUI
 {
-	//TODO: Add "Build Bed" to empty tiles. Check whether wall/deposit tiles are already going to be mined (need some kind of "JobOverview" class for the map).
+	//TODO: A "JobOverview" class that knows where e.x. walls/deposits are already going to be mined, or a structure is going to be built.
+	//TODO: A Unity-side companion for "JobOverview" that displays jobs.
+	
+	//TODO: Add Window_Tile buttons for bringing up a "Job" window for each job that touches this tile (using "JobOverview").
 
 	/// <summary>
 	/// A window for doing something with a tile.
@@ -64,6 +67,13 @@ namespace MyUI
 			var wnd = (Window_SelectTiles)ContentUI.Instance.CreateWindow(
 										      ContentUI.Instance.Window_SelectTiles, data);
 			wnd.Callback_WorldTileClicked(Target);
+		}
+		public void Callback_BuildBed(bool isEmergency)
+		{
+			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
+			playerGroup.AddJob(
+				new GameLogic.Units.Player_Char.Job_BuildBed(Target, playerGroup.ID,
+															 isEmergency, Game.Map));
 		}
 
 		private void Callback_TileTypeChanged(GameLogic.TileGrid tiles,

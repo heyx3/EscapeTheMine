@@ -32,7 +32,7 @@ namespace Rendering.TwoD
 			}
 		}
 
-		protected void UnitAddedToMap(Map map, Unit unit)
+		private void UnitAddedToMap(Map map, Unit unit)
 		{
 			GameObject obj;
 			switch (unit.MyType)
@@ -54,7 +54,7 @@ namespace Rendering.TwoD
 			}
 			unitToObj.Add(unit, obj);
 		}
-		protected void UnitRemovedFromMap(Map map, Unit unit)
+		private void UnitRemovedFromMap(Map map, Unit unit)
 		{
 			Destroy(unitToObj[unit]);
 			unitToObj.Remove(unit);

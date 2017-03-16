@@ -41,6 +41,16 @@ namespace GameLogic
 
 		public abstract string DisplayName { get; }
 
+		/// <summary>
+		/// If true, then the existence of this unit on a tile blocks structures from being built on it.
+		/// "Structures" are a certain category of Unit, including Door, Workshop, Trap, etc.
+		/// </summary>
+		public abstract bool BlocksStructures { get; }
+		/// <summary>
+		/// If true, then the existence of this unit on a tile blocks other units from moving through it.
+		/// </summary>
+		public abstract bool BlocksMovement { get; }
+
 
 		public Unit(Map theMap, Group g) : this(theMap, g, new Vector2i(-1, -1)) { }
 		public Unit(Map theMap, Group g, Vector2i pos)

@@ -7,9 +7,9 @@ using Mathf = UnityEngine.Mathf;
 /// <summary>
 /// Represents a value that is calculated as ((Stat^exp) * scale) + offset, where:
 /// "Stat" is some stat, like "Strength", whose value strongly influences this value.
-/// "exp" is an exponent that affects how quickly the stat grows.
+/// "exp" is an exponent that affects how strongly the stat affects the value.
 /// "scale" is a scale that adjusts how the input stat maps to the output value.
-/// "offset" is the "base" stat that you get when X is 0.
+/// "offset" is the "base" value that you get when the stat is 0.
 /// </summary>
 [Serializable]
 public class ScaledValue : MyData.IReadWritable

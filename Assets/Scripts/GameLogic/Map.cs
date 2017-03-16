@@ -95,6 +95,10 @@ namespace GameLogic
 			units.Add(u);
 			u.MyGroup.UnitsByID.Add(u.ID);
 
+			if (!posToUnits.ContainsKey(u.Pos))
+				posToUnits.Add(u.Pos, new List<Unit>());
+			posToUnits[u.Pos].Add(u);
+
 			if (OnUnitAdded != null)
 				OnUnitAdded(this, u);
 

@@ -94,6 +94,12 @@ namespace GameLogic.Units.Player_Char
 			return Mathf.RoundToInt(turnsF * nTilesToMine);
 		}
 
+		public static int TurnsToBuildStructure(float strengthStat, float adultMultiplier)
+		{
+			float turnsF = instance.turnsToBuildStructure.Evaluate(strengthStat * adultMultiplier);
+			return Mathf.RoundToInt(turnsF);
+		}
+
         public static float StrengthIncreaseFromMining(int nTilesToMine)
         {
             return instance.strengthIncreaseFromMining.Evaluate(nTilesToMine);
@@ -152,6 +158,9 @@ namespace GameLogic.Units.Player_Char
 		//The number of turns to mine one tile based on the player's strength.
 		private AsymptoteValue baseTurnsToMine = new AsymptoteValue(10.0f, 1.0f, 1.0f);
 
+		//The number of turns to build a structure based on the player's strength.
+		private AsymptoteValue turnsToBuildStructure = new AsymptoteValue(10.0f, 0.0f, 0.5f);
+
         //The improvement in the PlayerChar's strength from mining
         //    is proportional to the number of tiles mined.
         private ScaledValue strengthIncreaseFromMining = new ScaledValue(1.0f, 0.01f, 0.0f);
@@ -201,6 +210,8 @@ namespace GameLogic.Units.Player_Char
 			writer.Structure(turnsToMine, "turnsToMine");
 			writer.Structure(baseTurnsToMine, "baseTurnsToMine");
 
+			writer.Structure(turnsToBuildStructure, "turnsToBuildStructure");
+
 			writer.Float(reproductionChance, "reproductionChance");
 
             writer.Float(maturityIncreasePerTurn, "maturityIncreasePerTurn");
@@ -233,6 +244,8 @@ namespace GameLogic.Units.Player_Char
 			
 			reader.Structure(turnsToMine, "turnsToMine");
 			reader.Structure(baseTurnsToMine, "baseTurnsToMine");
+
+			reader.Structure(turnsToBuildStructure, "turnsToBuildStructure");
 			
 			reproductionChance = reader.Float("reproductionChance");
 
