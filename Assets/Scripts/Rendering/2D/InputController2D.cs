@@ -19,7 +19,7 @@ namespace Rendering.TwoD
         public CancelableEvent<Vector2i> OnWorldTileClicked = new CancelableEvent<Vector2i>();
 
 
-		public float ScrollSpeed = 5.0f;
+		public float ScrollSpeed = 0.44f;
 		public float MinDragDist = 10.0f;
 		public float ScrollZoomScale = 1.1f;
 
@@ -76,12 +76,20 @@ namespace Rendering.TwoD
 			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
 		}
 
-		public void Scroll(float scrollWheelAmount)
+		public void Scroll(float scrollWheelAmount, Vector2 mousePos)
 		{
 			float scale = Mathf.Pow(ScrollZoomScale, scrollWheelAmount);
 
+			//Remember the world position of the mouse before zooming.
+			Vector2 mouseWorldPos = Content2D.Instance.Cam.ScreenToWorldPoint(mousePos);
+
+			//Zoom.
 			UnityEngine.Assertions.Assert.IsTrue(Content2D.Instance.Cam.orthographic);
 			Content2D.Instance.Cam.orthographicSize /= scale;
+
+			//Preserve the world position under the mouse.
+			Vector2 newMouseWorldPos = Content2D.Instance.Cam.ScreenToWorldPoint(mousePos);
+			Content2D.Instance.CamTr.position += (Vector3)(mouseWorldPos - newMouseWorldPos);
 		}
 
         private void Update()

@@ -89,15 +89,16 @@ namespace UnityLogic
 			{
 				//TODO: Detect pinching. Maybe we can use the same component that raises drag/click events?
 			}
-			else
+			//Only use the scroll wheel if the user is currently dragging the camera.
+			else if (isDragging)
 			{
 				float scrollWheel = Input.mouseScrollDelta.y;
 				if (scrollWheel != 0.0f)
 				{
 					if (Use2D)
-						Input2D.Scroll(scrollWheel);
+						Input2D.Scroll(scrollWheel, lastMousePos);
 					if (Use3D)
-						Input3D.Scroll(scrollWheel);
+						Input3D.Scroll(scrollWheel, lastMousePos);
 				}
 			}
 		}

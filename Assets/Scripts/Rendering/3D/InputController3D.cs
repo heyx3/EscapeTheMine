@@ -27,7 +27,7 @@ namespace Rendering.ThreeD
 			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
 		}
 
-		public void Scroll(float scrollWheelAmount)
+		public void Scroll(float scrollWheelAmount, Vector3 mousePos)
 		{
 		}
 	}
