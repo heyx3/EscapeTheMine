@@ -87,8 +87,7 @@ namespace GameLogic.Units
 
 
 		public PlayerChar(Map theMap, ulong groupID, float food, float energy, float strength,
-						  float adultMultiplier,
-						  string name, Player_Char.Personality.Genders gender, int appearanceIndex)
+						  float adultMultiplier, string name, Player_Char.Personality.Genders gender)
 			: base(theMap, groupID)
 		{
 			Food = new Stat<float, PlayerChar>(this, food);
@@ -115,11 +114,11 @@ namespace GameLogic.Units
 				new Stat<float, PlayerChar>(this, Player_Char.Consts.InitialLowFoodThreshold);
 
 			Career = new Player_Char.JobQualifications(this);
-			Personality = new Player_Char.Personality(this, name, gender, appearanceIndex);
+			Personality = new Player_Char.Personality(this, name, gender);
 		}
 		public PlayerChar(Map theMap)
 			: this(theMap, ulong.MaxValue, 0.0f, 0.0f, 0.0f, 1.0f,
-				   "", Player_Char.Personality.Genders.Male, 0) { }
+				   "", Player_Char.Personality.Genders.Male) { }
 
 
 		public override System.Collections.IEnumerable TakeTurn()

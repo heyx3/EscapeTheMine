@@ -177,13 +177,19 @@ namespace GameLogic.Units.Player_Char
 		/// </summary>
 		public Stat<int, Personality> AppearanceIndex { get; private set; }
 
+		/// <summary>
+		/// Whether this instance's "appearance index" hasn't been set yet.
+		/// This is true as long as AppearanceIndex has its default value of -1.
+		/// </summary>
+		public bool IsAppearanceUnset { get { return AppearanceIndex == -1; } }
 
-		public Personality(PlayerChar owner, string name, Genders gender, int appearanceIndex)
+
+		public Personality(PlayerChar owner, string name, Genders gender)
 		{
 			Owner = owner;
 			Name = new Stat<string, Personality>(this, name);
 			Gender = new Stat<Genders, Personality>(this, gender);
-			AppearanceIndex = new Stat<int, Personality>(this, appearanceIndex);
+			AppearanceIndex = new Stat<int, Personality>(this, -1);
 		}
 
 

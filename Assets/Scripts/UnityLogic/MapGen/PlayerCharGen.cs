@@ -124,12 +124,11 @@ namespace UnityLogic.MapGen
 					var gender = (i % 2 == 0) ?
 								      GameLogic.Units.Player_Char.Personality.Genders.Male :
 								      GameLogic.Units.Player_Char.Personality.Genders.Female;
-					int appearanceIndex = 0;
 
 					PlayerChar chr = new PlayerChar(
 						theMap, playerGroup.ID, food, energy, strength, 1.0f,
 						GameLogic.Units.Player_Char.Personality.GenerateName(gender, prng.NextInt()),
-						gender, appearanceIndex);
+						gender);
 					theMap.AddUnit(chr);
 					unitsToKeep.Add(chr.ID);
 				}

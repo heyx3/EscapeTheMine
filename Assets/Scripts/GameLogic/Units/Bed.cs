@@ -111,7 +111,6 @@ namespace GameLogic.Units
 									  Player_Char.Personality.Genders.Female);
                     int seed = UnityEngine.Random.Range(0, int.MaxValue);
                     string name = Player_Char.Personality.GenerateName(gender, seed);
-					//TODO: How about UnitRenderer_PlayerChar chooses an appearance index once it's hooked up to the unit?
 					PlayerChar baby =
 						new PlayerChar(TheMap, father.MyGroupID,
 									   UnityEngine.Mathf.Lerp(Player_Char.Consts.MinStart_Food,
@@ -123,7 +122,7 @@ namespace GameLogic.Units
 									   UnityEngine.Mathf.Lerp(Player_Char.Consts.MinStart_Strength,
 															  Player_Char.Consts.MaxStart_Strength,
 															  UnityEngine.Random.value),
-									   0.0f, name, gender, 0);
+									   0.0f, name, gender);
 					TheMap.AddUnit(baby);
 
 					if (OnMakeBaby != null)
