@@ -184,6 +184,9 @@ namespace GameLogic.Units
 		/// </summary>
 		private Player_Char.Job FindNeedsJob(bool emergenciesOnly)
 		{
+			//TODO: If there are no beds, don't return a sleep job. Maybe have the map cache all available beds for quick queries.
+			//TODO: Once sleeping on the floor is also a thing, consider doing that if beds are too far away or something.
+
 			if (emergenciesOnly)
 			{
 				//Sleep, if health is dangerously low.

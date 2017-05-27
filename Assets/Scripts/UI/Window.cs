@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace MyUI
 {
+	//TODO: When a Unit dies, its window should close. Maybe make a UnitWindow base class?
+
 	/// <summary>
 	/// A draggable, closeable set of controls surrounded by a box.
 	/// </summary>

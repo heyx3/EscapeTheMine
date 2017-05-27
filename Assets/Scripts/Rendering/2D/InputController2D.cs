@@ -11,6 +11,8 @@ namespace Rendering.TwoD
 	/// </summary>
 	public class InputController2D : Singleton<InputController2D>
 	{
+		//TODO: Render a FAINT sprite over the tile the mouse is currently at.
+
         /// <summary>
         /// Raised when a world tile is clicked on.
         /// If no responders "cancel" the event, the usual behavior for clicking on the world is done
