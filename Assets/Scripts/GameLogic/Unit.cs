@@ -52,7 +52,7 @@ namespace GameLogic
 		public abstract bool BlocksMovement { get; }
 
 
-		public Unit(Map theMap, Group g) : this(theMap, g, new Vector2i(-1, -1)) { }
+		public Unit(Map theMap, Group g) : this(theMap, g, new Vector2i(0, 0)) { }
 		public Unit(Map theMap, Group g, Vector2i pos)
 		{
 			TheMap = theMap;
@@ -81,6 +81,10 @@ namespace GameLogic
 		/// Runs a coroutine that has this unit take his turn.
 		/// </summary>
 		public abstract System.Collections.IEnumerable TakeTurn();
+
+		
+		public override int GetHashCode() { return (int)ID; }
+		public override string ToString() { return DisplayName + ": " + MyType.ToString(); }
 
 
 		#region Serialization

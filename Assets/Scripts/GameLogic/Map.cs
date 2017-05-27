@@ -29,7 +29,7 @@ namespace GameLogic
 		private static HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
 
 		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
-		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>();
+		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>(); //TODO: Offer a GridSet instead, then have UnitDispatcher use it instead of its own.
 		private Dictionary<Unit.Types, HashSet<Unit>> unitsByType = new Dictionary<Unit.Types, HashSet<Unit>>();
 
 		private Graph pathingGraph;
@@ -59,6 +59,10 @@ namespace GameLogic
 		}
 
 		
+		public IEnumerable<Unit> GetUnits()
+		{
+			return units;
+		}
 		public IEnumerable<Unit> GetUnits(Vector2i tilePos)
 		{
 			return (posToUnits.ContainsKey(tilePos) ?

@@ -63,8 +63,9 @@ namespace GameLogic
 		private TileTypes[,] grid;
 		
 		
-		public int Width { get { return grid.GetLength(0); } }
-		public int Height { get { return grid.GetLength(1); } }
+		public int Width { get { return grid.SizeX(); } }
+		public int Height { get { return grid.SizeY(); } }
+		public Vector2i Dimensions { get { return grid.SizeXY(); } }
 
 		public TileTypes this[Vector2i tilePos]
 		{
