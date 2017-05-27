@@ -115,6 +115,7 @@ namespace GameLogic
 			units.Remove(u);
 
 			unitsByType[u.MyType].Remove(u);
+			posToUnits[u.Pos].Remove(u);
 
 			u.Pos.OnChanged -= Callback_UnitMoved;
 
@@ -257,8 +258,7 @@ namespace GameLogic
 		private void Callback_UnitMoved(Unit u, Vector2i oldP, Vector2i newP)
 		{
 			//Remove the unit's current entry in "posToUnits".
-			if (posToUnits.ContainsKey(oldP))
-				posToUnits[oldP].Remove(u);
+			posToUnits[oldP].Remove(u);
 
 			//Add its new entry in "posToUnits".
 			if (!posToUnits.ContainsKey(newP))
