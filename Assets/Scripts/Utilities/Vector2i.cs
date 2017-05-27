@@ -94,4 +94,40 @@ public struct Vector2i : IEquatable<Vector2i>
 	{
 		return (obj is Vector2i) && ((Vector2i)obj) == this;
 	}
+
+
+	//TODO: Rewrite code to use this iterator and the new 2D array extensions.
+	#region Iterator definition
+    public struct Iterator
+    {
+        public Vector2i MinInclusive { get { return minInclusive; } }
+        public Vector2i MaxExclusive { get { return maxExclusive; } }
+        public Vector2i Current { get { return current; } }
+
+        private Vector2i minInclusive, maxExclusive, current;
+
+        public Iterator(Vector2i maxExclusive) : this(Vector2i.Zero, maxExclusive) { }
+        public Iterator(Vector2i _minInclusive, Vector2i _maxExclusive)
+        {
+            minInclusive = _minInclusive;
+            maxExclusive = _maxExclusive;
+
+            current = Vector2i.Zero; //Just to make the compiler shut up
+            Reset();
+        }
+
+        public bool MoveNext()
+        {
+            current.x += 1;
+            if (current.x >= maxExclusive.x)
+                current = new Vector2i(minInclusive.x, current.y + 1);
+
+            return (current.y < maxExclusive.y);
+        }
+        public void Reset() { current = new Vector2i(minInclusive.x - 1, minInclusive.y); }
+        public void Dispose() { }
+
+        public Iterator GetEnumerator() { return this; }
+    }
+        #endregion
 }
