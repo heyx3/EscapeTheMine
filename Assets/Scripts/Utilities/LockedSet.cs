@@ -8,7 +8,6 @@ using MyData;
 /// <summary>
 /// A HashSet whose elements are carefully controlled.
 /// Events are exposed to react to any changes.
-/// Child classes just need to override two methods for serialization.
 /// </summary>
 public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 {

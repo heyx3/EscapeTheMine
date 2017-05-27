@@ -57,7 +57,7 @@ namespace MyUI
 			Transform elementButtonTr = elementButton.transform;
 
 			Transform selectUnitButton =
-				elementButtonTr.FindChild(ElementButtonPrefab_ButtonName_SelectUnit);
+				elementButtonTr.Find(ElementButtonPrefab_ButtonName_SelectUnit);
 			selectUnitButton.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(
 					() =>
 					{
@@ -66,14 +66,14 @@ namespace MyUI
 			selectUnitButton.GetComponentInChildren<UnityEngine.UI.Text>().text =
 				Target.TheMap.GetUnit(unitID).DisplayName;
 
-			elementButtonTr.FindChild(ElementButtonPrefab_ButtonName_StopSleeping)
+			elementButtonTr.Find(ElementButtonPrefab_ButtonName_StopSleeping)
 				.GetComponent<UnityEngine.UI.Button>()
 				.onClick.AddListener(
 					() =>
 					{
 						//End the sleeper's "Sleep" job.
 						var sleepingUnit = UnityLogic.EtMGame.Instance.Map.GetUnit(unitID);
-						((GameLogic.Units.PlayerChar)sleepingUnit).CurrentJob.EndJob(true);
+						((GameLogic.Units.PlayerChar)sleepingUnit).StopDoingJob(null, true);
 					});
 
 			elementButton.transform.SetParent(ContentParent, false);

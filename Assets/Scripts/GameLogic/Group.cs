@@ -70,9 +70,7 @@ namespace GameLogic
             Action<LockedSet<ulong>, ulong> onUnitAdded = (units, unitID) =>
                 unitsToUpdate.Add(TheMap.GetUnit(unitID));
             Action<LockedSet<ulong>, ulong> onUnitRemoved = (units, unitID) =>
-            {
 				unitsToUpdate.Remove(TheMap.GetUnit(unitID));
-            };
             UnitsByID.OnElementAdded += onUnitAdded;
             UnitsByID.OnElementRemoved += onUnitRemoved;
 

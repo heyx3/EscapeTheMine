@@ -115,6 +115,10 @@ namespace GameLogic.Units
 
 			Career = new Player_Char.JobQualifications(this);
 			Personality = new Player_Char.Personality(this, name, gender);
+
+			//When this Unit gets killed,
+			//    make sure all callbacks for its remaining custom jobs get called.
+			OnKilled += (_this, _theMap) => RemoveAllJobs();
 		}
 		public PlayerChar(Map theMap)
 			: this(theMap, ulong.MaxValue, 0.0f, 0.0f, 0.0f, 1.0f,
@@ -126,8 +130,8 @@ namespace GameLogic.Units
 			//Lose food over time.
 			if (Food > 0.0f)
 			{
-				float newFood = Food - Player_Char.Consts.FoodLossPerTurn(Strength);
-				Food.Value = Mathf.Max(0.0f, newFood);
+				float foodLoss = Player_Char.Consts.FoodLossPerTurn(Strength);
+				Food.Value = Mathf.Max(0.0f, Food - foodLoss);
 			}
 			//If no food is left, lose health over time (i.e. starvation).
 			else
@@ -222,7 +226,7 @@ namespace GameLogic.Units
 			//There are three types of jobs:
 			//  1. "Needs"-related jobs, like getting food/sleep or running from enemies.
 			//  2. "Custom" jobs given specifically to this unit.
-			//  3. Global jobs that any unit can take on.
+			//  3. "Global" jobs that any unit can take on.
 
 			//Jobs are taken in this order:
 			//  1. Emergency custom jobs.
@@ -246,6 +250,7 @@ namespace GameLogic.Units
 			}
 			else
 			{
+				//Try taking emergency jobs first.
 				job = TakeAJob(true);
 
 				if (job == null)
@@ -312,9 +317,8 @@ namespace GameLogic.Units
 		/// <param name="alert">
 		/// If the PlayerChar was in the middle of doing this job,
 		///     it will be ended with the given message.
-		/// If the interruption isn't important enough to notice, pass the empty string.
 		/// </param>
-		public bool RemoveJob(Player_Char.Job job, string alert)
+		public bool RemoveJob(Player_Char.Job job, string alert = "")
 		{
 			bool existed;
 
@@ -331,6 +335,22 @@ namespace GameLogic.Units
 			if (existed && OnRemoveCustomJob != null)
 				OnRemoveCustomJob(this, job);
 			return existed;
+		}
+		/// <summary>
+		/// Removes all jobs specifically given to this player.
+		/// </summary>
+		/// <param name="alert">
+		/// If the PlayerChar was in the middle of doing this job,
+		///     it will be ended with the given message.
+		/// </param>
+		public void RemoveAllJobs(string alert = "")
+		{
+			var jobsToDestroy = customJobs.ToList();
+			if (currentlyDoing != null)
+				jobsToDestroy.Add(currentlyDoing);
+
+			foreach (var job in jobsToDestroy)
+				RemoveJob(job, alert);
 		}
 		
 		/// <summary>
@@ -363,14 +383,14 @@ namespace GameLogic.Units
 		/// The job's "OnJobFinished" event will be raised with this message.
 		/// May be "null" if the interruption isn't important.
 		/// </param>
-		public Player_Char.Job StopDoingJob(string alert)
+		public Player_Char.Job StopDoingJob(string alert, bool succeeded = false)
 		{
 			if (currentlyDoing != null)
 			{
 				Player_Char.Job j = currentlyDoing;
 
 				Callback_OnJobFinished(j, false, alert);
-				j.EndJob(false, alert);
+				j.EndJob(succeeded, alert);
 
 				return j;
 			}
@@ -382,6 +402,7 @@ namespace GameLogic.Units
 
 		#region Callbacks
 
+		//These methods set up/take down the callbacks for the currently-active job.
 		private void InitCallbacks(Player_Char.Job activeJob)
 		{
 			activeJob.OnJobFinished += Callback_OnJobFinished;
@@ -393,10 +414,11 @@ namespace GameLogic.Units
 			activeJob.Owner.OnChanged -= Callback_JobOwnerChanged;
 		}
 
-		//These callbacks are for the job this instance is currently performing.
+		//These are the callbacks are for the currently-active job.
 		private void Callback_JobOwnerChanged(Player_Char.Job job, PlayerChar oldP, PlayerChar newP)
 		{
 			UnityEngine.Assertions.Assert.IsTrue(currentlyDoing == job);
+
 			StopDoingJob(Localization.Get("INTERRUPT_JOB_UNKNOWN", job.ToString()));
 		}
 		private void Callback_OnJobFinished(Player_Char.Job job, bool succeeded, string message)

@@ -8,8 +8,7 @@ using GameLogic;
 
 namespace MyUI
 {
-	//TODO: A "JobOverview" class that knows where e.x. walls/deposits are already going to be mined, or a structure is going to be built.
-	//TODO: A Unity-side companion for "JobOverview" that displays jobs.
+	//TODO: A Unity script for "JobQueries" that displays jobs.
 	
 	//TODO: Add Window_Tile buttons for bringing up a "Job" window for each job that touches this tile (using "JobOverview").
 

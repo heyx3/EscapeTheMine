@@ -34,12 +34,18 @@ namespace GameLogic.Groups
 		public IEnumerable<Job> NormalJobs {  get { return normalJobs; } }
 		public IEnumerable<Job> EmergencyJobs { get { return emergencyJobs; } }
 
+		public Player_Group.JobQueries JobQueries { get; private set; }
+
 
 		private HashSet<Job> normalJobs = new HashSet<Job>();
 		private HashSet<Job> emergencyJobs = new HashSet<Job>();
 
 
-        public PlayerGroup(Map theMap) : base(theMap, Consts.TurnPriority_Player, false) { }
+		public PlayerGroup(Map theMap)
+			: base(theMap, Consts.TurnPriority_Player, false)
+		{
+			JobQueries = new Player_Group.JobQueries(this);
+		}
 
 
         public override IEnumerable TakeTurn()
@@ -55,7 +61,7 @@ namespace GameLogic.Groups
 		public bool AddJob(Job j)
 		{
 			HashSet<Job> toUse = (j.IsEmergency ? normalJobs : emergencyJobs);
-			if (!toUse.Add(j))
+			if (toUse.Add(j))
 			{
 				InitJob(j);
 
@@ -82,6 +88,7 @@ namespace GameLogic.Groups
 
 				if (OnJobCanceled != null)
 					OnJobCanceled(this, j);
+
 				return true;
 			}
 			else

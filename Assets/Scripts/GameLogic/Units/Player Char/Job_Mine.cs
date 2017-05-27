@@ -11,6 +11,8 @@ namespace GameLogic.Units.Player_Char
 {
 	public class Job_Mine : Job
 	{
+		public IEnumerable<Vector2i> TilesToMine {  get { return tilesToMine; } }
+
 		private HashSet<Vector2i> tilesToMine;
 
 		private int turnsLeft;
