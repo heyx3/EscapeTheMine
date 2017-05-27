@@ -20,7 +20,7 @@ namespace MyUI
 
 		private void Callback_PauseToggled(GameLogic.Map map, bool oldVal, bool newVal)
 		{
-			gameObject.SetActive(newVal);
+			gameObject.SetActive(Game.IsInGame && newVal);
 		}
 		private void Callback_MapStart()
 		{
