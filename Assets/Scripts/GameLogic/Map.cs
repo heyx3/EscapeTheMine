@@ -209,6 +209,9 @@ namespace GameLogic
 
 			while (true)
 			{
+				//Prevent an infinite loop if there are no units or groups.
+				yield return null;
+
 				//Order groups based on their turn priority and have them take their turns.
 
 				//Use a list so that new groups don't break the enumerator.
