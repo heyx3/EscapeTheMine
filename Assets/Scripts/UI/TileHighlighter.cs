@@ -43,6 +43,23 @@ namespace MyUI
                         throw new NotImplementedException();
                 }
             }
+			public Sprite Spr
+			{
+				get
+				{
+					if (spr != null)
+						return spr.sprite;
+					else
+						throw new NotImplementedException();
+				}
+				set
+				{
+					if (spr != null)
+						spr.sprite = value;
+					else
+						throw new NotImplementedException();
+				}
+			}
 
             public GameObject Obj { get { return tr.gameObject; } }
             
@@ -119,6 +136,7 @@ namespace MyUI
 
         public Vector2i GetPos(ulong highlightID) { return highlightsByID[highlightID].Pos; }
         public Color GetColor(ulong highlightID) { return highlightsByID[highlightID].Col; }
+		public Sprite GetSprite(ulong highlightID) { return highlightsByID[highlightID].Spr; }
 
         public void SetPos(ulong highlightID, Vector2i pos)
         {
@@ -130,6 +148,11 @@ namespace MyUI
             Tile t = highlightsByID[highlightID];
             t.Col = col;
         }
+		public void SetSprite(ulong highlightID, Sprite spr)
+		{
+			Tile t = highlightsByID[highlightID];
+			t.Spr = spr;
+		}
 
         private void Start()
         {

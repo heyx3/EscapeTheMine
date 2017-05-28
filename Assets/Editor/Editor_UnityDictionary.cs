@@ -23,7 +23,16 @@ public class Editor_UnityDictionary<KeyType, ValueType> : PropertyDrawer
 	{
 		var ownerObj = thisProperty.serializedObject.targetObject;
 		var ownerObjType = ownerObj.GetType();
-		var value = ownerObjType.GetField(thisProperty.name).GetValue(ownerObj);
+
+		var field = ownerObjType.GetField(thisProperty.name);
+		if (field == null)
+		{
+			field = ownerObjType.GetField(thisProperty.name,
+										  System.Reflection.BindingFlags.Instance |
+											  System.Reflection.BindingFlags.NonPublic);
+		}
+
+		var value = field.GetValue(ownerObj);
 		return (UnityDictionary<KeyType, ValueType>)value;
 	}
 
@@ -65,7 +74,7 @@ public class Editor_UnityDictionary<KeyType, ValueType> : PropertyDrawer
 		//Draw the foldout title.
 		showElements = EditorGUI.Foldout(new Rect(position.x, position.y,
 												  position.width - buttonWidth - 5.0f, lineHeight),
-										 showElements, property.name);
+										 showElements, label);
 		//Draw an "add" button next to the foldout.
 		if (objBeingEdited.CanAddNewKey() &&
 			GUI.Button(new Rect(position.x + position.width - buttonWidth, position.y,
@@ -145,5 +154,10 @@ namespace Editor_Dict
 	public class Editor_UITabsByTabType : Editor_UnityDictionary<MyUI.Window_PlayerChar.TabTypes, UITab>
 	{
 		public Editor_UITabsByTabType() : base(true) { }
+	}
+	[CustomPropertyDrawer(typeof(Dict.SpritesByJobType))]
+	public class Editor_SpritesByJobType : Editor_UnityDictionary<GameLogic.Units.Player_Char.Job.Types, Sprite>
+	{
+		public Editor_SpritesByJobType() : base(true) { }
 	}
 }

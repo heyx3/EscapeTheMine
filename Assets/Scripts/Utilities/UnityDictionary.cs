@@ -6,6 +6,10 @@ using GameLogic;
 using UnityEngine;
 
 
+//To use this object: Go to the bottom of the file and create your needed sub-class,
+//    then create a corresponding sub-class in "Editor/Editor_UnityDictionary.cs".
+
+
 /// <summary>
 /// A dictionary that is serializable and editable by Unity.
 /// </summary>
@@ -250,5 +254,12 @@ namespace Dict
 	{
 		public UITabsByTabType(bool autoFillWithDefaults = false) : base(autoFillWithDefaults) { }
 		public UITabsByTabType(IEnumerable<KeyValuePair<MyUI.Window_PlayerChar.TabTypes, UITab>> values) : base(values) { }
+	}
+
+	[Serializable]
+	public class SpritesByJobType : DataByEnum<GameLogic.Units.Player_Char.Job.Types, Sprite>
+	{
+		public SpritesByJobType(bool autoFillWithDefaults = false) : base(autoFillWithDefaults) { }
+		public SpritesByJobType(IEnumerable<KeyValuePair<GameLogic.Units.Player_Char.Job.Types, Sprite>> values) : base(values) { }
 	}
 }

@@ -51,6 +51,15 @@ namespace GameLogic.Groups.Player_Group
 			});
 		}
 
+		/// <summary>
+		/// Gets whether the given job affects at least one tile.
+		/// </summary>
+		public bool AffectsAnyPoses(Job job)
+		{
+			return affectedMultiPoses.ContainsKey(job) ||
+				   (affectedPoses.ContainsKey(job) && affectedPoses[job].HasValue);
+		}
+
 		
 		/// <summary>
 		/// Raised when any job is created, whether a global job or a PlayerChar-specific one.
