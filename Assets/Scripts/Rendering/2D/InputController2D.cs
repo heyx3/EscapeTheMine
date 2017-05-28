@@ -11,8 +11,6 @@ namespace Rendering.TwoD
 	/// </summary>
 	public class InputController2D : Singleton<InputController2D>
 	{
-		//TODO: Render a FAINT sprite over the tile the mouse is currently at.
-
         /// <summary>
         /// Raised when a world tile is clicked on.
         /// If no responders "cancel" the event, the usual behavior for clicking on the world is done
@@ -25,8 +23,12 @@ namespace Rendering.TwoD
 		public float MinDragDist = 10.0f;
 		public float ScrollZoomScale = 1.1f;
 
+		public Color TileHighlightColor = new Color(1.0f, 1.0f, 1.0f, 0.1f);
+
         public Vector2i MouseTilePos { get; private set; }
-		
+
+		private ulong tileHighlightID;
+
 
 		public void Click(Vector2 mPos)
 		{
@@ -94,10 +96,17 @@ namespace Rendering.TwoD
 			Content2D.Instance.CamTr.position += (Vector3)(mouseWorldPos - newMouseWorldPos);
 		}
 
-        private void Update()
+		private void Start()
+		{
+			tileHighlightID = MyUI.TileHighlighter.Instance.CreateHighlight(new Vector2i(0, 0),
+																			TileHighlightColor);
+		}
+		private void Update()
         {
             Vector2 worldMPos = Content2D.Instance.Cam.ScreenToWorldPoint(Input.mousePosition);
             MouseTilePos = new Vector2i(worldMPos);
+
+			MyUI.TileHighlighter.Instance.SetPos(tileHighlightID, MouseTilePos);
         }
 	}
 }
