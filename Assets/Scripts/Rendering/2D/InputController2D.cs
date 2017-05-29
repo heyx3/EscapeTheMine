@@ -107,6 +107,10 @@ namespace Rendering.TwoD
             MouseTilePos = new Vector2i(worldMPos);
 
 			MyUI.TileHighlighter.Instance.SetPos(tileHighlightID, MouseTilePos);
+			if (UnityLogic.EtMGame.Instance.IsInGame)
+				MyUI.TileHighlighter.Instance.SetColor(tileHighlightID, TileHighlightColor);
+			else
+				MyUI.TileHighlighter.Instance.SetColor(tileHighlightID, new Color(0.0f, 0.0f, 0.0f, 0.0f));
         }
 	}
 }
