@@ -21,19 +21,17 @@ namespace GameLogic
 		/// </summary>
         public Stat<bool, Map> IsPaused { get; private set; }
 
-
 		private ulong nextID = 0;
 		private HashSet<Unit> units = new HashSet<Unit>();
-
-		private static List<Unit> emptyUnitList = new List<Unit>();
-		private static HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
-
+		
 		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
-		private Dictionary<Vector2i, List<Unit>> posToUnits = new Dictionary<Vector2i, List<Unit>>(); //TODO: Offer a GridSet instead, then have UnitDispatcher use it instead of its own.
+		private GridSet<Unit> unitsByPos;
 		private Dictionary<Unit.Types, HashSet<Unit>> unitsByType = new Dictionary<Unit.Types, HashSet<Unit>>();
 
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
+
+		private static HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
 
 
 		public Map(int mapSizeX, int mapSizeY)
@@ -56,6 +54,16 @@ namespace GameLogic
 
 			pathingGraph = new Graph(this);
 			pathing = new Pathfinding.PathFinder<Vector2i>(pathingGraph, null);
+
+			unitsByPos = new GridSet<Unit>(Tiles.Dimensions);
+
+			//When the tile grid changes size, reset "unitsByPos".
+			Tiles.OnTileGridReset += (grid, oldSize, newSize) =>
+				{
+					unitsByPos = new GridSet<Unit>(newSize);
+					foreach (Unit u in units)
+						unitsByPos.AddValue(u, u.Pos);
+				};
 		}
 
 		
@@ -63,18 +71,42 @@ namespace GameLogic
 		{
 			return units;
 		}
-		public IEnumerable<Unit> GetUnits(Vector2i tilePos)
-		{
-			return (posToUnits.ContainsKey(tilePos) ?
-						posToUnits[tilePos] :
-						emptyUnitList);
-		}
 		public IEnumerable<Unit> GetUnits(Unit.Types type)
 		{
 			if (unitsByType.ContainsKey(type))
 				return unitsByType[type];
 			else
 				return emptyUnitSet;
+		}
+		public GridSet<Unit>.CellIterator GetUnits(Vector2i tilePos)
+		{
+			return unitsByPos.GetValuesAt(tilePos);
+		}
+		public GridSet<Unit>.PosIterator GetTilesWithUnits()
+		{
+			return unitsByPos.GetActiveCells();
+		}
+
+		public bool AnyUnitsAt(Vector2i tilePos, Predicate<Unit> predicate)
+		{
+			foreach (var unit in GetUnits(tilePos))
+				if (predicate(unit))
+					return true;
+			return false;
+		}
+		public bool AllUnitsAt(Vector2i tilePos, Predicate<Unit> predicate)
+		{
+			foreach (var unit in GetUnits(tilePos))
+				if (!predicate(unit))
+					return false;
+			return true;
+		}
+		public Unit FirstUnitAt(Vector2i tilePos, Predicate<Unit> predicate)
+		{
+			foreach (var unit in GetUnits(tilePos))
+				if (predicate(unit))
+					return unit;
+			return null;
 		}
 		
 		/// <summary>
@@ -91,18 +123,16 @@ namespace GameLogic
 				nextID += 1;
 			}
 
+			//Add the unit's info to various cached data structures.
 			if (!unitsByType.ContainsKey(u.MyType))
 				unitsByType.Add(u.MyType, new HashSet<Unit>());
 			unitsByType[u.MyType].Add(u);
-
+			if (!unitsByPos.ContainsAt(u.Pos, u))
+				unitsByPos.AddValue(u, u.Pos);
 			idToUnit.Add(u.ID, u);
 			units.Add(u);
+
 			u.MyGroup.UnitsByID.Add(u.ID);
-
-			if (!posToUnits.ContainsKey(u.Pos))
-				posToUnits.Add(u.Pos, new List<Unit>());
-			posToUnits[u.Pos].Add(u);
-
 			if (OnUnitAdded != null)
 				OnUnitAdded(this, u);
 
@@ -119,7 +149,7 @@ namespace GameLogic
 			units.Remove(u);
 
 			unitsByType[u.MyType].Remove(u);
-			posToUnits[u.Pos].Remove(u);
+			unitsByPos.RemoveValue(u, u.Pos);
 
 			u.Pos.OnChanged -= Callback_UnitMoved;
 
@@ -155,6 +185,7 @@ namespace GameLogic
 			units.Clear();
 
 			Groups.Clear();
+			Groups.NextID = 0;
 
             IsPaused.Value = true;
 		}
@@ -236,41 +267,38 @@ namespace GameLogic
 
         public void WriteData(MyData.Writer writer)
 		{
-			writer.Structure(Groups, "groups");
 			writer.Structure(Tiles, "tiles");
-
 			writer.UInt64(nextID, "nextID");
-
+			writer.Structure(Groups, "groups");
 			writer.Collection<Unit, HashSet<Unit>>(units, "units",
 												   (wr, unit, name) =>
 													   Unit.Write(wr, name, unit));
+
 		}
 		public void ReadData(MyData.Reader reader)
 		{
 			Clear();
-
-			reader.Structure(Groups, "groups");
+			
 			reader.Structure(Tiles, "tiles");
+			unitsByPos = new GridSet<Unit>(Tiles.Dimensions);
 
 			nextID = reader.UInt64("nextID");
 
+			reader.Structure(Groups, "groups");
 			reader.Collection("units",
 							  (MyData.Reader rd, ref Unit outUnit, string name) =>
 							      outUnit = Unit.Read(rd, this, name),
 							  (size) => units);
+
 			foreach (Unit u in units)
 				AddUnit(u);
+			foreach (Group g in Groups)
+				g.FinishDeserialization();
 		}
 		
 		private void Callback_UnitMoved(Unit u, Vector2i oldP, Vector2i newP)
 		{
-			//Remove the unit's current entry in "posToUnits".
-			posToUnits[oldP].Remove(u);
-
-			//Add its new entry in "posToUnits".
-			if (!posToUnits.ContainsKey(newP))
-				posToUnits.Add(newP, new List<Unit>());
-			posToUnits[newP].Add(u);
+			unitsByPos.MoveValue(u, oldP, newP);
 
 			if (OnUnitMoved != null)
 				OnUnitMoved(this, u, oldP, newP);

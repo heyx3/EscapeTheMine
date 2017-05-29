@@ -42,6 +42,13 @@ public abstract class IDCollection<OwnerType> : LockedSet<OwnerType>
     {
         return idToObj[id];
     }
+	public OwnerType TryGet(ulong id)
+	{
+		if (idToObj.ContainsKey(id))
+			return idToObj[id];
+		else
+			return default(OwnerType);
+	}
     public bool TryGet(ulong id, ref OwnerType outOwner)
     {
         if (idToObj.ContainsKey(id))

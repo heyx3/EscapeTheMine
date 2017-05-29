@@ -135,7 +135,27 @@ namespace UnityLogic
 
 		public bool IsInGame { get { return mapGameCoroutine != null; } }
 
+
 		private Coroutine mapGameCoroutine = null;
+		
+
+		/// <summary>
+		/// Sometimes other scripts want to do things that are OK in-game,
+		///     but not OK when the map is halfway through loading.
+		/// This method checks whether the map is currently loading,
+		///     and executes the given action either immediately
+		///     or as soon as possible after the map is fully loaded.
+		/// </summary>
+		public void DoAfterMapLoaded(Action toDo)
+		{
+			if (isDeserializing)
+				onDoneDeserializing += toDo;
+			else
+				toDo();
+		}
+
+		private bool isDeserializing = false;
+		private event Action onDoneDeserializing;
 		
 
 		/// <summary>
@@ -214,6 +234,8 @@ namespace UnityLogic
 				StopCoroutine(mapGameCoroutine);
 			mapGameCoroutine = null;
 
+			isDeserializing = true;
+
 			string filePath = MenuConsts.Instance.GetSaveFilePath(name);
 			try
 			{
@@ -227,6 +249,11 @@ namespace UnityLogic
 			{
 				Debug.LogError("Unable to load " + filePath + ": " + e.Message);
             }
+
+			isDeserializing = false;
+			if (onDoneDeserializing != null)
+				onDoneDeserializing();
+			onDoneDeserializing = null;
 
 			mapGameCoroutine = StartCoroutine(Map.RunGameCoroutine());
 

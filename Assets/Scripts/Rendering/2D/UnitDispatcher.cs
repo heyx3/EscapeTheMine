@@ -13,36 +13,40 @@ namespace Rendering.TwoD
 	/// </summary>
 	public class UnitDispatcher : RendererComponent
 	{
+		public static UnitDispatcher Instance { get; private set; }
+
+
 		/// <summary>
 		/// The sorting layers of the unit sprites get cycled regularly
 		///     so that all sprites can be visible.
 		/// </summary>
 		public int MinSortLayer = 1,
 				   MaxSortLayer = 10;
-
-		//TODO: Tie the wait between cycles to the number of active grid cells.
-		public float WaitBetweenCycles = 0.5f;
+		public float WaitBetweenCycles = 0.5f; //TODO: Tie the wait between cycles to the number of active grid cells.
 
 		public GameObject UnitPrefab_PlayerChar, UnitPrefab_Bed;
-
-
-		private Vector2i.Iterator posCycler;
-		private Dictionary<Unit, SpriteRenderer> unitToSprite = new Dictionary<Unit, SpriteRenderer>();
-
-		private GridSet<Unit> unitsByPos;
-		private Coroutine spriteCycler;
+		
+		[Serializable]
+		public class SpriteSet_PlayerChar
+		{
+			public Sprite Idle;
+		}
+		public SpriteSet_PlayerChar[] Sprites_PlayerChar = new SpriteSet_PlayerChar[1];
 
 		
+		private Dictionary<Unit, SpriteRenderer> unitToSprite = new Dictionary<Unit, SpriteRenderer>();
+		private Coroutine spriteCycler;
+
+
+		protected override void Awake()
+		{
+			base.Awake();
+			Instance = this;
+		}
 		private void OnEnable()
 		{
-			unitsByPos = new GridSet<Unit>(Map.Tiles.Dimensions);
-
-			posCycler = new Vector2i.Iterator(Map.Tiles.Dimensions);
-			posCycler.MoveNext();
-
 			Map.OnUnitAdded += Callback_UnitAddedToMap;
 			Map.OnUnitRemoved += Callback_UnitRemovedFromMap;
-			Map.Tiles.OnTileGridReset += Callback_TileGridReset;
 
 			//"Add" the units that already exist.
 			foreach (Unit u in Map.GetUnits())
@@ -61,7 +65,6 @@ namespace Rendering.TwoD
 
 				Map.OnUnitAdded -= Callback_UnitAddedToMap;
 				Map.OnUnitRemoved -= Callback_UnitRemovedFromMap;
-				Map.Tiles.OnTileGridReset -= Callback_TileGridReset;
 			}
 
 			StopCoroutine(spriteCycler);
@@ -69,49 +72,62 @@ namespace Rendering.TwoD
 
 		private System.Collections.IEnumerator RunSpriteCycle()
 		{
-			//Only cycle sprites in cells with at least two units.
-			Func<Vector2i, bool> isCellCycleable = (tilePos) =>
-				unitsByPos.Count(tilePos) > 1;
-
-			List<Vector2i> toCycleThrough = new List<Vector2i>();
+			List<Vector2i> activeTiles = new List<Vector2i>();
 			var waitAfterEach = new WaitForSeconds(WaitBetweenCycles);
-
-			int activeUnitI = -1;
-			int count = -1;
-			Action<Unit, int> countUnit = (unit, unitI) =>
-			{
-				count += 1;
-				if (unitToSprite[unit].sortingOrder == MaxSortLayer)
-					activeUnitI = unitI;
-			};
-			Action<Unit, int> cycleSprite = (unit, unitI) =>
-			{
-				unitToSprite[unit].sortingOrder = (unitI == activeUnitI) ?
-												      MaxSortLayer :
-												      MinSortLayer;
-			};
 
 			while (true)
 			{
 				//Get the cells to cycle through.
-				toCycleThrough.Clear();
-				toCycleThrough.AddRange(unitsByPos.ActiveCells.Where(isCellCycleable));
-				
-				foreach (Vector2i tilePos in toCycleThrough)
+				activeTiles.Clear();
+				foreach (Vector2i tilePos in Map.GetTilesWithUnits())
+					activeTiles.Add(tilePos);
+
+				foreach (Vector2i tilePos in activeTiles)
 				{
-					//Find the number of units, and the unit that's currently active.
-					count = 0;
-					activeUnitI = -1;
-					unitsByPos.ForEach(tilePos, countUnit);
+					//Only cycle sprites in cells with at least two units.
+					bool cycle = false,
+						 foundFirst = false;
+					foreach (var unit in Map.GetUnits(tilePos))
+					{
+						if (foundFirst)
+						{
+							cycle = true;
+							break;
+						}
+						else
+						{
+							foundFirst = true;
+						}
+					}
 
-					if (count == 0)
-						continue;
-					
-					//Cycle the sprite layers.
-					activeUnitI = (activeUnitI + 1) % count;
-					unitsByPos.ForEach(tilePos, cycleSprite);
+					if (cycle)
+					{
+						//Find the number of units, and the unit that's currently active.
+						int count = 0;
+						int activeUnitI = -1;
+						foreach (Unit u in Map.GetUnits(tilePos))
+						{
+							if (unitToSprite[u].sortingOrder == MaxSortLayer)
+								activeUnitI = count;
+							count += 1;
+						}
 
-					yield return waitAfterEach;
+						if (count == 0)
+							continue;
+
+						//Cycle the sprite layers.
+						activeUnitI = (activeUnitI + 1) % count;
+						int i = 0;
+						foreach (Unit u in Map.GetUnits(tilePos))
+						{
+							unitToSprite[u].sortingOrder = (i == activeUnitI) ?
+														       MaxSortLayer :
+															   MinSortLayer;
+							i += 1;
+						}
+						
+						yield return waitAfterEach;
+					}
 				}
 
 				//Prevent infinite loops if there's nothing to cycle through.
@@ -141,32 +157,11 @@ namespace Rendering.TwoD
 				default: throw new NotImplementedException(unit.GetType().Name);
 			}
 			unitToSprite.Add(unit, spr);
-
-			unitsByPos.AddValue(unit, unit.Pos);
-			unit.Pos.OnChanged += Callback_UnitPosChanged;
 		}
 		private void Callback_UnitRemovedFromMap(Map map, Unit unit)
 		{
 			Destroy(unitToSprite[unit].gameObject);
 			unitToSprite.Remove(unit);
-
-			unit.Pos.OnChanged -= Callback_UnitPosChanged;
-			unitsByPos.RemoveValue(unit, unit.Pos);
-		}
-
-		private void Callback_TileGridReset(TileGrid grid, Vector2i oldSize, Vector2i newSize)
-		{
-			unitsByPos = new GridSet<Unit>(newSize);
-			foreach (Unit u in unitToSprite.Keys)
-				unitsByPos.AddValue(u, u.Pos);
-
-			posCycler = new Vector2i.Iterator(newSize);
-			posCycler.MoveNext();
-		}
-
-		private void Callback_UnitPosChanged(Unit u, Vector2i oldPos, Vector2i newPos)
-		{
-			unitsByPos.MoveValue(u, oldPos, newPos);
 		}
 	}
 }

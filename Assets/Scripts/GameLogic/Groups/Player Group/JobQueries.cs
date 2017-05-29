@@ -91,7 +91,10 @@ namespace GameLogic.Groups.Player_Group
 		public JobQueries(PlayerGroup owner)
 		{
 			Owner = owner;
+		}
 
+		public void Init()
+		{
 			Owner.TheMap.Groups.OnElementRemoved += Callback_GroupRemoved;
 
 			Owner.OnNewJob += Callback_NewGroupJob;
@@ -103,6 +106,25 @@ namespace GameLogic.Groups.Player_Group
 			//Call the "unit created" callback for all currently-existing units.
 			foreach (ulong unitID in Owner.UnitsByID)
 				Callback_NewUnit(Owner.UnitsByID, unitID);
+		}
+		public void Dispose()
+		{
+			Owner.TheMap.Groups.OnElementRemoved -= Callback_GroupRemoved;
+
+			Owner.OnNewJob -= Callback_NewGroupJob;
+			Owner.OnJobCanceled -= Callback_CancelGroupJob;
+
+			Owner.UnitsByID.OnElementAdded -= Callback_NewUnit;
+			Owner.UnitsByID.OnElementRemoved -= Callback_RemoveUnit;
+
+			//Call the "unit removed" callback for all currently-existing units.
+			//Note that this automatically calls the proper callbacks
+			//    for all jobs belonging to each unit.
+			foreach (ulong unitID in Owner.UnitsByID)
+				Callback_RemoveUnit(Owner.UnitsByID, unitID);
+			//Call "CancelGroupJob" for all currently-existing global jobs.
+			foreach (Job j in Owner.NormalJobs.Concat(Owner.EmergencyJobs))
+				Callback_CancelGroupJob(Owner, j);
 		}
 
 		

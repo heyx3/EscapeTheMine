@@ -45,6 +45,7 @@ namespace GameLogic.Groups
 			: base(theMap, Consts.TurnPriority_Player, false)
 		{
 			JobQueries = new Player_Group.JobQueries(this);
+			JobQueries.Init();
 		}
 
 
@@ -95,13 +96,6 @@ namespace GameLogic.Groups
 			{
 				return false;
 			}
-		}
-		public void Clear()
-		{
-			while (normalJobs.Count > 0)
-				Cancel(normalJobs.First());
-			while (emergencyJobs.Count > 0)
-				Cancel(emergencyJobs.First());
 		}
 
 		/// <summary>
@@ -169,9 +163,17 @@ namespace GameLogic.Groups
         }
         public override void ReadData(Reader reader)
         {
+			//Clear out any current jobs.
+			while (normalJobs.Count > 0)
+				Cancel(normalJobs.First());
+			while (emergencyJobs.Count > 0)
+				Cancel(emergencyJobs.First());
+
+			//Stop JobQueries from doing stuff until after deserialization is done.
+			JobQueries.Dispose();
+
             base.ReadData(reader);
 
-			Clear();
 			reader.Collection("normalJobs",
 							  (MyData.Reader rd, ref Job outval, string name) =>
 								  { outval = Job.Read(rd, name, TheMap); },
@@ -185,6 +187,12 @@ namespace GameLogic.Groups
 				InitJob(j);
         }
 
-        #endregion
-    }
+		public override void FinishDeserialization()
+		{
+			base.FinishDeserialization();
+			JobQueries.Init();
+		}
+
+		#endregion
+	}
 }

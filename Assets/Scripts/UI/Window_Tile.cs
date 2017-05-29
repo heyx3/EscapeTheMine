@@ -8,8 +8,6 @@ using GameLogic;
 
 namespace MyUI
 {
-	//TODO: A Unity script for "JobQueries" that displays jobs.
-	
 	//TODO: Add Window_Tile buttons for bringing up a "Job" window for each job that touches this tile (using "JobOverview").
 
 	/// <summary>

@@ -53,7 +53,7 @@ namespace GameLogic.Units.Player_Char
 		{
 			//If the tile no longer supports building a bed, stop the job.
 			if (!TheMap.Value.Tiles[Tile].IsBuildableOn() ||
-				TheMap.Value.GetUnits(Tile).Any(u => u.BlocksStructures))
+				TheMap.Value.AnyUnitsAt(Tile, u => u.BlocksStructures))
 			{
 				EndJob(false, Localization.Get("CANT_BUILD_ON_TILE"));
 				yield break;

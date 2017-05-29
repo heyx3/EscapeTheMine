@@ -32,20 +32,29 @@ namespace Rendering.TwoD
 
 		public void Click(Vector2 mPos)
 		{
+			var game = UnityLogic.EtMGame.Instance;
+
+			//Exit if the game isn't currently running a map.
+			if (!game.IsInGame)
+				return;
+
 			Vector2 worldMPos = Content2D.Instance.Cam.ScreenToWorldPoint(mPos);
-			GameLogic.Map map = UnityLogic.EtMGame.Instance.Map;
 
 			//Exit if we clicked outside the map.
 			Vector2i tilePos = new Vector2i(worldMPos);
-			if (!map.Tiles.IsValid(tilePos))
+			if (game.Map.Tiles.IsValid(tilePos))
 				return;
 
             //If nothing special happens because of this click,
             //    do the usual behavior -- show a window for the unit(s) that were clicked on.
             if (!OnWorldTileClicked.Raise(tilePos))
             {
-                //Get the units in the part of the map we clicked on and show the window for them.
-                List<GameLogic.Unit> clickedUnits = map.GetUnits(tilePos).ToList();
+				//Get the units in the part of the map we clicked on and show the window for them.
+
+				List<GameLogic.Unit> clickedUnits = new List<GameLogic.Unit>();
+				foreach (var unit in game.Map.GetUnits(tilePos))
+					clickedUnits.Add(unit);
+
                 if (clickedUnits.Count == 1)
                 {
                     MyUI.ContentUI.Instance.CreateUnitWindow(clickedUnits[0]);
@@ -66,10 +75,18 @@ namespace Rendering.TwoD
 
 		public void StartDragging(Vector2 mousePos)
 		{
+			//Exit if the game isn't currently running a map.
+			if (!UnityLogic.EtMGame.Instance.IsInGame)
+				return;
+
 			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Drag);
 		}
 		public void DragInput(Vector2 lastMPos, Vector2 currentMPos)
 		{
+			//Exit if the game isn't currently running a map.
+			if (!UnityLogic.EtMGame.Instance.IsInGame)
+				return;
+
 			Vector2 deltaCam = (currentMPos - lastMPos) *
 							   ScrollSpeed * Time.deltaTime *
 							   Content2D.Instance.Cam.orthographicSize;
@@ -77,11 +94,19 @@ namespace Rendering.TwoD
 		}
 		public void StopDragging(Vector2 startMPos, Vector2 endMPos)
 		{
+			//Exit if the game isn't currently running a map.
+			if (!UnityLogic.EtMGame.Instance.IsInGame)
+				return;
+
 			MouseCursor.Instance.SetCursor(MouseCursor.Cursors.Normal);
 		}
 
 		public void Scroll(float scrollWheelAmount, Vector2 mousePos)
 		{
+			//Exit if the game isn't currently running a map.
+			if (!UnityLogic.EtMGame.Instance.IsInGame)
+				return;
+
 			float scale = Mathf.Pow(ScrollZoomScale, scrollWheelAmount);
 
 			//Remember the world position of the mouse before zooming.

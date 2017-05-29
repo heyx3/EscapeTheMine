@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 
 namespace MyUI
 {
 	/// <summary>
-	/// A singleton Window that should always be open,
-	///     and displays any announcements about events in the game.
+	/// A singleton Window that should always be open.
+	/// Displays any announcements about events in the game.
 	/// Periodically hides itself if no announcements have happened recently.
 	/// </summary>
 	public class Window_Announcements : Window_Global
@@ -68,8 +67,6 @@ namespace MyUI
 		private void Start()
 		{
 			Game.Map.Groups.OnElementAdded += Callback_NewGroup;
-			foreach (GameLogic.Group g in Game.Map.Groups)
-				Callback_NewGroup(Game.Map.Groups, g);
 
 			Game.OnStart += () => gameObject.SetActive(true);
 			Game.OnEnd += () => gameObject.SetActive(false);
@@ -81,13 +78,13 @@ namespace MyUI
 				gameObject.SetActive(false);
 		}
 
+
 		protected override void Callback_MapChanging()
 		{
 			//Just don't close like windows usually do.
 			//Note that in the Start() method,
 			//    this window adds callbacks to hide/show itself when a map ends/starts.
 		}
-
 		public override void Callback_DragButton_Titlebar()
 		{
 			base.Callback_DragButton_Titlebar();
@@ -98,39 +95,39 @@ namespace MyUI
 
 		private void Callback_NewGroup(LockedSet<GameLogic.Group> groups, GameLogic.Group newGroup)
 		{
-			newGroup.UnitsByID.OnElementAdded += Callback_NewUnit;
-			foreach (ulong unitID in newGroup.UnitsByID)
-				Callback_NewUnit(newGroup.UnitsByID, unitID);
-
 			if (newGroup is GameLogic.Groups.PlayerGroup)
 			{
 				var pGroup = (GameLogic.Groups.PlayerGroup)newGroup;
+				pGroup.JobQueries.OnJobCreated += Callback_NewJob;
 
-				pGroup.OnNewJob += Callback_NewJob;
-				foreach (GameLogic.Units.Player_Char.Job j in pGroup.NormalJobs.Concat(pGroup.EmergencyJobs))
-					Callback_NewJob(pGroup, j);
+				//Call the "New Job" callback on any existing jobs.
+				
+				foreach (var job in pGroup.NormalJobs.Concat(pGroup.EmergencyJobs))
+					Callback_NewJob(pGroup, job);
+
+				//If the map is in the middle of loading, we have to defer this part.
+				Game.DoAfterMapLoaded(() =>
+				{
+					foreach (ulong unitID in pGroup.UnitsByID)
+					{
+						var unit = Game.Map.GetUnit(unitID);
+						if (unit is GameLogic.Units.PlayerChar)
+						{
+							var pChar = (GameLogic.Units.PlayerChar)unit;
+
+							foreach (var job in pChar.CustomJobs)
+								Callback_NewJob(pGroup, job);
+
+							if (pChar.CurrentJob != null)
+								Callback_NewJob(pGroup, pChar.CurrentJob);
+						}
+					}
+				});
 			}
 		}
-		private void Callback_NewUnit(LockedSet<ulong> unitsByID, ulong id)
-		{
-			GameLogic.Unit unit = Game.Map.GetUnit(id);
 
-			if (unit is GameLogic.Units.PlayerChar)
-			{
-				var pChar = (GameLogic.Units.PlayerChar)unit;
-
-				pChar.OnAddCustomJob += Callback_NewCustomJob;
-				foreach (GameLogic.Units.Player_Char.Job j in pChar.CustomJobs)
-					Callback_NewCustomJob(pChar, j);
-			}
-		}
 		private void Callback_NewJob(GameLogic.Groups.PlayerGroup group,
 									 GameLogic.Units.Player_Char.Job newJob)
-		{
-			newJob.OnJobFinished += Callback_JobFinished;
-		}
-		private void Callback_NewCustomJob(GameLogic.Units.PlayerChar pChar,
-										   GameLogic.Units.Player_Char.Job newJob)
 		{
 			newJob.OnJobFinished += Callback_JobFinished;
 		}

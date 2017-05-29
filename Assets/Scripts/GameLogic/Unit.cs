@@ -56,7 +56,8 @@ namespace GameLogic
 		public Unit(Map theMap, Group g, Vector2i pos)
 		{
 			TheMap = theMap;
-			MyGroupID = g.ID;
+			if (g != null)
+				MyGroupID = g.ID;
 			Pos = new Stat<Vector2i, Unit>(this, pos);
 
 			ID = ulong.MaxValue;
@@ -64,9 +65,9 @@ namespace GameLogic
 			IsIDRegistered = false;
 		}
 
-		public Unit(Map theMap, ulong groupID) : this(theMap, theMap.Groups.Get(groupID)) { }
+		public Unit(Map theMap, ulong groupID) : this(theMap, theMap.Groups.TryGet(groupID)) { }
 		public Unit(Map theMap, ulong groupID, Vector2i pos)
-			: this(theMap, theMap.Groups.Get(groupID), pos) { }
+			: this(theMap, theMap.Groups.TryGet(groupID), pos) { }
 
 
 		public void RegisterID(ulong myID)
@@ -134,59 +135,6 @@ namespace GameLogic
 			MyGroupID = reader.UInt64("myGroup");
 
 			IsIDRegistered = reader.Bool("isIDRegistered");
-		}
-
-		#endregion
-
-
-		#region UnitSet class
-
-		public class UnitSet : IDCollection<Unit>
-		{
-			public Map Owner { get; private set; }
-			public event Action<UnitSet, Unit, Vector2i, Vector2i> OnUnitMoved;
-
-			public UnitSet(Map owner)
-			{
-				Owner = owner;
-
-				OnElementAdded += Callback_UnitAdded;
-				OnElementRemoved += Callback_UnitRemoved;
-
-				foreach (Unit u in this)
-					Callback_UnitAdded(this, u);
-			}
-
-			private void Callback_UnitAdded(LockedSet<Unit> thisSet, Unit u)
-			{
-				u.Pos.OnChanged += Callback_UnitMoved;
-			}
-			private void Callback_UnitRemoved(LockedSet<Unit> thisSet, Unit u)
-			{
-				u.Pos.OnChanged -= Callback_UnitMoved;
-			}
-			private void Callback_UnitMoved(Unit u, Vector2i oldPos, Vector2i newPos)
-			{
-				if (OnUnitMoved != null)
-					OnUnitMoved(this, u, oldPos, newPos);
-			}
-			
-			protected override ulong GetID(Unit owner)
-			{
-				return owner.ID;
-			}
-			protected override void SetID(ref Unit owner, ulong id)
-			{
-				owner.ID = id;
-			}
-			protected override void Write(MyData.Writer writer, Unit value, string name)
-			{
-				Unit.Write(writer, name, value);
-			}
-			protected override Unit Read(MyData.Reader reader, string name)
-			{
-				return Unit.Read(reader, Owner, name);
-			}
 		}
 
 		#endregion

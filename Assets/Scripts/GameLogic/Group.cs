@@ -149,6 +149,10 @@ namespace GameLogic
                                   { outID = r.UInt64(name); },
                               (size) => EnemiesByID);
         }
+		/// <summary>
+		/// Must be called once the map owning this group is done deserializing everything.
+		/// </summary>
+		public virtual void FinishDeserialization() { }
 
         public static void Write(Group g, string name, MyData.Writer writer)
         {

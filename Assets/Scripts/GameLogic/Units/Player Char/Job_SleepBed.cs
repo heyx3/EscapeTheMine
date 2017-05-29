@@ -95,7 +95,7 @@ namespace GameLogic.Units.Player_Char
 				{
 					case TryMoveToPos_States.Finished:
 						//Start sleeping.
-						StartSleeping((Bed)TheMap.Value.GetUnits(Owner.Value.Pos).First(u => u is Bed));
+						StartSleeping((Bed)TheMap.Value.FirstUnitAt(Owner.Value.Pos, u => u is Bed));
 						break;
 
 					case TryMoveToPos_States.EnRoute:

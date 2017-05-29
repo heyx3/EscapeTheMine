@@ -64,7 +64,7 @@ namespace GameLogic
 		}
 		private bool UnitsBlock(Vector2i tile)
 		{
-			return Owner.GetUnits(tile).Any(u => u.BlocksMovement);
+			return Owner.AnyUnitsAt(tile, u => u.BlocksMovement);
 		}
 	}
 }

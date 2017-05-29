@@ -10,10 +10,7 @@ namespace Rendering.TwoD
 {
 	public class UnitRenderer_PlayerChar : UnitRenderer<GameLogic.Units.PlayerChar>
 	{
-		/// <summary>
-		/// The sprites for when a PlayerChar isn't doing anything.
-		/// </summary>
-		public Sprite[] IdleSprites;
+		private UnitDispatcher.SpriteSet_PlayerChar[] sprites { get { return UnitDispatcher.Instance.Sprites_PlayerChar; } }
 
         private BlinkSprite lowFoodWarning;
 
@@ -35,13 +32,7 @@ namespace Rendering.TwoD
 		{
 			base.Start();
 
-			if (Target.Personality.IsAppearanceUnset)
-			{
-				Target.Personality.AppearanceIndex.Value =
-					UnityEngine.Random.Range(0, IdleSprites.Length);
-			}
-
-			MySprite.sprite = IdleSprites[Target.Personality.AppearanceIndex];
+			MySprite.sprite = sprites[Target.Personality.AppearanceIndex % sprites.Length].Idle;
 			
             Target.Food.OnChanged += Callback_FoodChanged;
             Callback_FoodChanged(Target, 0.0f, Target.Food);
