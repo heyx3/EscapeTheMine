@@ -162,28 +162,15 @@ namespace GameLogic.Groups.Player_Group
 				var job_Mine = (Job_Mine)job;
 				affectedMultiPoses.Add(job, job_Mine.TilesToMine);
 			}
-			else if (job is Job_MoveToPos)
-			{
-				var job_moveToPos = (Job_MoveToPos)job;
-				affectedPoses.Add(job, job_moveToPos.TargetPos);
-				job_moveToPos.TargetPos.OnChanged += (_j, oldPos, newPos) =>
-				{
-					affectedPoses[_j] = newPos;
-				};
-			}
 			else if (job is Job_BuildBed)
 			{
 				var job_buildBed = (Job_BuildBed)job;
 				affectedPoses.Add(job, job_buildBed.Tile);
 			}
-			//Any jobs that don't affect tiles go here.
-			else if (job is Job_GrowUp || job is Job_SleepBed)
-			{
-				affectedPoses.Add(job, null);
-			}
 			else
 			{
-				throw new NotImplementedException("Unknown job type: " + job.GetType().Name);
+				//The job is assumed to not affect any tiles.
+				affectedPoses.Add(job, null);
 			}
 
 			if (OnJobCreated != null)

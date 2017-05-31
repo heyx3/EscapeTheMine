@@ -4,6 +4,7 @@
 
 ## Job messages
 NO_PATH_JOB:Couldn't find a path
+DESTINATION_BLOCKED_JOB:Destination is blocked
 NO_BED:Couldn't find a friendly bed
 CANT_BUILD_ON_TILE:Tile no longer supports a new structure
 INTERRUPT_JOB_EMERGENCY:Job interrupted by emergency: %s

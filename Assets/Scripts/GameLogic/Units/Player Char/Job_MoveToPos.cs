@@ -23,6 +23,12 @@ namespace GameLogic.Units.Player_Char
 
 		public override IEnumerable TakeTurn()
 		{
+			if (TheMap.Value.Tiles[TargetPos].BlocksMovement())
+			{
+				EndJob(false, Localization.Get("DESTINATION_BLOCKED_JOB"));
+				yield break;
+			}
+
 			TryMoveToPos_Status moveStatus = new TryMoveToPos_Status();
 			foreach (object o in TryMoveToPos(new Pathfinding.Goal<Vector2i>(TargetPos), moveStatus))
 				yield return o;
