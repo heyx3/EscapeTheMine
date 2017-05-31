@@ -170,7 +170,7 @@ namespace GameLogic.Units.Player_Char
 							   healthIncreaseFromBedPerTurn = new AsymptoteValue(0.02f, 0.0f, 1.0f);
 
 		//The chance of a male/female pair in the same bed producing a child each turn.
-		private float reproductionChance = 0.001f;
+		private float reproductionChance = 0.01f;
 
 		private float defaultSeekBedEnergy = 25.0f,
 					  defaultSeekBedHealth = 0.15f;

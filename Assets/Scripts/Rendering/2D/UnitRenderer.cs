@@ -28,6 +28,8 @@ namespace Rendering.TwoD
 			Target.Pos.OnChanged += Callback_UnitMoved;
 			MyTr.position = new Vector3(Target.Pos.Value.x + 0.5f, Target.Pos.Value.y + 0.5f,
 										MyTr.position.z);
+
+			gameObject.name = Target.DisplayName;
 		}
 		protected virtual void OnDestroy()
 		{

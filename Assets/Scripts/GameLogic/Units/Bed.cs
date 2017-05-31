@@ -124,6 +124,7 @@ namespace GameLogic.Units
 															  UnityEngine.Random.value),
 									   0.0f, name, gender);
 					TheMap.AddUnit(baby);
+					baby.Pos.Value = Pos;
 
 					if (OnMakeBaby != null)
 						OnMakeBaby(this, father, mother, baby);

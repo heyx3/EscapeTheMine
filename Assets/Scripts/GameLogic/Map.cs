@@ -12,6 +12,7 @@ namespace GameLogic
 		public event Action<Map, Unit> OnUnitRemoved;
 		public event Action<Map, Unit, Vector2i, Vector2i> OnUnitMoved;
 
+		//TODO: Set a target number of units taking a turn per second, and use the delta t value to "catch up" every frame.
 
 		public Group.GroupSet Groups { get; private set; }
 		public TileGrid Tiles { get; private set; }
