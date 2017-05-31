@@ -110,6 +110,7 @@ namespace MyUI
 
                 t.Pos = tilePos;
                 t.Col = highlightColor;
+                t.Spr = HighlightSprite;
             }
             else
             {

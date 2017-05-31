@@ -42,7 +42,7 @@ namespace Rendering.TwoD
 
 			//Exit if we clicked outside the map.
 			Vector2i tilePos = new Vector2i(worldMPos);
-			if (game.Map.Tiles.IsValid(tilePos))
+			if (!game.Map.Tiles.IsValid(tilePos))
 				return;
 
             //If nothing special happens because of this click,
