@@ -17,7 +17,7 @@ namespace MyUI
             /// <summary>
             /// Null is passed if the user pressed "Cancel".
             /// </summary>
-			public Action<HashSet<Vector2i>> OnFinished;
+			public event Action<HashSet<Vector2i>> OnFinished;
             /// <summary>
             /// Tells the window whether the given tile is allowed in the selection.
             /// </summary>
@@ -31,20 +31,25 @@ namespace MyUI
 			public string TitleKey, MessageKey;
 			public object[] TitleArgs, MessageArgs;
 
-			public TilesSelectionData(Action<HashSet<Vector2i>> onFinished,
-									  Func<Vector2i, bool> isTileValid,
+			public TilesSelectionData(Func<Vector2i, bool> isTileValid,
                                       bool mustBeConnected,
 									  string title, string message,
 									  object[] messageArgs = null,
 									  object[] titleArgs = null)
 			{
-				OnFinished = onFinished;
+				OnFinished = null;
                 IsTileValid = isTileValid;
                 MustBeConnected = mustBeConnected;
 				TitleKey = title;
 				MessageKey = message;
 				TitleArgs = titleArgs;
 				MessageArgs = messageArgs;
+			}
+
+			public void Raise_OnFinished(HashSet<Vector2i> selectedTiles)
+			{
+				if (OnFinished != null)
+					OnFinished(selectedTiles);
 			}
 		}
 
@@ -156,12 +161,12 @@ namespace MyUI
         
         public void Callback_Finished()
         {
-            Target.OnFinished(currentChoice);
+            Target.Raise_OnFinished(currentChoice);
             Callback_Button_Close();
         }
         public void Callback_Cancel()
         {
-            Target.OnFinished(null);
+            Target.Raise_OnFinished(null);
             Callback_Button_Close();
         }
         

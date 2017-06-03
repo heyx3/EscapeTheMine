@@ -185,41 +185,41 @@ namespace MyUI
 		{
 			//Ask the player to select a tile to move to.
 			var data = new Window_SelectTile.TileSelectionData(
-				(tilePos) =>
-				{
-					if (tilePos.HasValue)
-						Target.AddJob(new Job_MoveToPos(tilePos.Value, makeEmergency, Game.Map));
-				},
 				(tilePos) => !Game.Map.Tiles[tilePos].BlocksMovement(),
 				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
+			data.OnFinished += (tilePos) =>
+			{
+				if (tilePos.HasValue)
+					Target.AddJob(new Job_MoveToPos(tilePos.Value, makeEmergency, Game.Map));
+			};
 			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
         public void Callback_NewJob_Mine(bool makeEmergency)
         {
             var data = new Window_SelectTiles.TilesSelectionData(
-                (tilePoses) =>
-                {
-                    if (tilePoses != null)
-                        Target.AddJob(new Job_Mine(tilePoses, makeEmergency, Game.Map));
-                },
                 (tilePos) => Game.Map.Tiles[tilePos].IsMinable(),
                 true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
+			data.OnFinished += (tilePoses) =>
+			{
+				if (tilePoses != null)
+					Target.AddJob(new Job_Mine(tilePoses, makeEmergency, Game.Map));
+			};
             ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
         }
 		public void Callback_NewJob_BuildBed(bool makeEmergency)
 		{
 			//Ask the player to select a tile to move to.
 			var data = new Window_SelectTile.TileSelectionData(
-				(tilePos) =>
-				{
-					if (tilePos.HasValue)
-					{
-						Target.AddJob(new Job_BuildBed(tilePos.Value, Target.MyGroupID,
-													   makeEmergency, Game.Map));
-					}
-				},
 				(tilePos) => Game.Map.Tiles[tilePos].IsBuildableOn(),
 				"WINDOW_BUILDBED_TITLE", "WINDOW_BUILDBED_MESSAGE");
+			data.OnFinished += (tilePos) =>
+			{
+				if (tilePos.HasValue)
+				{
+					Target.AddJob(new Job_BuildBed(tilePos.Value, Target.MyGroupID,
+												   makeEmergency, Game.Map));
+				}
+			};
 			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 		}
 
@@ -241,16 +241,16 @@ namespace MyUI
 			if (chooseBed)
 			{
 				var data = new Window_SelectTile.TileSelectionData(
-					(tilePos) =>
-					{
-						if (tilePos.HasValue)
-						{
-							var bed = Job_SleepBed.FirstFriendlyBedAtPos(tilePos.Value, Target);
-							Target.AddJob(new Job_SleepBed(isEmergency, Game.Map, bed));
-						}
-					},
 					(tilePos) => (Job_SleepBed.FirstFriendlyBedAtPos(tilePos, Target) != null),
 					"WINDOW_SLEEPAT_TITLE", "WINDOW_SLEEPAT_MESSAGE");
+				data.OnFinished += (tilePos) =>
+				{
+					if (tilePos.HasValue)
+					{
+						var bed = Job_SleepBed.FirstFriendlyBedAtPos(tilePos.Value, Target);
+						Target.AddJob(new Job_SleepBed(isEmergency, Game.Map, bed));
+					}
+				};
 				ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
 			}
 			//Otherwise, just sleep at the closest bed.

@@ -14,24 +14,29 @@ namespace MyUI
 	{
 		public struct TileSelectionData
 		{
-			public Action<Vector2i?> OnFinished;
+			public event Action<Vector2i?> OnFinished;
 			public Predicate<Vector2i> IsTileValid;
 
 			public string TitleKey, MessageKey;
 			public object[] TitleArgs, MessageArgs;
 
-			public TileSelectionData(Action<Vector2i?> onFinished,
-									 Predicate<Vector2i> isTileValid,
+			public TileSelectionData(Predicate<Vector2i> isTileValid,
 									 string title, string message,
 									 object[] messageArgs = null,
 									 object[] titleArgs = null)
 			{
-				OnFinished = onFinished;
+				OnFinished = null;
 				IsTileValid = isTileValid;
 				TitleKey = title;
 				MessageKey = message;
 				TitleArgs = titleArgs;
 				MessageArgs = messageArgs;
+			}
+
+			public void Raise_OnFinished(Vector2i? selectedTile)
+			{
+				if (OnFinished != null)
+					OnFinished(selectedTile);
 			}
 		}
 
@@ -116,7 +121,7 @@ namespace MyUI
 
         public override void Callback_Button_Close()
         {
-            Target.OnFinished(null);
+            Target.Raise_OnFinished(null);
 
             base.Callback_Button_Close();
         }
@@ -128,7 +133,7 @@ namespace MyUI
 		{
 			if (Target.IsTileValid(tilePos))
 			{
-                Target.OnFinished(tilePos);
+                Target.Raise_OnFinished(tilePos);
                 Destroy(gameObject);
 				return true;
 			}

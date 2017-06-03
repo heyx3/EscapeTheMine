@@ -11,9 +11,7 @@ namespace GameLogic
 		public event Action<Map, Unit> OnUnitAdded;
 		public event Action<Map, Unit> OnUnitRemoved;
 		public event Action<Map, Unit, Vector2i, Vector2i> OnUnitMoved;
-
-		//TODO: Set a target number of units taking a turn per second, and use the delta t value to "catch up" every frame.
-
+		
 		public Group.GroupSet Groups { get; private set; }
 		public TileGrid Tiles { get; private set; }
 
@@ -21,6 +19,11 @@ namespace GameLogic
 		/// Indicates that units should not take their turns.
 		/// </summary>
         public Stat<bool, Map> IsPaused { get; private set; }
+
+		/// <summary>
+		/// The minimum-allowable time it takes to run through every unit on the map.
+		/// </summary>
+		public float MinTurnWait = 0.5f;
 
 		private ulong nextID = 0;
 		private HashSet<Unit> units = new HashSet<Unit>();
@@ -32,7 +35,7 @@ namespace GameLogic
 		private Graph pathingGraph;
 		private Pathfinding.PathFinder<Vector2i> pathing;
 
-		private static HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
+		private static readonly HashSet<Unit> emptyUnitSet = new HashSet<Unit>();
 
 
 		public Map(int mapSizeX, int mapSizeY)
@@ -238,9 +241,11 @@ namespace GameLogic
 		public System.Collections.IEnumerator RunGameCoroutine()
 		{
 			List<Group> groupsToUpdate = new List<Group>(Groups.Count);
-
+			
 			while (true)
 			{
+				float turnStartTime = Time.time;
+
 				//Prevent an infinite loop if there are no units or groups.
 				yield return null;
 
@@ -262,6 +267,11 @@ namespace GameLogic
 					}
 				}
 				groupsToUpdate.Clear();
+
+				//Wait for the next turn.
+				float elapsedTime = Time.time - turnStartTime;
+				if (elapsedTime < MinTurnWait)
+					yield return new WaitForSeconds(MinTurnWait - elapsedTime);
 			}
 		}
 
