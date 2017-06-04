@@ -59,8 +59,27 @@ namespace GameLogic.Groups.Player_Group
 			return affectedMultiPoses.ContainsKey(job) ||
 				   (affectedPoses.ContainsKey(job) && affectedPoses[job].HasValue);
 		}
+		/// <summary>
+		/// Gets whether any existing jobs will affect the given position.
+		/// </summary>
+		public bool AnyJobsAffecting(Vector2i pos)
+		{
+			foreach (Job j in outstandingJobs)
+			{
+				if (affectedPoses.ContainsKey(j))
+				{
+					if (affectedPoses[j].HasValue && affectedPoses[j] == pos)
+						return true;
+				}
+				else if (affectedMultiPoses[j].Contains(pos))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 
-		
+
 		/// <summary>
 		/// Raised when any job is created, whether a global job or a PlayerChar-specific one.
 		/// </summary>
@@ -127,7 +146,7 @@ namespace GameLogic.Groups.Player_Group
 				Callback_CancelGroupJob(Owner, j);
 		}
 
-		
+
 		/// <summary>
 		/// Starts tracking the given job, if it wasn't already being tracked.
 		/// </summary>
@@ -201,7 +220,7 @@ namespace GameLogic.Groups.Player_Group
 				//Remove all outstanding jobs.
 				while (outstandingJobs.Count > 0)
 					RemoveJob(outstandingJobs.First());
-				
+
 				Owner.TheMap.Groups.OnElementRemoved -= Callback_GroupRemoved;
 			}
 		}

@@ -22,7 +22,7 @@ namespace MyUI
             /// Tells the window whether the given tile is allowed in the selection.
             /// </summary>
 			public Func<Vector2i, bool> IsTileValid;
-            
+
             /// <summary>
             /// If true, all tiles must be connected to each other.
             /// </summary>
@@ -58,7 +58,7 @@ namespace MyUI
 		/// It doesn't make sense to have more than one of these open at once.
 		/// </summary>
 		private static Window_SelectTiles instance = null;
-        
+
 		public Localizer Label_Title, Label_Message;
         public UnityEngine.UI.Button ConfirmButton;
         public Color MouseTileGoodHighlightColor = Color.yellow,
@@ -158,7 +158,7 @@ namespace MyUI
                                                   MouseTileGoodHighlightColor :
                                                   MouseTileBadHighlightColor);
         }
-        
+
         public void Callback_Finished()
         {
             Target.Raise_OnFinished(currentChoice);
@@ -169,7 +169,7 @@ namespace MyUI
             Target.Raise_OnFinished(null);
             Callback_Button_Close();
         }
-        
+
 		public void Callback_NewViewMode(UnityLogic.ViewModes oldViewMode,
 										 UnityLogic.ViewModes newViewMode)
 		{
@@ -198,9 +198,9 @@ namespace MyUI
                 canConfirm = !Target.MustBeConnected || IsFullyConnected();
             }
         }
-		
+
         /// <summary>
-		/// Returns "true" if the given tile is a valid selection.
+		/// Always returns "true".
 		/// </summary>
 		public bool Callback_WorldTileClicked(Vector2i tilePos)
 		{
@@ -211,7 +211,6 @@ namespace MyUI
                 tileHighlights.Remove(tilePos);
                 currentChoice.Remove(tilePos);
                 canConfirm = !Target.MustBeConnected || IsFullyConnected();
-                return true;
             }
             //Otherwise, add it to the selection.
             else
@@ -223,11 +222,10 @@ namespace MyUI
                                                                                 SelectedTileHighlightColor));
                     currentChoice.Add(tilePos);
 					canConfirm = !Target.MustBeConnected || IsFullyConnected();
-                    return true;
                 }
-
-			    return false;
             }
+
+            return true;
 		}
 
 		private void CleanUpCallbacks(UnityLogic.ViewModes viewMode)

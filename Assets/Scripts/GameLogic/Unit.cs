@@ -12,6 +12,8 @@ namespace GameLogic
 	/// </summary>
 	public abstract class Unit : MyData.IReadWritable
 	{
+		//TODO: Allow the player to add a "Note" to any unit. Show the note when mousing over.
+
 		/// <summary>
 		/// Raised when this unit is removed from the map.
 		/// </summary>

@@ -49,16 +49,19 @@ namespace MyUI
 
 		public void Callback_Mine(bool isEmergency)
 		{
+			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
 			var data = new Window_SelectTiles.TilesSelectionData(
-				(tilePos) => Game.Map.Tiles[tilePos].IsMinable(),
+				(tilePos) =>
+					(Game.Map.Tiles[tilePos].IsMinable() &&
+					 !playerGroup.JobQueries.AnyJobsAffecting(tilePos)),
 				true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
 			data.OnFinished += (tilePoses) =>
 			{
 				if (tilePoses != null)
 				{
-					var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
-					playerGroup.AddJob(
-						new GameLogic.Units.Player_Char.Job_Mine(tilePoses, isEmergency, Game.Map));
+					playerGroup.AddJob(new GameLogic.Units.Player_Char.Job_Mine(tilePoses,
+																				isEmergency,
+																				Game.Map));
 				}
 
 				//Destroy this window.
@@ -71,9 +74,11 @@ namespace MyUI
 		public void Callback_BuildBed(bool isEmergency)
 		{
 			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
-			playerGroup.AddJob(
-				new GameLogic.Units.Player_Char.Job_BuildBed(Target, playerGroup.ID,
-															 isEmergency, Game.Map));
+			if (!playerGroup.JobQueries.AnyJobsAffecting(Target))
+			{
+				playerGroup.AddJob(new GameLogic.Units.Player_Char.Job_BuildBed(Target, playerGroup.ID,
+																				isEmergency, Game.Map));
+			}
 
 			//Destroy this window.
 			Callback_Button_Close();

@@ -38,6 +38,8 @@ namespace GameLogic.Units.Player_Char
 
 		public override IEnumerable TakeTurn()
 		{
+			//TODO: Sometimes PlayerChars get stuck and never finish mining.
+
 			//Remove any tiles that are no longer minable.
 			tilesToMine.RemoveWhere(tile => !TheMap.Value.Tiles[tile].IsMinable());
 

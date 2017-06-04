@@ -186,8 +186,11 @@ namespace MyUI
         public void Callback_NewJob_MoveToPos(bool makeEmergency)
 		{
 			//Ask the player to select a tile to move to.
+			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
 			var data = new Window_SelectTile.TileSelectionData(
-				(tilePos) => !Game.Map.Tiles[tilePos].BlocksMovement(),
+				(tilePos) =>
+					(!Game.Map.Tiles[tilePos].BlocksMovement() &&
+					 !playerGroup.JobQueries.AnyJobsAffecting(tilePos)),
 				"WINDOW_MOVETOPOS_TITLE", "WINDOW_MOVETOPOS_MESSAGE");
 			data.OnFinished += (tilePos) =>
 			{
@@ -198,8 +201,12 @@ namespace MyUI
 		}
         public void Callback_NewJob_Mine(bool makeEmergency)
         {
+			//Ask the player to select any other tiles to mine.
+			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
             var data = new Window_SelectTiles.TilesSelectionData(
-                (tilePos) => Game.Map.Tiles[tilePos].IsMinable(),
+                (tilePos) =>
+					(Game.Map.Tiles[tilePos].IsMinable() &&
+					 !playerGroup.JobQueries.AnyJobsAffecting(tilePos)),
                 true, "WINDOW_MINEPOSES_TITLE", "WINDOW_MINEPOSES_MESSAGE");
 			data.OnFinished += (tilePoses) =>
 			{
@@ -210,9 +217,12 @@ namespace MyUI
         }
 		public void Callback_NewJob_BuildBed(bool makeEmergency)
 		{
-			//Ask the player to select a tile to move to.
+			//Ask the player where the bed should be built.
+			var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
 			var data = new Window_SelectTile.TileSelectionData(
-				(tilePos) => Game.Map.Tiles[tilePos].IsBuildableOn(),
+				(tilePos) =>
+					(Game.Map.Tiles[tilePos].IsBuildableOn() &&
+					 !playerGroup.JobQueries.AnyJobsAffecting(tilePos)),
 				"WINDOW_BUILDBED_TITLE", "WINDOW_BUILDBED_MESSAGE");
 			data.OnFinished += (tilePos) =>
 			{
@@ -242,8 +252,11 @@ namespace MyUI
 			//If the player wants to choose a specific bed, let him.
 			if (chooseBed)
 			{
+				var playerGroup = Game.Map.FindGroup<GameLogic.Groups.PlayerGroup>();
 				var data = new Window_SelectTile.TileSelectionData(
-					(tilePos) => (Job_SleepBed.FirstFriendlyBedAtPos(tilePos, Target) != null),
+					(tilePos) =>
+						(Job_SleepBed.FirstFriendlyBedAtPos(tilePos, Target) != null &&
+						 !playerGroup.JobQueries.AnyJobsAffecting(tilePos)),
 					"WINDOW_SLEEPAT_TITLE", "WINDOW_SLEEPAT_MESSAGE");
 				data.OnFinished += (tilePos) =>
 				{
