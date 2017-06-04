@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 
 namespace GameLogic
@@ -11,7 +10,7 @@ namespace GameLogic
 		public event Action<Map, Unit> OnUnitAdded;
 		public event Action<Map, Unit> OnUnitRemoved;
 		public event Action<Map, Unit, Vector2i, Vector2i> OnUnitMoved;
-		
+
 		public Group.GroupSet Groups { get; private set; }
 		public TileGrid Tiles { get; private set; }
 
@@ -27,7 +26,7 @@ namespace GameLogic
 
 		private ulong nextID = 0;
 		private HashSet<Unit> units = new HashSet<Unit>();
-		
+
 		private Dictionary<ulong, Unit> idToUnit = new Dictionary<ulong, Unit>();
 		private GridSet<Unit> unitsByPos;
 		private Dictionary<Unit.Types, HashSet<Unit>> unitsByType = new Dictionary<Unit.Types, HashSet<Unit>>();
@@ -70,7 +69,7 @@ namespace GameLogic
 				};
 		}
 
-		
+
 		public IEnumerable<Unit> GetUnits()
 		{
 			return units;
@@ -112,7 +111,7 @@ namespace GameLogic
 					return unit;
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Adds the given unit to this map.
 		/// Returns its new ID.
@@ -177,7 +176,7 @@ namespace GameLogic
 			return Groups.Where(g => (g is GroupType)).Select(g => (GroupType)g);
 		}
 
-		
+
 		/// <summary>
 		/// Wipes out all units and jobs.
 		/// NOTE: the map may take a few frames to actually end.
@@ -240,11 +239,13 @@ namespace GameLogic
 		/// </summary>
 		public System.Collections.IEnumerator RunGameCoroutine()
 		{
+			//Note that this method requires some interaction with the Unity API.
+			//However, it's worth it to have this method be encapsulated in the Map class.
+
 			List<Group> groupsToUpdate = new List<Group>(Groups.Count);
-			
 			while (true)
 			{
-				float turnStartTime = Time.time;
+				float turnStartTime = UnityEngine.Time.time;
 
 				//Prevent an infinite loop if there are no units or groups.
 				yield return null;
@@ -269,9 +270,9 @@ namespace GameLogic
 				groupsToUpdate.Clear();
 
 				//Wait for the next turn.
-				float elapsedTime = Time.time - turnStartTime;
+				float elapsedTime = UnityEngine.Time.time - turnStartTime;
 				if (elapsedTime < MinTurnWait)
-					yield return new WaitForSeconds(MinTurnWait - elapsedTime);
+					yield return new UnityEngine.WaitForSeconds(MinTurnWait - elapsedTime);
 			}
 		}
 
@@ -289,7 +290,7 @@ namespace GameLogic
 		public void ReadData(MyData.Reader reader)
 		{
 			Clear();
-			
+
 			reader.Structure(Tiles, "tiles");
 			unitsByPos = new GridSet<Unit>(Tiles.Dimensions);
 
@@ -306,7 +307,7 @@ namespace GameLogic
 			foreach (Group g in Groups)
 				g.FinishDeserialization();
 		}
-		
+
 		private void Callback_UnitMoved(Unit u, Vector2i oldP, Vector2i newP)
 		{
 			unitsByPos.MoveValue(u, oldP, newP);
@@ -315,4 +316,4 @@ namespace GameLogic
 				OnUnitMoved(this, u, oldP, newP);
 		}
 	}
-} 
+}

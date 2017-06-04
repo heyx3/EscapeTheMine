@@ -35,7 +35,7 @@ namespace GameLogic.Units.Player_Char
 		/// </summary>
 		public Stat<string, Job> SuccessMessage;
 
-		
+
 		/// <summary>
 		/// Raised when a PlayerChar stops doing this job.
 		/// The second parameter represents whether the job was successful.
@@ -44,7 +44,7 @@ namespace GameLogic.Units.Player_Char
 		/// </summary>
 		public event Action<Job, bool, string> OnJobFinished;
 
-		
+
 		public Job(bool isEmergency, Map theMap, string successMessage = null)
 		{
 			Owner = new Stat<PlayerChar, Job>(this, null);
@@ -59,7 +59,7 @@ namespace GameLogic.Units.Player_Char
 		/// Acts as a coroutine.
 		/// </summary>
 		public abstract System.Collections.IEnumerable TakeTurn();
-		
+
 		protected enum TryMoveToPos_States
 		{
 			EnRoute,
@@ -93,7 +93,7 @@ namespace GameLogic.Units.Player_Char
 			outStatus.CurrentState = TryMoveToPos_States.EnRoute;
 
 			//Try to find the best path.
-			List<Vector2i> path = Owner.Value.FindPath(goal);
+			List<Vector2i> path = Owner.Value.FindPath(goal, Owner.Value.Career.AvoidEnemiesWhenPathing);
 			if (path == null)
 			{
 				outStatus.CurrentState = TryMoveToPos_States.NoPath;

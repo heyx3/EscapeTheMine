@@ -16,31 +16,6 @@ namespace GameLogic.Units
 	public class PlayerChar : Unit
 	{
 		/// <summary>
-		/// Calculates edge length/heuristics for PlayerChar's A* pathfinding.
-		/// </summary>
-		private void AStarEdgeCalc(Pathfinding.Goal<Vector2i> goal,
-								   Pathfinding.Edge<Vector2i> edge,
-								   out float edgeLength, out float heuristic)
-		{
-			Graph.AStarEdgeCalc(goal, edge, out edgeLength, out heuristic);
-
-			//Subtract enemy distances squared from the heuristic.
-			foreach (Unit enemy in _temp_enemies)
-			{
-				float distSqr = enemy.Pos.Value.DistanceSqr(Pos);
-				float distT = distSqr * Player_Char.Consts.One_Over_MaxEnemyDistSqr;
-				distT = Math.Max(0.0f, Mathf.Min(1.0f, distT));
-
-				heuristic += (Player_Char.Consts.EnemyDistHeuristicMax * distT);
-			}
-		}
-		/// <summary>
-		/// Re-use a collection of a PlayerChar's enemies to reduce garbage.
-		/// </summary>
-		private static HashSet<Unit> _temp_enemies = new HashSet<Unit>();
-
-
-		/// <summary>
 		/// Raised when a new job is given to this PlayerChar specifically.
 		/// </summary>
 		public event Action<PlayerChar, Player_Char.Job> OnAddCustomJob;
@@ -48,8 +23,8 @@ namespace GameLogic.Units
 		/// Raised when a job given to this specific PlayerChar was taken away.
 		/// </summary>
 		public event Action<PlayerChar, Player_Char.Job> OnRemoveCustomJob;
-		
-		
+
+
 		public Stat<float, PlayerChar> Food { get; private set; }
 		public Stat<float, PlayerChar> Energy { get; private set; }
 		public Stat<float, PlayerChar> Health { get; private set; }
@@ -270,40 +245,6 @@ namespace GameLogic.Units
 		}
 
 		/// <summary>
-		/// Outputs the shortest path from this PlayerChar to the given goal
-		///     into the "outPath" list.
-		/// Does not include this PlayerChar's own position in the list.
-		/// Returns whether a path was actually found.
-		/// </summary>
-		public bool FindPath(Pathfinding.Goal<Vector2i> goal, List<Vector2i> outPath)
-		{
-			//Collect all of this PlayerChar's current enemies for the A* heuristic.
-			_temp_enemies.Clear();
-			foreach (ulong enemyGroupID in TheMap.Groups.Get(MyGroupID).EnemiesByID)
-				foreach (ulong enemyUnitID in TheMap.Groups.Get(enemyGroupID).UnitsByID)
-					_temp_enemies.Add(TheMap.GetUnit(enemyUnitID));
-
-			return TheMap.FindPath(Pos, goal, outPath, AStarEdgeCalc);
-		}
-		/// <summary>
-		/// Finds the shortest path from this PlayerChar to the given goal.
-		/// Does not include this PlayerChar's own position in the list.
-		/// Returns "null" if a path wasn't found.
-		/// IMPORTANT: The returned list is reused for other calls to this method,
-		///     so treat it as a temp variable!
-		/// </summary>
-		public List<Vector2i> FindPath(Pathfinding.Goal<Vector2i> goal)
-		{
-			//Collect all of this PlayerChar's current enemies for the A* heuristic.
-			_temp_enemies.Clear();
-			foreach (ulong enemyGroupID in TheMap.Groups.Get(MyGroupID).EnemiesByID)
-				foreach (ulong enemyUnitID in TheMap.Groups.Get(enemyGroupID).UnitsByID)
-					_temp_enemies.Add(TheMap.GetUnit(enemyUnitID));
-
-			return TheMap.FindPath(Pos, goal, AStarEdgeCalc);
-		}
-
-		/// <summary>
 		/// Adds a new job for this specific PlayerChar to do.
 		/// </summary>
 		public void AddJob(Player_Char.Job job)
@@ -355,7 +296,7 @@ namespace GameLogic.Units
 			foreach (var job in jobsToDestroy)
 				RemoveJob(job, alert);
 		}
-		
+
 		/// <summary>
 		/// Stops this PlayerChar from doing its current job and starts the given one.
 		/// Returns the job that was stopped (or "null" if it wasn't doing anything).
@@ -458,7 +399,7 @@ namespace GameLogic.Units
 				customJobs, "customJobs",
 				(w, valToWrite, name) =>
 					Player_Char.Job.Write(w, valToWrite, name));
-			
+
 			if (currentlyDoing != null)
 			{
 				writer.Bool(true, "hasJob");
@@ -489,7 +430,7 @@ namespace GameLogic.Units
 				(MyData.Reader r, ref Player_Char.Job outVal, string name) =>
 					outVal = Player_Char.Job.Read(r, name, TheMap),
 				(size) => customJobs);
-			
+
 			if (reader.Bool("hasJob"))
 				StartDoingJob(Player_Char.Job.Read(reader, "currentJob", TheMap), null);
 		}

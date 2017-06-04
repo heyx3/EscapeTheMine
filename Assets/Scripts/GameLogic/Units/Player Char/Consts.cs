@@ -52,9 +52,6 @@ namespace GameLogic.Units.Player_Char
 						writer.Dispose();
 				}
 			}
-
-			//Set pre-computed fields.
-			One_Over_MaxEnemyDistSqr = 1.0f / MaxEnemyDistSqr;
 		}
 
 
@@ -79,11 +76,6 @@ namespace GameLogic.Units.Player_Char
 
 		public static int MovesPerTurn { get { return instance.movesPerTurn; } }
 		public static int FramesPerMove {  get { return instance.framesPerMove; } }
-
-		public static float MaxEnemyDistSqr { get { return instance.maxEnemyDistSqr; } }
-		public static float One_Over_MaxEnemyDistSqr { get; private set; }
-
-		public static float EnemyDistHeuristicMax { get { return instance.enemyDistHeuristicMax; } }
 
 		public static int TurnsToMine(float strengthStat, float adultMultiplier, int nTilesToMine)
 		{
@@ -115,7 +107,7 @@ namespace GameLogic.Units.Player_Char
 		}
 
 		public static float ReproductionChance { get { return instance.reproductionChance; } }
-		
+
 		public static float DefaultSeekBedEnergy { get { return instance.defaultSeekBedEnergy; } }
 		public static float DefaultSeekBedHealth { get { return instance.defaultSeekBedHealth; } }
 
@@ -136,7 +128,7 @@ namespace GameLogic.Units.Player_Char
 		private float max_health = 1.0f;
 
 		private float starvationDamagePerTurn = 0.2f;
-		
+
 		//Loss in food goes down as strength increases.
 		private AsymptoteValue foodLossPerTurn = new AsymptoteValue(0.2f, 0.0f, 2.0f);
 
@@ -146,11 +138,6 @@ namespace GameLogic.Units.Player_Char
 
 		private int movesPerTurn = 5,
 					framesPerMove = 2;
-
-		//The square of the maximum distance an enemy can be while still affecting the A* heuristic.
-		private int maxEnemyDistSqr = 11 * 11;
-		//A scale for the effect of an enemy on the A* heuristic.
-		private float enemyDistHeuristicMax = 1.0f;
 
 		//The number of turns to mine one tile, based on the total number of tiles being mined.
 		//The base value depends on the PlayerChar's strength.
@@ -189,23 +176,20 @@ namespace GameLogic.Units.Player_Char
 			writer.Float(maxStart_Energy, "maxStart_Energy");
 			writer.Float(minStart_Strength, "minStart_Strength");
 			writer.Float(maxStart_Strength, "maxStart_Strength");
-			
+
 			writer.Float(initialLowFoodThreshold, "initialLowFoodThreshold");
-			
+
 			writer.Float(max_health, "max_health");
-			
+
 			writer.Float(starvationDamagePerTurn, "starvationDamagePerTurn");
 
 			writer.Structure(foodLossPerTurn, "foodLossPerTurn");
 
 			writer.Structure(maxFood, "maxFood");
 			writer.Structure(maxEnergy, "maxEnergy");
-			
+
 			writer.Int(movesPerTurn, "movesPerTurn");
 			writer.Int(framesPerMove, "framesPerMove");
-
-			writer.Int(maxEnemyDistSqr, "maxEnemyDistSqr");
-			writer.Float(enemyDistHeuristicMax, "enemyDistHeuristicMax");
 
 			writer.Structure(turnsToMine, "turnsToMine");
 			writer.Structure(baseTurnsToMine, "baseTurnsToMine");
@@ -224,11 +208,11 @@ namespace GameLogic.Units.Player_Char
 			maxStart_Energy = reader.Float("maxStart_Energy");
 			minStart_Strength = reader.Float("minStart_Strength");
 			maxStart_Strength = reader.Float("maxStart_Strength");
-			
+
 			initialLowFoodThreshold = reader.Float("initialLowFoodThreshold");
-			
+
 			max_health = reader.Float("max_health");
-			
+
 			starvationDamagePerTurn = reader.Float("starvationDamagePerTurn");
 
 			reader.Structure(foodLossPerTurn, "foodLossPerTurn");
@@ -239,14 +223,11 @@ namespace GameLogic.Units.Player_Char
 			movesPerTurn = reader.Int("movesPerTurn");
 			framesPerMove = reader.Int("framesPerMove");
 
-			maxEnemyDistSqr = reader.Int("maxEnemyDistSqr");
-			enemyDistHeuristicMax = reader.Float("enemyDistHeuristicMax");
-			
 			reader.Structure(turnsToMine, "turnsToMine");
 			reader.Structure(baseTurnsToMine, "baseTurnsToMine");
 
 			reader.Structure(turnsToBuildStructure, "turnsToBuildStructure");
-			
+
 			reproductionChance = reader.Float("reproductionChance");
 
             maturityIncreasePerTurn = reader.Float("maturityIncreasePerTurn");

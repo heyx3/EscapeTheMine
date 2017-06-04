@@ -34,7 +34,7 @@ namespace MyUI
 			int percent = Mathf.RoundToInt(100.0f * f);
 			return percent.ToString() + "%";
 		}
-        
+
 
 		public Localizer Label_Title,
                          Label_FoodValue, Label_HealthValue,
@@ -43,10 +43,11 @@ namespace MyUI
         public UnityEngine.UI.InputField Input_MaxMoveToPosDist,
                                          Input_FindBedBelowEnergy,
                                          Input_FindBedBelowHealth;
-        public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_TakeBuildBedJobs,
-									 Toggle_GrowingUpIsEmergency;
+		public UnityEngine.UI.Toggle Toggle_TakeMiningJobs, Toggle_TakeBuildJobs,
+									 Toggle_GrowingUpIsEmergency,
+									 Toggle_AvoidEnemies;
 
-		
+
 		public enum TabTypes
 		{
 			JobSelection,
@@ -67,7 +68,7 @@ namespace MyUI
 				else
 					kvp.Value.DeselectMe();
 		}
-		
+
         private void Start()
         {
             Target.Personality.Name.OnChanged += OnNameChanged;
@@ -96,10 +97,11 @@ namespace MyUI
 
             Input_MaxMoveToPosDist.text = Target.Career.MoveToPos_MaxDist.Value.ToString();
             Toggle_TakeMiningJobs.isOn = Target.Career.AcceptJob_Mining;
-			Toggle_TakeBuildBedJobs.isOn = Target.Career.AcceptJob_BuildBed;
+			Toggle_TakeBuildJobs.isOn = Target.Career.AcceptJob_Build;
             Input_FindBedBelowEnergy.text = Target.Career.SleepWhen_EnergyBelow.Value.ToString();
             Input_FindBedBelowHealth.text = Target.Career.SleepWhen_HealthBelow.Value.ToString();
             Toggle_GrowingUpIsEmergency.isOn = Target.Career.GrowingUpIsEmergency;
+			Toggle_AvoidEnemies.isOn = Target.Career.AvoidEnemiesWhenPathing;
 
 			SwitchToTab(firstTab);
 		}
@@ -154,7 +156,7 @@ namespace MyUI
             Label_Title.Args[0] = newName;
             Label_Title.OnValidate();
         }
-        
+
 		public void Callback_TabClicked(UITab tab)
 		{
 			//Find the type of tab that was clicked on and select it.
@@ -180,7 +182,7 @@ namespace MyUI
 				default: throw new NotImplementedException(UnityLogic.Options.ViewMode.ToString());
 			}
 	}
-        
+
         public void Callback_NewJob_MoveToPos(bool makeEmergency)
 		{
 			//Ask the player to select a tile to move to.
@@ -260,19 +262,13 @@ namespace MyUI
 			}
 		}
 
-        public void Callback_ChangeStat_MaxMoveToPosDist(string newVal)
-        {
-            int i;
-            if (int.TryParse(newVal, out i) && i >= 0)
-                Target.Career.MoveToPos_MaxDist.Value = i;
-        }
         public void Callback_ChangeStat_TakeMiningJobs(bool shouldTake)
         {
             Target.Career.AcceptJob_Mining.Value = shouldTake;
         }
-		public void Callback_ChangeStat_TakeBuildBedJobs(bool shouldTake)
+		public void Callback_ChangeStat_TakeBuildJobs(bool shouldTake)
 		{
-			Target.Career.AcceptJob_BuildBed.Value = shouldTake;
+			Target.Career.AcceptJob_Build.Value = shouldTake;
 		}
         public void Callback_ChangeStat_SleepEnergyThreshold(string newVal)
         {
@@ -286,5 +282,15 @@ namespace MyUI
             if (float.TryParse(newVal, out f) && f >= 0.0f)
                 Target.Career.SleepWhen_HealthBelow.Value = f;
         }
+        public void Callback_ChangeStat_MaxMoveToPosDist(string newVal)
+        {
+            int i;
+            if (int.TryParse(newVal, out i) && i >= 0)
+                Target.Career.MoveToPos_MaxDist.Value = i;
+        }
+		public void Callback_ChangeStat_AvoidEnemies(bool shouldAvoid)
+		{
+			Target.Career.AvoidEnemiesWhenPathing.Value = shouldAvoid;
+		}
     }
 }
