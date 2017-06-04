@@ -137,7 +137,7 @@ namespace UnityLogic
 
 
 		private Coroutine mapGameCoroutine = null;
-		
+
 
 		/// <summary>
 		/// Sometimes other scripts want to do things that are OK in-game,
@@ -156,7 +156,7 @@ namespace UnityLogic
 
 		private bool isDeserializing = false;
 		private event Action onDoneDeserializing;
-		
+
 
 		/// <summary>
 		/// Quits the current world without saving and goes back to the main menu.
@@ -227,7 +227,7 @@ namespace UnityLogic
 			if (OnStart != null)
 				OnStart();
         }
-		
+
 		public void LoadWorld(string name)
 		{
 			if (mapGameCoroutine != null)
@@ -291,16 +291,23 @@ namespace UnityLogic
 
 			//Convert the generated data to actual game tiles.
 			GameLogic.TileTypes[,] tiles = new GameLogic.TileTypes[Settings.Size, Settings.Size];
-			for (int y = 0; y < tiles.GetLength(1); ++y)
+			foreach (Vector2i tilePos in tiles.AllIndices())
 			{
-				for (int x = 0; x < tiles.GetLength(0); ++x)
+				if (tilePos.x == 0 || tilePos.x == Settings.Size - 1 ||
+					tilePos.y == 0 || tilePos.y == Settings.Size - 1)
 				{
-					if (x == 0 || x == Settings.Size - 1 || y == 0 || y == Settings.Size - 1)
-						tiles[x, y] = GameLogic.TileTypes.Bedrock;
-					else if (finalWalls[x, y])
-						tiles[x, y] = (deposits[x, y] ? GameLogic.TileTypes.Deposit : GameLogic.TileTypes.Wall);
-					else
-						tiles[x, y] = GameLogic.TileTypes.Empty;
+					tiles.Set(tilePos, GameLogic.TileTypes.Bedrock);
+				}
+				else if (finalWalls.Get(tilePos))
+				{
+					tiles.Set(tilePos,
+							  deposits.Get(tilePos) ?
+								  GameLogic.TileTypes.Deposit :
+								  GameLogic.TileTypes.Wall);
+				}
+				else
+				{
+					tiles.Set(tilePos, GameLogic.TileTypes.Empty);
 				}
 			}
 			Map.Tiles.Reset(tiles);
@@ -323,7 +330,7 @@ namespace UnityLogic
 
 				default: throw new NotImplementedException(Options.ViewMode.ToString());
 			}
-			
+
 			SaveWorld();
 		}
 

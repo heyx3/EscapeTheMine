@@ -46,7 +46,7 @@ namespace UnityLogic.MapGen
 		/// </summary>
 		public float CircleMinRadius = 0.1f,
 					 CircleMaxRadius = 0.35f;
-		
+
 
 		public List<Room> Generate(BiomeTile[,] tiles, int nThreads, int seed)
 		{
@@ -55,38 +55,29 @@ namespace UnityLogic.MapGen
 			//Generate the initial rooms as rectangles,
 			//    then modify them from there with cellular automata.
 
-			int sizeX = tiles.GetLength(0),
-				sizeY = tiles.GetLength(1);
-
 			//Calculate the size of each initial room.
-			int roomCellSizeX = sizeX / NRooms,
-				roomCellSizeY = sizeY / NRooms;
-			int roomSizeX = roomCellSizeX - RoomSpacing,
-				roomSizeY = roomCellSizeY - RoomSpacing;
-			
+			Vector2i roomCellSize = tiles.SizeXY() / NRooms;
+			Vector2i roomSize = roomCellSize - RoomSpacing;
+
 			float minCircleLerp = Mathf.Lerp(0.5f, 0.0f, CirclePosVariance),
 				  maxCircleLerp = Mathf.Lerp(0.5f, 1.0f, CirclePosVariance);
 
 			//Create the initial rooms.
-			for (int yStart = 0; (yStart + roomCellSizeY) <= sizeY; yStart += roomCellSizeY)
-				for (int xStart = 0; (xStart + roomCellSizeX) <= sizeX; xStart += roomCellSizeX)
+			Vector2i max = tiles.SizeXY() + 1;
+			for (int yStart = 0; (yStart + roomCellSize.y) < max.y; yStart += roomCellSize.y)
+				for (int xStart = 0; (xStart + roomCellSize.x) < max.x; xStart += roomCellSize.x)
 				{
+					Vector2i start = new Vector2i(xStart, yStart);
+
 					//For the room's biome, get the biome of its center tile.
+					Vector2i center = start + (roomCellSize / 2);
 
-					int centerX = xStart + (roomCellSizeX / 2),
-						centerY = yStart + (roomCellSizeY / 2);
+					PRNG prng = new PRNG(center.x, center.y, seed);
 
-					PRNG prng = new PRNG(centerX, centerY, seed);
+					Vector2i roomMin = center - (roomSize / 2),
+							 roomMax = center + (roomSize / 2);
 
-					int roomMinX = centerX - (roomSizeX / 2),
-						roomMinY = centerY - (roomSizeY / 2),
-						roomMaxX = centerX + (roomSizeX / 2),
-						roomMaxY = centerY + (roomSizeY / 2);
-
-					outRooms.Add(new Room(tiles[centerX, centerY],
-										  new RectI(roomMinX, roomMinY,
-													(roomMaxX - roomMinX),
-													(roomMaxY - roomMinY))));
+					outRooms.Add(new Room(tiles.Get(center), new RectI(roomMin, roomMax)));
 
 					//Carve circular spaces out of the room.
 					int nCircles = MinCirclesPerRoom +
@@ -99,12 +90,12 @@ namespace UnityLogic.MapGen
 													  Mathf.Lerp(minCircleLerp, maxCircleLerp,
 																 prng.NextFloat()));
 
-						Vector2 circlePos = new Vector2(Mathf.Lerp(xStart, xStart + roomCellSizeX,
+						Vector2 circlePos = new Vector2(Mathf.Lerp(xStart, xStart + roomCellSize.x,
 																   posLerp.x),
-														Mathf.Lerp(yStart, yStart + roomCellSizeY,
+														Mathf.Lerp(yStart, yStart + roomCellSize.y,
 																   posLerp.y));
-						float circleRadius = Mathf.Lerp(CircleMinRadius * roomSizeX,
-														CircleMaxRadius * roomSizeY,
+						float circleRadius = Mathf.Lerp(CircleMinRadius * roomSize.x,
+														CircleMaxRadius * roomSize.y,
 														prng.NextFloat());
 
 						CarveCircle(outRooms[outRooms.Count - 1], circlePos, circleRadius);

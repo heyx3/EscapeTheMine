@@ -42,26 +42,23 @@ namespace UnityLogic.MapGen
 			//Use a blend between a room's biome and the tile's own biome.
 			BiomeTile[,] oldBiomes = biomes;
 			biomes = new BiomeTile[oldBiomes.GetLength(0), oldBiomes.GetLength(1)];
-			for (int y = 0; y < biomes.GetLength(1); ++y)
-				for (int x = 0; x < biomes.GetLength(0); ++x)
-				{
-					Room r = rooms.FirstOrDefault(_r => _r.Spaces.Contains(new Vector2i(x, y)));
-					if (r == null)
-						biomes[x, y] = oldBiomes[x, y];
-					else
-						biomes[x, y] = new BiomeTile(r.Biome, oldBiomes[x, y], TileVariation);
-				}
+			foreach (Vector2i tilePos in biomes.AllIndices())
+			{
+				Room r = rooms.FirstOrDefault(_r => _r.Spaces.Contains(tilePos));
+				if (r == null)
+					biomes.Set(tilePos, oldBiomes.Get(tilePos));
+				else
+					biomes.Set(tilePos, new BiomeTile(r.Biome, oldBiomes.Get(tilePos), TileVariation));
+			}
 
 			//Turn the room data into a grid of tiles.
 			bool[,] tiles1 = new bool[biomes.GetLength(0), biomes.GetLength(1)];
-			for (int y = 0; y < tiles1.GetLength(1); ++y)
-				for (int x = 0; x < tiles1.GetLength(0); ++x)
-					tiles1[x, y] = !rooms.Any(r => r.Spaces.Contains(new Vector2i(x, y)));
+			foreach (Vector2i tilePos in tiles1.AllIndices())
+				tiles1.Set(tilePos, !rooms.Any(r => r.Spaces.Contains(tilePos)));
 			//Create a second copy to ping-pong back and forth between iterations.
 			bool[,] tiles2 = new bool[tiles1.GetLength(0), tiles1.GetLength(1)];
-			for (int y = 0; y < tiles2.GetLength(1); ++y)
-				for (int x = 0; x < tiles2.GetLength(0); ++x)
-					tiles2[x, y] = tiles1[x, y];
+			foreach (Vector2i tilePos in tiles2.AllIndices())
+				tiles2.Set(tilePos, tiles1.Get(tilePos));
 
 			//Run the cellular automata.
 			for (int i = 0; i < NIterations; ++i)

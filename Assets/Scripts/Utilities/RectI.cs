@@ -30,7 +30,7 @@ public struct RectI
 
 	public Vector2i Center { get { return new Vector2i(MinX + (SizeX / 2), MinY + (SizeY / 2)); } }
 
-	
+
 	public RectI(int minX, int minY, int sizeX, int sizeY)
 	{
 		MinX = minX;
@@ -74,5 +74,10 @@ public struct RectI
 	{
 		return (r.ContainsX(MinX) || ContainsX(r.MinX)) &&
 			   (r.ContainsY(MinY) || ContainsY(r.MinY));
+	}
+
+	public Vector2i.Iterator GetEnumerator()
+	{
+		return new Vector2i.Iterator(MinXY, MaxXY + 1);
 	}
 }

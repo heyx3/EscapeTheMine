@@ -147,13 +147,17 @@ namespace Rendering.TwoD
 			tileGridTex.Resize(Tiles.Width, Tiles.Height);
 
 			Color[] cols = new Color[tileGridTex.width * tileGridTex.height];
-			for (int y = 0; y < tileGridTex.height; ++y)
-				for (int x = 0; x < tileGridTex.width; ++x)
-					cols[x + (y * tileGridTex.width)] = tileTypeToMaterialParam[Tiles[new Vector2i(x, y)]];
+			foreach (Vector2i tilePos in new Vector2i.Iterator(new Vector2i(tileGridTex.width,
+																			tileGridTex.height)))
+			{
+				int index = tilePos.x + (tilePos.y * tileGridTex.width);
+				var tileType = Tiles[tilePos];
+				cols[index] = tileTypeToMaterialParam[tileType];
+			}
 
 			tileGridTex.SetPixels(cols);
 			tileGridTex.Apply();
-			
+
 			tileQuad.GetComponentInChildren<SpriteRenderer>().material.SetTexture(paramName_TileGridTex, tileGridTex);
 		}
 		private void Callback_TileChanged(GameLogic.TileGrid tiles, Vector2i pos,

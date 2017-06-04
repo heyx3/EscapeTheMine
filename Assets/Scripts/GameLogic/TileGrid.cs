@@ -17,7 +17,7 @@ namespace GameLogic
 		public static bool BlocksMovement(this TileTypes t) { return blocksMovement[t]; }
         public static bool IsMinable(this TileTypes t) { return isMinable[t]; }
 		public static bool IsBuildableOn(this TileTypes t) { return canBuildStructureOn[t]; }
-		
+
 
 		#region Lookup dictionaries
 		private static readonly Dictionary<TileTypes, bool> blocksMovement = new Dictionary<TileTypes, bool>()
@@ -61,8 +61,8 @@ namespace GameLogic
 
 
 		private TileTypes[,] grid;
-		
-		
+
+
 		public int Width { get { return grid.SizeX(); } }
 		public int Height { get { return grid.SizeY(); } }
 		public Vector2i Dimensions { get { return grid.SizeXY(); } }
@@ -90,17 +90,15 @@ namespace GameLogic
 		{
 			//Make a copy so that modifying the parameter doesn't secretly change this grid.
 			grid = new TileTypes[_grid.GetLength(0), _grid.GetLength(1)];
-            for (int y = 0; y < grid.GetLength(1); ++y)
-                for (int x = 0; x < grid.GetLength(0); ++x)
-                    grid[x, y] = _grid[x, y];
+			foreach (Vector2i p in grid.AllIndices())
+				grid.Set(p, _grid.Get(p));
 		}
 		public TileGrid(int width, int height) : this(new Vector2i(width, height)) { }
 		public TileGrid(Vector2i size)
 		{
 			grid = new TileTypes[size.x, size.y];
-			for (int y = 0; y < Height; ++y)
-				for (int x = 0; x < Width; ++x)
-					grid[x, y] = TileTypes.Empty;
+			foreach (Vector2i p in grid.AllIndices())
+				grid.Set(p, TileTypes.Empty);
 		}
 		public TileGrid() { grid = null; }
 
@@ -117,9 +115,8 @@ namespace GameLogic
 				grid = new TileTypes[newSize.x, newSize.y];
 
 			//Copy the data over.
-			for (int y = 0; y < newSize.y; ++y)
-				for (int x = 0; x < newSize.x; ++x)
-					grid[x, y] = newGrid[x, y];
+			foreach (Vector2i p in grid.AllIndices())
+				grid.Set(p, newGrid.Get(p));
 
 			//Raise the event.
 			if (OnTileGridReset != null)
@@ -131,7 +128,7 @@ namespace GameLogic
 			return tilePos.x >= 0 && tilePos.x < Width &&
 				   tilePos.y >= 0 && tilePos.y < Height;
 		}
-		
+
 		/// <summary>
 		/// Gets the position of all tiles of the given type.
 		/// </summary>

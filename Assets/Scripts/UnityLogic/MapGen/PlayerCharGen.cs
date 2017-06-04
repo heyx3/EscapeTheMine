@@ -67,14 +67,15 @@ namespace UnityLogic.MapGen
 															 0, genSettings.Size - 1),
 												 Mathf.Clamp(entranceRegionMax.y,
 															 0, genSettings.Size - 1));
-
-				for (int y = entranceRegionMin.y; y <= entranceRegionMax.y; ++y)
-					for (int x = entranceRegionMin.x; x <= entranceRegionMax.x; ++x)
-						if (entrance.DistanceSqr(new Vector2i(x, y)) < entranceRadiusSqr)
-						{
-							entranceSpaces.Add(new Vector2i(x, y));
-							theMap.Tiles[x, y] = GameLogic.TileTypes.Empty;
-						}
+				foreach (Vector2i entranceSpace in new Vector2i.Iterator(entranceRegionMin,
+																		 entranceRegionMax + 1))
+				{
+					if (entrance.DistanceSqr(entranceSpace) < entranceRadiusSqr)
+					{
+						entranceSpaces.Add(entranceSpace);
+						theMap.Tiles[entranceSpace] = GameLogic.TileTypes.Empty;
+					}
+				}
 			}
 
 
@@ -104,7 +105,7 @@ namespace UnityLogic.MapGen
 					float p = prng.NextFloat() * Math.Min(1.0f, totalPoints);
 					float energy = p;
 					totalPoints -= p;
-					
+
 					p = prng.NextFloat() * Math.Min(1.0f, totalPoints);
 					float food = p;
 					totalPoints -= p;
