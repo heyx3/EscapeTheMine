@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using UnityEngine;
 
+//TODO: Use StreamingAssets to get the localization file to copy over?
 
 public static class Localization
 {

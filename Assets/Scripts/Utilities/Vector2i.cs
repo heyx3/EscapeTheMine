@@ -119,5 +119,5 @@ public struct Vector2i : IEquatable<Vector2i>
 
         public Iterator GetEnumerator() { return this; }
     }
-        #endregion
+    #endregion
 }

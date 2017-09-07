@@ -115,7 +115,7 @@ public abstract class LockedSet<T> : MyData.IReadWritable, ICollection<T>
 	protected abstract T Read(MyData.Reader reader, string name);
 
 
-	//Extra stuff needed to finish the ICollection<T> interface:	
+	//Extra stuff needed to finish the ICollection<T> interface:
 	public IEnumerator<T> GetEnumerator() { return elements.GetEnumerator(); }
 	IEnumerator IEnumerable.GetEnumerator() { return elements.GetEnumerator(); }
 	public bool IsReadOnly { get { return false; } }

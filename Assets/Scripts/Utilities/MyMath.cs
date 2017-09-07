@@ -6,7 +6,7 @@ public static class MyMath
 {
 	public static bool IsNearZero(this float f, float error) { return Math.Abs(f) <= error; }
 	public static bool IsNearEqual(this float f, float f2, float error) { return Math.Abs(f - f2) <= error; }
-	
+
 	public static float Sign(this float f) { return (f > 0.0f ? 1.0f : (f < 0.0f ? -1.0f : 0.0f)); }
 	public static int SignI(this float f) { return (f > 0.0f ? 1 : (f < 0.0f ? -1 : 0)); }
 
