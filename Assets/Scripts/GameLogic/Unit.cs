@@ -187,6 +187,7 @@ namespace GameLogic
 			{
 				case Types.PlayerChar: u = new Units.PlayerChar(theMap); break;
 				case Types.Bed: u = new Units.Bed(theMap); break;
+				case Types.LizardMan: u = new Units.LizardMan(theMap); break;
 				default: throw new NotImplementedException(type.ToString());
 			}
 
@@ -199,6 +200,7 @@ namespace GameLogic
 		{
 			PlayerChar,
 			Bed,
+			LizardMan,
 		}
 		public abstract Types MyType { get; }
 

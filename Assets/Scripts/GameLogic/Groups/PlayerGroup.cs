@@ -17,6 +17,19 @@ namespace GameLogic.Groups
     public class PlayerGroup : Group
     {
 		/// <summary>
+		/// Gets the PlayerGroup for the given map.
+		/// Creates one if it doesn't exist yet.
+		/// </summary>
+		public static PlayerGroup Get(Map theMap)
+		{
+			var group = theMap.FindGroup<PlayerGroup>();
+			if (group == null)
+				group = new PlayerGroup(theMap);
+			return group;
+		}
+
+
+		/// <summary>
 		/// Raised when a new job was added.
 		/// </summary>
 		public event Action<PlayerGroup, Job> OnNewJob;
@@ -46,15 +59,11 @@ namespace GameLogic.Groups
 		{
 			JobQueries = new Player_Group.JobQueries(this);
 			JobQueries.Init();
+
+			theMap.Groups.Add(this);
 		}
 
 
-        public override IEnumerable TakeTurn()
-        {
-            foreach (object o in base.TakeTurn())
-                yield return o;
-        }
-		
 		/// <summary>
 		/// Adds the given job to this group.
 		/// Returns whether it already existed in this collection.
@@ -128,7 +137,7 @@ namespace GameLogic.Groups
 
 			return toTake;
 		}
-		
+
 		private void InitJob(Job j)
 		{
 			j.IsEmergency.OnChanged += Callback_JobEmergencyChanged;

@@ -10,10 +10,35 @@ namespace Rendering.TwoD
 {
 	public class UnitRenderer_PlayerChar : UnitRenderer<GameLogic.Units.PlayerChar>
 	{
-		private UnitDispatcher.SpriteSet_PlayerChar[] sprites { get { return UnitDispatcher.Instance.Sprites_PlayerChar; } }
+		//TODO: Callbacks for taking damage/dealing damage. First have to set up a cross-type damage system.
 
+		private UnitDispatcher.Data_PlayerChar spriteData { get { return UnitDispatcher.Instance.PlayerChar; } }
+
+		private Coroutine animCoroutine = null;
         private BlinkSprite lowFoodWarning;
 
+
+		private void ClearAnims()
+		{
+			if (animCoroutine != null)
+			{
+				StopCoroutine(animCoroutine);
+				animCoroutine = null;
+				MySprite.sprite = spriteData.GetSet(Target.Personality.AppearanceIndex).Idle;
+			}
+		}
+		private void Play_Hurt()
+		{
+			ClearAnims();
+			animCoroutine = StartCoroutine(spriteData.PlayAnim_Hurt(Target.Personality.AppearanceIndex,
+																	MySprite));
+		}
+		private void Play_Attack()
+		{
+			ClearAnims();
+			animCoroutine = StartCoroutine(spriteData.PlayAnim_Attack(Target.Personality.AppearanceIndex,
+																	  MySprite));
+		}
 
         protected override void Awake()
         {
@@ -32,30 +57,30 @@ namespace Rendering.TwoD
 		{
 			base.Start();
 
-			MySprite.sprite = sprites[Target.Personality.AppearanceIndex % sprites.Length].Idle;
-			
+			MySprite.sprite = spriteData.GetSet(Target.Personality.AppearanceIndex).Idle;
+
             Target.Food.OnChanged += Callback_FoodChanged;
             Callback_FoodChanged(Target, 0.0f, Target.Food);
-			
+
             Target.Health.OnChanged += Callback_HealthChanged;
             Callback_HealthChanged(Target, 0.0f, Target.Health);
-			
+
             Target.Energy.OnChanged += Callback_EnergyChanged;
             Callback_EnergyChanged(Target, 0.0f, Target.Energy);
-			
+
             Target.Strength.OnChanged += Callback_StrengthChanged;
             Callback_StrengthChanged(Target, 0.0f, Target.Strength);
 		}
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
-			
+
             Target.Food.OnChanged -= Callback_FoodChanged;
             Target.Health.OnChanged -= Callback_HealthChanged;
             Target.Energy.OnChanged -= Callback_EnergyChanged;
             Target.Strength.OnChanged -= Callback_StrengthChanged;
         }
-		
+
         private void Callback_FoodChanged(GameLogic.Units.PlayerChar u, float oldFood, float newFood)
         {
             lowFoodWarning.gameObject.SetActive(

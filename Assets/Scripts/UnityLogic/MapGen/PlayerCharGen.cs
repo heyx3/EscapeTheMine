@@ -85,12 +85,7 @@ namespace UnityLogic.MapGen
 				unitsToKeep = new UlongSet();
 
 				//Find or create the PlayerGroup.
-				var playerGroup = theMap.FindGroup<GameLogic.Groups.PlayerGroup>();
-				if (playerGroup == null)
-				{
-					playerGroup = new GameLogic.Groups.PlayerGroup(theMap);
-					theMap.Groups.Add(playerGroup);
-				}
+				var playerGroup = GameLogic.Groups.PlayerGroup.Get(theMap);
 
 				//Generate a certain number of player units.
 				PRNG prng = new PRNG(seed);

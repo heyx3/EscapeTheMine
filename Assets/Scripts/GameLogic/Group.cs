@@ -105,6 +105,7 @@ namespace GameLogic
         public enum Types
         {
             PlayerChars = 0,
+			Monsters,
         }
         public abstract Types MyType { get; }
 
@@ -169,6 +170,9 @@ namespace GameLogic
                 case Types.PlayerChars:
 					g = new Groups.PlayerGroup(theMap);
                     break;
+				case Types.Monsters:
+					g = new Groups.MonstersGroup(theMap);
+					break;
 
                 default: throw new NotImplementedException(type.ToString());
             }

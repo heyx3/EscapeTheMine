@@ -1,24 +1,35 @@
 fileFormatVersion: 2
 guid: 66cf2613a5d0630489d31e8fba48b834
-timeCreated: 1494553132
+timeCreated: 1504756543
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: PlayerChars_0
-    21300002: PlayerChars_1
-    21300004: PlayerChars_2
-    21300006: PlayerChars_3
-    21300008: PlayerChars_4
-    21300010: PlayerChars_5
-    21300012: PlayerChars_6
-    21300014: PlayerChars_7
-    21300016: PlayerChars_8
-    21300018: PlayerChars_9
-    21300020: PlayerChars_10
-    21300022: PlayerChars_11
-    21300024: PlayerChars_12
-    21300026: PlayerChars_13
-    21300028: PlayerChars_14
+    21300000: p1_idle
+    21300002: p1_attack
+    21300004: p1_hit
+    21300006: p2_idle
+    21300008: p2_attack
+    21300010: p2_hit
+    21300012: p3_idle
+    21300014: p3_attack
+    21300016: p3_hurt
+    21300018: p4_idle
+    21300020: p4_attack
+    21300022: p4_hurt
+    21300024: p5_idle
+    21300026: p5_attack
+    21300028: p5_hurt
+    21300030: p1_hurt
+    21300032: p2_hurt
+    21300034: p6_idle
+    21300036: p6_attack
+    21300038: p6_hurt
+    21300040: p7_idle
+    21300042: p7_attack
+    21300044: p7_hurt
+    21300046: p8_idle
+    21300048: p8_attack
+    21300050: p8_hurt
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -101,7 +112,163 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerChars_0
+      name: p1_idle
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 112
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p1_attack
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 112
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p1_hurt
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 112
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p2_idle
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 96
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p2_attack
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 96
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p2_hurt
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 96
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p3_idle
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p3_attack
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p3_hurt
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 80
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p4_idle
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p4_attack
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 64
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p4_hurt
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p5_idle
       rect:
         serializedVersion: 2
         x: 0
@@ -114,7 +281,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_1
+      name: p5_attack
       rect:
         serializedVersion: 2
         x: 16
@@ -127,7 +294,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_2
+      name: p5_hurt
       rect:
         serializedVersion: 2
         x: 32
@@ -140,20 +307,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_3
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 48
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: PlayerChars_4
+      name: p6_idle
       rect:
         serializedVersion: 2
         x: 0
@@ -166,7 +320,20 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_5
+      name: p6_attack
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 32
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: p6_hurt
       rect:
         serializedVersion: 2
         x: 32
@@ -179,20 +346,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_6
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 32
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: PlayerChars_7
+      name: p7_idle
       rect:
         serializedVersion: 2
         x: 0
@@ -205,7 +359,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_8
+      name: p7_attack
       rect:
         serializedVersion: 2
         x: 16
@@ -218,7 +372,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_9
+      name: p7_hurt
       rect:
         serializedVersion: 2
         x: 32
@@ -231,20 +385,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_10
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 16
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: PlayerChars_11
+      name: p8_idle
       rect:
         serializedVersion: 2
         x: 0
@@ -257,7 +398,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_12
+      name: p8_attack
       rect:
         serializedVersion: 2
         x: 16
@@ -270,23 +411,10 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: PlayerChars_13
+      name: p8_hurt
       rect:
         serializedVersion: 2
         x: 32
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: PlayerChars_14
-      rect:
-        serializedVersion: 2
-        x: 48
         y: 0
         width: 16
         height: 16

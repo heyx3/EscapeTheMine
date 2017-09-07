@@ -56,11 +56,13 @@ namespace GameLogic.Groups
 
 
         public static int TurnPriority_Player { get { return instance.turnPriority_Player; } }
+		public static int TurnPriority_Monster { get { return instance.turnPriority_Monster; } }
 
 
         #region Private fields
 
-        private int turnPriority_Player = 10;
+        private int turnPriority_Player = 10,
+					turnPriority_Monster = 20;
 
 		#endregion
 
@@ -68,10 +70,12 @@ namespace GameLogic.Groups
 		public void WriteData(MyData.Writer writer)
 		{
             writer.Int(turnPriority_Player, "turnPriority_Player");
+            writer.Int(turnPriority_Monster, "turnPriority_Monster");
 		}
 		public void ReadData(MyData.Reader reader)
         {
             turnPriority_Player = reader.Int("turnPriority_Player");
+            turnPriority_Monster = reader.Int("turnPriority_Monster");
         }
 	}
 }
