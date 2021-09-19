@@ -197,7 +197,9 @@ namespace MyUI
 				if (tilePos.HasValue)
 					Target.AddJob(new Job_MoveToPos(tilePos.Value, makeEmergency, Game.Map));
 			};
-			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+
+			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+			wnd.SetOwner(this);
 		}
         public void Callback_NewJob_Mine(bool makeEmergency)
         {
@@ -213,7 +215,9 @@ namespace MyUI
 				if (tilePoses != null)
 					Target.AddJob(new Job_Mine(tilePoses, makeEmergency, Game.Map));
 			};
-            ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
+
+            var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTiles, data);
+			wnd.SetOwner(this);
         }
 		public void Callback_NewJob_BuildBed(bool makeEmergency)
 		{
@@ -232,7 +236,9 @@ namespace MyUI
 												   makeEmergency, Game.Map));
 				}
 			};
-			ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+			
+			var wnd = ContentUI.Instance.CreateWindow(ContentUI.Instance.Window_SelectTile, data);
+			wnd.SetOwner(this);
 		}
 
 		public enum BedSleepTypes

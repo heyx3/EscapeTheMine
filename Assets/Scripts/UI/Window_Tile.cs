@@ -67,9 +67,11 @@ namespace MyUI
 				//Destroy this window.
 				Callback_Button_Close();
 			};
+
 			var wnd = (Window_SelectTiles)ContentUI.Instance.CreateWindow(
 										      ContentUI.Instance.Window_SelectTiles, data);
 			wnd.Callback_WorldTileClicked(Target);
+			wnd.SetOwner(this);
 		}
 		public void Callback_BuildBed(bool isEmergency)
 		{

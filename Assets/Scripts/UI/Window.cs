@@ -37,6 +37,9 @@ namespace MyUI
 		public event Action<Window<T>, Vector2, Vector2> OnWindowDragged;
 
 
+		private bool hasOwner = false;
+		private Component owner = null;
+
 		private T target = default(T);
 		private bool isTargetInitialized = false;
 		private Vector2 dragOffset;
@@ -51,6 +54,22 @@ namespace MyUI
 		}
 
 
+		/// <summary>
+		/// Ties the lifetime of this window to the given object.
+		/// </summary>
+		public void SetOwner(GameObject o)
+        {
+			SetOwner(o.transform);
+        }
+		/// <summary>
+		/// Ties the lifetime of this window to the given Component.
+		/// </summary>
+		public void SetOwner(Component c)
+        {
+			hasOwner = true;
+			owner = c;
+        }
+
 		protected virtual void Awake()
 		{
 			MyTr = transform;
@@ -59,6 +78,11 @@ namespace MyUI
 			Game.OnStart += Callback_MapChanging;
 			Game.OnEnd += Callback_MapChanging;
 		}
+		protected virtual void Update()
+        {
+			if (hasOwner && owner == null)
+				Callback_Button_Close();
+        }
 		protected virtual void OnDestroy()
 		{
 			allWindows.Remove(this);

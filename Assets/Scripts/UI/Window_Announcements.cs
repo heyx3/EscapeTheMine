@@ -71,11 +71,13 @@ namespace MyUI
 			Game.OnStart += () => gameObject.SetActive(true);
 			Game.OnEnd += () => gameObject.SetActive(false);
 		}
-		private void Update()
+		protected override void Update()
 		{
 			timeSinceLastInteraction -= Time.deltaTime;
 			if (timeSinceLastInteraction <= 0.0f)
 				gameObject.SetActive(false);
+
+			base.Update();
 		}
 
 

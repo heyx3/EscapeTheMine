@@ -148,7 +148,7 @@ namespace MyUI
 			if (instance == this)
 				instance = null;
         }
-        private void Update()
+        protected override void Update()
         {
             Vector2i mTilePos = mousedOverTile;
 
@@ -157,6 +157,8 @@ namespace MyUI
                                               Target.IsTileValid(mTilePos) ?
                                                   MouseTileGoodHighlightColor :
                                                   MouseTileBadHighlightColor);
+
+            base.Update();
         }
 
         public void Callback_Finished()

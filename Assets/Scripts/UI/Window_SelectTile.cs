@@ -108,7 +108,7 @@ namespace MyUI
 			if (instance == this)
 				instance = null;
         }
-        private void Update()
+        protected override void Update()
         {
             Vector2i mTilePos = mousedOverTile;
 
@@ -117,9 +117,11 @@ namespace MyUI
                                               Target.IsTileValid(mTilePos) ?
                                                   TileGoodHighlightColor :
                                                   TileBadHighlightColor);
-        }
 
-        public override void Callback_Button_Close()
+			base.Update();
+		}
+
+		public override void Callback_Button_Close()
         {
             Target.Raise_OnFinished(null);
 
