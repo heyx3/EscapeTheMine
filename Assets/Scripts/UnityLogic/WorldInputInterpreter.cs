@@ -12,6 +12,9 @@ namespace UnityLogic
 	/// </summary>
 	public class WorldInputInterpreter : MonoBehaviour
 	{
+		public KeyCode Key_ScrollUp = KeyCode.Equals,
+					   Key_ScrollDown = KeyCode.Minus;
+
 		private bool isClicking = false,
 					 isDragging = false;
 		private Vector2 startMousePos, lastMousePos;
@@ -89,16 +92,28 @@ namespace UnityLogic
 			{
 				//TODO: Detect pinching. Maybe we can use the same component that raises drag/click events?
 			}
-			//Only use the scroll wheel if the user is currently dragging the camera.
-			else if (isDragging)
+			else
 			{
-				float scrollWheel = Input.mouseScrollDelta.y;
+				//Only check the scroll wheel if the user is currently dragging the camera,
+				//    to avoid issues when they're interacting with UI widgets.
+				float scrollWheel = 0.0f;
+				if (isDragging)
+					scrollWheel += Input.mouseScrollDelta.y;
+				if (Input.GetKeyDown(Key_ScrollUp))
+					scrollWheel += 1;
+				else if (Input.GetKeyDown(Key_ScrollDown))
+					scrollWheel -= 1;
+
 				if (scrollWheel != 0.0f)
 				{
+					var zoomScreenCenter = isDragging ?
+										       lastMousePos :
+											   (new Vector2(Screen.width, Screen.height) / 2);
+
 					if (Use2D)
-						Input2D.Scroll(scrollWheel, lastMousePos);
+						Input2D.Scroll(scrollWheel, zoomScreenCenter);
 					if (Use3D)
-						Input3D.Scroll(scrollWheel, lastMousePos);
+						Input3D.Scroll(scrollWheel, zoomScreenCenter);
 				}
 			}
 		}
